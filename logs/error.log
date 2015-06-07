@@ -1,0 +1,667 @@
+2015-06-03 06:37:22 Error: [Cake\Controller\Exception\MissingComponentException] Component class IndicatorComponentComponent could not be found.
+Exception Attributes: array (
+  'class' => 'IndicatorComponentComponent',
+  'plugin' => NULL,
+)
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Core\ObjectRegistry.php(87): Cake\Controller\ComponentRegistry->_throwMissingClassError('IndicatorCompon...', NULL)
+#1 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Controller\Controller.php(328): Cake\Core\ObjectRegistry->load('IndicatorCompon...', Array)
+#2 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Controller\Controller.php(456): Cake\Controller\Controller->loadComponent('IndicatorCompon...', Array)
+#3 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Controller\Controller.php(280): Cake\Controller\Controller->_loadComponents()
+#4 [internal function]: Cake\Controller\Controller->__construct(Object(Cake\Network\Request), Object(Cake\Network\Response), 'Services')
+#5 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Routing\Filter\ControllerFactoryFilter.php(87): ReflectionClass->newInstance(Object(Cake\Network\Request), Object(Cake\Network\Response), 'Services')
+#6 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Routing\Filter\ControllerFactoryFilter.php(49): Cake\Routing\Filter\ControllerFactoryFilter->_getController(Object(Cake\Network\Request), Object(Cake\Network\Response))
+#7 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Routing\DispatcherFilter.php(145): Cake\Routing\Filter\ControllerFactoryFilter->beforeDispatch(Object(Cake\Event\Event))
+#8 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Event\EventManager.php(385): Cake\Routing\DispatcherFilter->handle(Object(Cake\Event\Event), Object(Cake\Network\Request), Object(Cake\Network\Response))
+#9 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Event\EventManager.php(351): Cake\Event\EventManager->_callListener(Array, Object(Cake\Event\Event))
+#10 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Event\EventManagerTrait.php(78): Cake\Event\EventManager->dispatch(Object(Cake\Event\Event))
+#11 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(62): Cake\Routing\Dispatcher->dispatchEvent('Dispatcher.befo...', Array)
+#12 C:\-- Projects --\dfaNew\webroot\index.php(37): Cake\Routing\Dispatcher->dispatch(Object(Cake\Network\Request), Object(Cake\Network\Response))
+#13 {main}
+
+
+2015-06-03 06:37:45 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 43 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 20]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 20
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 43
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 06:37:45 Error: Fatal Error (1): Class 'App\Controller\Component\App' not found in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 23]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-03 06:37:46 Error: [Cake\Error\FatalErrorException] Class 'App\Controller\Component\App' not found
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Class 'App\\Cont...', 'C:\\-- Projects ...', 23)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-03 06:41:38 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 43 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 20]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 20
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 43
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 06:41:38 Error: Fatal Error (1): Class 'App\Controller\Component\App' not found in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 23]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-03 06:41:38 Error: [Cake\Error\FatalErrorException] Class 'App\Controller\Component\App' not found
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Class 'App\\Cont...', 'C:\\-- Projects ...', 23)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-03 06:57:21 Warning: Warning (4096): Argument 1 passed to Cake\Controller\Component::initialize() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php on line 14 and defined in [C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Controller\Component.php, line 133]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+Cake\Controller\Component::initialize() - CORE\src\Controller\Component.php, line 133
+App\Controller\Component\IndicatorComponent::initialize() - APP/Controller\Component\IndicatorComponent.php, line 14
+Cake\Controller\Component::__construct() - CORE\src\Controller\Component.php, line 121
+Cake\Controller\ComponentRegistry::_create() - CORE\src\Controller\ComponentRegistry.php, line 106
+Cake\Core\ObjectRegistry::load() - CORE\src\Core\ObjectRegistry.php, line 89
+Cake\Controller\Controller::loadComponent() - CORE\src\Controller\Controller.php, line 328
+Cake\Controller\Controller::_loadComponents() - CORE\src\Controller\Controller.php, line 456
+Cake\Controller\Controller::__construct() - CORE\src\Controller\Controller.php, line 280
+ReflectionClass::newInstance() - [internal], line ??
+Cake\Routing\Filter\ControllerFactoryFilter::_getController() - CORE\src\Routing\Filter\ControllerFactoryFilter.php, line 87
+Cake\Routing\Filter\ControllerFactoryFilter::beforeDispatch() - CORE\src\Routing\Filter\ControllerFactoryFilter.php, line 49
+Cake\Routing\DispatcherFilter::handle() - CORE\src\Routing\DispatcherFilter.php, line 145
+Cake\Event\EventManager::_callListener() - CORE\src\Event\EventManager.php, line 385
+Cake\Event\EventManager::dispatch() - CORE\src\Event\EventManager.php, line 351
+Cake\Routing\Dispatcher::dispatchEvent() - CORE\src\Event\EventManagerTrait.php, line 78
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 62
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 06:57:21 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 43 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 24]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 24
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 43
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 06:57:21 Error: Fatal Error (1): Class 'App\Controller\Component\App' not found in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 27]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-03 06:57:21 Error: [Cake\Error\FatalErrorException] Class 'App\Controller\Component\App' not found
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Class 'App\\Cont...', 'C:\\-- Projects ...', 27)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-03 06:57:30 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 43 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 19]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 19
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 43
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 06:57:30 Error: Fatal Error (1): Class 'App\Controller\Component\App' not found in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 22]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-03 06:57:31 Error: [Cake\Error\FatalErrorException] Class 'App\Controller\Component\App' not found
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Class 'App\\Cont...', 'C:\\-- Projects ...', 22)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-03 06:58:26 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 43 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 20]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 20
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 43
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 06:58:26 Error: Fatal Error (1): Call to undefined method Cake\Core\App::import() in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 23]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-03 06:58:27 Error: [Cake\Error\FatalErrorException] Call to undefined method Cake\Core\App::import()
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Call to undefin...', 'C:\\-- Projects ...', 23)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-03 08:53:33 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 43 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 19]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 19
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 43
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 08:53:33 Error: Fatal Error (1): Class 'App\Controller\Component\App' not found in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 22]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-03 08:53:34 Error: [Cake\Error\FatalErrorException] Class 'App\Controller\Component\App' not found
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Class 'App\\Cont...', 'C:\\-- Projects ...', 22)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-03 08:59:55 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 43 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 19]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 19
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 43
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 08:59:55 Error: Fatal Error (1): Call to undefined method App\Controller\Component\IndicatorComponent::loadModel() in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 23]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-03 08:59:55 Error: [Cake\Error\FatalErrorException] Call to undefined method App\Controller\Component\IndicatorComponent::loadModel()
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Call to undefin...', 'C:\\-- Projects ...', 23)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-03 09:00:59 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 43 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 19]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 19
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 43
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 09:00:59 Error: Fatal Error (1): Class 'App\Controller\Component\ClassRegistry' not found in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 23]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-03 09:00:59 Error: [Cake\Error\FatalErrorException] Class 'App\Controller\Component\ClassRegistry' not found
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Class 'App\\Cont...', 'C:\\-- Projects ...', 23)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-03 09:09:48 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 43 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 19]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 19
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 43
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 09:09:48 Error: Fatal Error (1): Class 'App\Controller\Component\TableRegistry' not found in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 22]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-03 09:09:48 Error: [Cake\Error\FatalErrorException] Class 'App\Controller\Component\TableRegistry' not found
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Class 'App\\Cont...', 'C:\\-- Projects ...', 22)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-03 09:10:23 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 43 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 20]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 20
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 43
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 09:10:23 Warning: Warning (4096): Argument 2 passed to App\Model\Table\UTIndicatorEnTable::getDataByIds() must be of the type array, null given, called in C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php on line 25 and defined in [C:\-- Projects --\dfaNew\src\Model\Table\UTIndicatorEnTable.php, line 35]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Model\Table\UTIndicatorEnTable::getDataByIds() - APP/Model\Table\UTIndicatorEnTable.php, line 35
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 25
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 43
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 09:10:23 Error: [Cake\View\Exception\MissingTemplateException] Template file "Services\service_query.ctp" is missing.
+Exception Attributes: array (
+  'file' => 'Services\\service_query.ctp',
+)
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\View\View.php(460): Cake\View\View->_getViewFileName(NULL)
+#1 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Controller\Controller.php(581): Cake\View\View->render(NULL, NULL)
+#2 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(120): Cake\Controller\Controller->render()
+#3 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(87): Cake\Routing\Dispatcher->_invoke(Object(App\Controller\ServicesController))
+#4 C:\-- Projects --\dfaNew\webroot\index.php(37): Cake\Routing\Dispatcher->dispatch(Object(Cake\Network\Request), Object(Cake\Network\Response))
+#5 {main}
+
+
+2015-06-03 09:10:59 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 44 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 20]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 20
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 44
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 09:10:59 Warning: Warning (4096): Argument 2 passed to App\Model\Table\UTIndicatorEnTable::getDataByIds() must be of the type array, null given, called in C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php on line 25 and defined in [C:\-- Projects --\dfaNew\src\Model\Table\UTIndicatorEnTable.php, line 35]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Model\Table\UTIndicatorEnTable::getDataByIds() - APP/Model\Table\UTIndicatorEnTable.php, line 35
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 25
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 44
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 09:11:18 Warning: Warning (4096): Argument 2 passed to App\Controller\Component\IndicatorComponent::getDataByIds() must be of the type array, none given, called in C:\-- Projects --\dfaNew\src\Controller\ServicesController.php on line 44 and defined in [C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php, line 20]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 20
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 44
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 09:11:18 Warning: Warning (4096): Argument 2 passed to App\Model\Table\UTIndicatorEnTable::getDataByIds() must be of the type array, null given, called in C:\-- Projects --\dfaNew\src\Controller\Component\IndicatorComponent.php on line 25 and defined in [C:\-- Projects --\dfaNew\src\Model\Table\UTIndicatorEnTable.php, line 35]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+App\Model\Table\UTIndicatorEnTable::getDataByIds() - APP/Model\Table\UTIndicatorEnTable.php, line 35
+App\Controller\Component\IndicatorComponent::getDataByIds() - APP/Controller\Component\IndicatorComponent.php, line 25
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 44
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+[main] - ROOT\webroot\index.php, line 37
+
+
+
+2015-06-03 09:11:18 Error: [LogicException] Controller action can only return an instance of Response
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(87): Cake\Routing\Dispatcher->_invoke(Object(App\Controller\ServicesController))
+#1 C:\-- Projects --\dfaNew\webroot\index.php(37): Cake\Routing\Dispatcher->dispatch(Object(Cake\Network\Request), Object(Cake\Network\Response))
+#2 {main}
+
+
+2015-06-03 09:11:45 Error: [LogicException] Controller action can only return an instance of Response
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(87): Cake\Routing\Dispatcher->_invoke(Object(App\Controller\ServicesController))
+#1 C:\-- Projects --\dfaNew\webroot\index.php(37): Cake\Routing\Dispatcher->dispatch(Object(Cake\Network\Request), Object(Cake\Network\Response))
+#2 {main}
+
+
+2015-06-04 09:08:33 Error: Fatal Error (1): Class 'App\Model\Table\Table' not found in [C:\-- Projects --\dfaNew\src\Model\Table\UTIndicatorEnTable.php, line 11]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-04 09:08:33 Error: [Cake\Error\FatalErrorException] Class 'App\Model\Table\Table' not found
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Class 'App\\Mode...', 'C:\\-- Projects ...', 11)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-04 09:24:03 Error: Fatal Error (1): Cannot use object of type Cake\ORM\ResultSet as array in [C:\-- Projects --\dfaNew\src\Model\Table\UTIndicatorEnTable.php, line 46]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-04 09:24:04 Error: [Cake\Error\FatalErrorException] Cannot use object of type Cake\ORM\ResultSet as array
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Cannot use obje...', 'C:\\-- Projects ...', 46)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-04 09:24:13 Error: Fatal Error (1): Cannot use object of type Cake\ORM\ResultSet as array in [C:\-- Projects --\dfaNew\src\Model\Table\UTIndicatorEnTable.php, line 46]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-04 09:24:13 Error: [Cake\Error\FatalErrorException] Cannot use object of type Cake\ORM\ResultSet as array
+Request URL: /dfaNew/services/serviceQuery/1
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Cannot use obje...', 'C:\\-- Projects ...', 46)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-06 14:30:06 Warning: Warning (2): PDO::__construct(): php_network_getaddresses: getaddrinfo failed: No such host is known.  in [C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Database\Driver\PDODriverTrait.php, line 48]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+PDO::__construct() - [internal], line ??
+Cake\Database\Driver\Mysql::_connect() - CORE\src\Database\Driver\PDODriverTrait.php, line 48
+Cake\Database\Driver\Mysql::connect() - CORE\src\Database\Driver\Mysql.php, line 89
+Cake\Database\Connection::connect() - CORE\src\Database\Connection.php, line 185
+include - APP/Template\Pages\home.ctp, line 114
+Cake\View\View::_evaluate() - CORE\src\View\View.php, line 815
+Cake\View\View::_render() - CORE\src\View\View.php, line 775
+Cake\View\View::render() - CORE\src\View\View.php, line 463
+Cake\Controller\Controller::render() - CORE\src\Controller\Controller.php, line 581
+App\Controller\PagesController::display() - APP/Controller\PagesController.php, line 57
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+require - ROOT\webroot\index.php, line 37
+[main] - ROOT\index.php, line 16
+
+
+
+2015-06-07 05:41:27 Warning: Warning (2): PDO::__construct(): php_network_getaddresses: getaddrinfo failed: No such host is known.  in [C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Database\Driver\PDODriverTrait.php, line 48]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+PDO::__construct() - [internal], line ??
+Cake\Database\Driver\Mysql::_connect() - CORE\src\Database\Driver\PDODriverTrait.php, line 48
+Cake\Database\Driver\Mysql::connect() - CORE\src\Database\Driver\Mysql.php, line 89
+Cake\Database\Connection::connect() - CORE\src\Database\Connection.php, line 185
+include - APP/Template\Pages\home.ctp, line 114
+Cake\View\View::_evaluate() - CORE\src\View\View.php, line 815
+Cake\View\View::_render() - CORE\src\View\View.php, line 775
+Cake\View\View::render() - CORE\src\View\View.php, line 463
+Cake\Controller\Controller::render() - CORE\src\Controller\Controller.php, line 581
+App\Controller\PagesController::display() - APP/Controller\PagesController.php, line 57
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+require - ROOT\webroot\index.php, line 37
+[main] - ROOT\index.php, line 16
+
+
+
+2015-06-07 05:46:59 Warning: Warning (2): PDO::__construct(): php_network_getaddresses: getaddrinfo failed: No such host is known.  in [C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Database\Driver\PDODriverTrait.php, line 48]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+PDO::__construct() - [internal], line ??
+Cake\Database\Driver\Mysql::_connect() - CORE\src\Database\Driver\PDODriverTrait.php, line 48
+Cake\Database\Driver\Mysql::connect() - CORE\src\Database\Driver\Mysql.php, line 89
+Cake\Database\Connection::connect() - CORE\src\Database\Connection.php, line 185
+include - APP/Template\Pages\home.ctp, line 114
+Cake\View\View::_evaluate() - CORE\src\View\View.php, line 815
+Cake\View\View::_render() - CORE\src\View\View.php, line 775
+Cake\View\View::render() - CORE\src\View\View.php, line 463
+Cake\Controller\Controller::render() - CORE\src\Controller\Controller.php, line 581
+App\Controller\PagesController::display() - APP/Controller\PagesController.php, line 57
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+require - ROOT\webroot\index.php, line 37
+[main] - ROOT\index.php, line 16
+
+
+
+2015-06-07 15:00:58 Warning: Warning (2): PDO::__construct(): php_network_getaddresses: getaddrinfo failed: No such host is known.  in [C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Database\Driver\PDODriverTrait.php, line 48]
+Trace:
+Cake\Error\BaseErrorHandler::handleError() - CORE\src\Error\BaseErrorHandler.php, line 138
+PDO::__construct() - [internal], line ??
+Cake\Database\Driver\Mysql::_connect() - CORE\src\Database\Driver\PDODriverTrait.php, line 48
+Cake\Database\Driver\Mysql::connect() - CORE\src\Database\Driver\Mysql.php, line 89
+Cake\Database\Driver\Mysql::beginTransaction() - CORE\src\Database\Driver\PDODriverTrait.php, line 100
+Cake\Database\Connection::begin() - CORE\src\Database\Connection.php, line 385
+Cake\Database\Connection::transactional() - CORE\src\Database\Connection.php, line 558
+Cake\ORM\Table::save() - CORE\src\ORM\Table.php, line 1314
+App\Model\Table\UTTimeperiodTable::savesingleTimePeriod() - APP/Model\Table\UTTimePeriodTable.php, line 112
+App\Controller\Component\TimeperiodComponent::savesingleTimePeriodData() - APP/Controller\Component\TimeperiodComponent.php, line 60
+App\Controller\ServicesController::serviceQuery() - APP/Controller\ServicesController.php, line 52
+Cake\Controller\Controller::invokeAction() - CORE\src\Controller\Controller.php, line 410
+Cake\Routing\Dispatcher::_invoke() - CORE\src\Routing\Dispatcher.php, line 114
+Cake\Routing\Dispatcher::dispatch() - CORE\src\Routing\Dispatcher.php, line 87
+require - ROOT\webroot\index.php, line 37
+[main] - ROOT\index.php, line 16
+
+
+
+2015-06-07 15:01:01 Error: [PDOException] SQLSTATE[HY000] [2002] php_network_getaddresses: getaddrinfo failed: No such host is known. 
+Request URL: /dfa_devinfo_data_admin/index.php/services/serviceQuery/services/serviceQuery/2?TimePeriodData=2011
+Stack Trace:
+#0 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Database\Driver\PDODriverTrait.php(48): PDO->__construct('mysql:host=dgps...', 'root', '', Array)
+#1 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Database\Driver\Mysql.php(89): Cake\Database\Driver\Mysql->_connect('mysql:host=dgps...', Array)
+#2 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Database\Driver\PDODriverTrait.php(100): Cake\Database\Driver\Mysql->connect()
+#3 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Database\Connection.php(385): Cake\Database\Driver\Mysql->beginTransaction()
+#4 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Database\Connection.php(558): Cake\Database\Connection->begin()
+#5 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\ORM\Table.php(1314): Cake\Database\Connection->transactional(Object(Closure))
+#6 C:\wamp\www\dfa_devinfo_data_admin\src\Model\Table\UTTimePeriodTable.php(112): Cake\ORM\Table->save(Object(Cake\ORM\Entity))
+#7 C:\wamp\www\dfa_devinfo_data_admin\src\Controller\Component\TimeperiodComponent.php(60): App\Model\Table\UTTimeperiodTable->savesingleTimePeriod('2011')
+#8 C:\wamp\www\dfa_devinfo_data_admin\src\Controller\ServicesController.php(52): App\Controller\Component\TimeperiodComponent->savesingleTimePeriodData('2011')
+#9 [internal function]: App\Controller\ServicesController->serviceQuery('2')
+#10 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Controller\Controller.php(410): call_user_func_array(Array, Array)
+#11 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(114): Cake\Controller\Controller->invokeAction()
+#12 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(87): Cake\Routing\Dispatcher->_invoke(Object(App\Controller\ServicesController))
+#13 C:\wamp\www\dfa_devinfo_data_admin\webroot\index.php(37): Cake\Routing\Dispatcher->dispatch(Object(Cake\Network\Request), Object(Cake\Network\Response))
+#14 C:\wamp\www\dfa_devinfo_data_admin\index.php(16): require('C:\\wamp\\www\\dfa...')
+#15 {main}
+
+
+2015-06-07 15:14:20 Error: [BadMethodCallException] Unknown finder method "count"
+Request URL: /dfa_devinfo_data_admin/index.php/services/serviceQuery/services/serviceQuery/2?TimePeriodData=2011
+Stack Trace:
+#0 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\ORM\Table.php(885): Cake\ORM\Table->callFinder('count', Object(Cake\ORM\Query), Array)
+#1 C:\wamp\www\dfa_devinfo_data_admin\src\Model\Table\UTTimePeriodTable.php(101): Cake\ORM\Table->find('count', Array)
+#2 C:\wamp\www\dfa_devinfo_data_admin\src\Controller\Component\TimeperiodComponent.php(60): App\Model\Table\UTTimeperiodTable->savesingleTimePeriod('2011')
+#3 C:\wamp\www\dfa_devinfo_data_admin\src\Controller\ServicesController.php(52): App\Controller\Component\TimeperiodComponent->savesingleTimePeriodData('2011')
+#4 [internal function]: App\Controller\ServicesController->serviceQuery('2')
+#5 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Controller\Controller.php(410): call_user_func_array(Array, Array)
+#6 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(114): Cake\Controller\Controller->invokeAction()
+#7 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(87): Cake\Routing\Dispatcher->_invoke(Object(App\Controller\ServicesController))
+#8 C:\wamp\www\dfa_devinfo_data_admin\webroot\index.php(37): Cake\Routing\Dispatcher->dispatch(Object(Cake\Network\Request), Object(Cake\Network\Response))
+#9 C:\wamp\www\dfa_devinfo_data_admin\index.php(16): require('C:\\wamp\\www\\dfa...')
+#10 {main}
+
+
+2015-06-07 15:19:02 Error: Fatal Error (1): Call to a member function toArray() on a non-object in [C:\wamp\www\dfa_devinfo_data_admin\src\Model\Table\UTTimePeriodTable.php, line 109]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-07 15:19:03 Error: [Cake\Error\FatalErrorException] Call to a member function toArray() on a non-object
+Request URL: /dfa_devinfo_data_admin/index.php/services/serviceQuery/services/serviceQuery/2?TimePeriodData=2011
+Stack Trace:
+#0 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Call to a membe...', 'C:\\wamp\\www\\dfa...', 109)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-07 15:19:03 Error: Fatal Error (1): Call to a member function toArray() on a non-object in [C:\wamp\www\dfa_devinfo_data_admin\src\Model\Table\UTTimePeriodTable.php, line 109]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-07 15:19:04 Error: [Cake\Error\FatalErrorException] Call to a member function toArray() on a non-object
+Request URL: /dfa_devinfo_data_admin/index.php/services/serviceQuery/services/serviceQuery/2?TimePeriodData=2011
+Stack Trace:
+#0 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Call to a membe...', 'C:\\wamp\\www\\dfa...', 109)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-07 16:44:25 Error: [Cake\Datasource\Exception\RecordNotFoundException] Record not found in table "UT_Timeperiod"
+Request URL: /dfa_devinfo_data_admin/index.php/services/serviceQuery/services/serviceQuery/3?TimePeriodData=2011
+Stack Trace:
+#0 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\ORM\Table.php(1127): Cake\ORM\Query->firstOrFail()
+#1 C:\wamp\www\dfa_devinfo_data_admin\src\Model\Table\UTTimePeriodTable.php(135): Cake\ORM\Table->get(2011)
+#2 C:\wamp\www\dfa_devinfo_data_admin\src\Controller\Component\TimeperiodComponent.php(74): App\Model\Table\UTTimeperiodTable->deletesingleTimePeriod('2011')
+#3 C:\wamp\www\dfa_devinfo_data_admin\src\Controller\ServicesController.php(62): App\Controller\Component\TimeperiodComponent->deletesingleTimePeriod('2011')
+#4 [internal function]: App\Controller\ServicesController->serviceQuery('3')
+#5 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Controller\Controller.php(410): call_user_func_array(Array, Array)
+#6 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(114): Cake\Controller\Controller->invokeAction()
+#7 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(87): Cake\Routing\Dispatcher->_invoke(Object(App\Controller\ServicesController))
+#8 C:\wamp\www\dfa_devinfo_data_admin\webroot\index.php(37): Cake\Routing\Dispatcher->dispatch(Object(Cake\Network\Request), Object(Cake\Network\Response))
+#9 C:\wamp\www\dfa_devinfo_data_admin\index.php(16): require('C:\\wamp\\www\\dfa...')
+#10 {main}
+
+
+2015-06-07 16:47:47 Error: [RuntimeException] Table "App\Model\Table\UTTimeperiodTable" is not associated with "Articles"
+Request URL: /dfa_devinfo_data_admin/index.php/services/serviceQuery/services/serviceQuery/3?TimePeriodData=2011
+Stack Trace:
+#0 C:\wamp\www\dfa_devinfo_data_admin\src\Model\Table\UTTimePeriodTable.php(140): Cake\ORM\Table->__get('Articles')
+#1 C:\wamp\www\dfa_devinfo_data_admin\src\Controller\Component\TimeperiodComponent.php(74): App\Model\Table\UTTimeperiodTable->deletesingleTimePeriod('2011')
+#2 C:\wamp\www\dfa_devinfo_data_admin\src\Controller\ServicesController.php(62): App\Controller\Component\TimeperiodComponent->deletesingleTimePeriod('2011')
+#3 [internal function]: App\Controller\ServicesController->serviceQuery('3')
+#4 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Controller\Controller.php(410): call_user_func_array(Array, Array)
+#5 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(114): Cake\Controller\Controller->invokeAction()
+#6 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Routing\Dispatcher.php(87): Cake\Routing\Dispatcher->_invoke(Object(App\Controller\ServicesController))
+#7 C:\wamp\www\dfa_devinfo_data_admin\webroot\index.php(37): Cake\Routing\Dispatcher->dispatch(Object(Cake\Network\Request), Object(Cake\Network\Response))
+#8 C:\wamp\www\dfa_devinfo_data_admin\index.php(16): require('C:\\wamp\\www\\dfa...')
+#9 {main}
+
+
+2015-06-07 18:09:30 Error: Fatal Error (1): Call to undefined method App\Controller\ServicesController::getDataByTimeperiod() in [C:\wamp\www\dfa_devinfo_data_admin\src\Controller\ServicesController.php, line 72]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-07 18:09:31 Error: [Cake\Error\FatalErrorException] Call to undefined method App\Controller\ServicesController::getDataByTimeperiod()
+Request URL: /dfa_devinfo_data_admin/index.php/services/serviceQuery/services/serviceQuery/301?TimePeriodData=2011
+Stack Trace:
+#0 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Call to undefin...', 'C:\\wamp\\www\\dfa...', 72)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+
+2015-06-07 18:10:14 Error: Fatal Error (1): Call to undefined method App\Controller\ServicesController::getDataByTimeperiod() in [C:\wamp\www\dfa_devinfo_data_admin\src\Controller\ServicesController.php, line 72]
+Trace:
+Cake\Error\BaseErrorHandler::handleFatalError() - CORE\src\Error\BaseErrorHandler.php, line 191
+Cake\Error\BaseErrorHandler::Cake\Error\{closure}() - CORE\src\Error\BaseErrorHandler.php, line 90
+[main] - [internal], line ??
+
+
+
+2015-06-07 18:10:14 Error: [Cake\Error\FatalErrorException] Call to undefined method App\Controller\ServicesController::getDataByTimeperiod()
+Request URL: /dfa_devinfo_data_admin/index.php/services/serviceQuery/services/serviceQuery/301?TimePeriodData=2011
+Stack Trace:
+#0 C:\wamp\www\dfa_devinfo_data_admin\vendor\cakephp\cakephp\src\Error\BaseErrorHandler.php(90): Cake\Error\BaseErrorHandler->handleFatalError(1, 'Call to undefin...', 'C:\\wamp\\www\\dfa...', 72)
+#1 [internal function]: Cake\Error\BaseErrorHandler->Cake\Error\{closure}()
+#2 {main}
+
+

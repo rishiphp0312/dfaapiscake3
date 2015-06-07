@@ -1,0 +1,38 @@
+2015-06-02 10:19:50 Error: [Cake\Database\Exception] SQLSTATE[42S02]: Base table or view not found: 1146 Table 'Developer_Evaluation_Database.u_t_indicator_en' doesn't exist
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Database\Schema\Collection.php(96): Cake\Database\Schema\Collection->_reflect('Column', 'u_t_indicator_e...', Array, Object(Cake\Database\Schema\Table))
+#1 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Database\Schema\CachedCollection.php(65): Cake\Database\Schema\Collection->describe('u_t_indicator_e...', Array)
+#2 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\ORM\Table.php(426): Cake\Database\Schema\CachedCollection->describe('u_t_indicator_e...')
+#3 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\ORM\Table.php(502): Cake\ORM\Table->schema()
+#4 C:\-- Projects --\dfaNew\vendor\cakephp\bake\src\Shell\Task\ModelTask.php(194): Cake\ORM\Table->primaryKey()
+#5 C:\-- Projects --\dfaNew\vendor\cakephp\bake\src\Shell\Task\ModelTask.php(109): Bake\Shell\Task\ModelTask->getAssociations(Object(Cake\ORM\Table))
+#6 C:\-- Projects --\dfaNew\vendor\cakephp\bake\src\Shell\Task\ModelTask.php(95): Bake\Shell\Task\ModelTask->bake('UTIndicatorEn')
+#7 C:\-- Projects --\dfaNew\vendor\cakephp\bake\src\Shell\BakeShell.php(241): Bake\Shell\Task\ModelTask->main('UTIndicatorEn')
+#8 [internal function]: Bake\Shell\BakeShell->all('UT_Indicator_en')
+#9 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Console\Shell.php(380): call_user_func_array(Array, Array)
+#10 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Console\ShellDispatcher.php(204): Cake\Console\Shell->runCommand(Array, true)
+#11 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Console\ShellDispatcher.php(175): Cake\Console\ShellDispatcher->_dispatch()
+#12 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Console\ShellDispatcher.php(126): Cake\Console\ShellDispatcher->dispatch()
+#13 C:\-- Projects --\dfaNew\bin\cake.php(33): Cake\Console\ShellDispatcher::run(Array)
+#14 {main}
+
+
+2015-06-02 10:22:20 Error: [Cake\Database\Exception] SQLSTATE[42S02]: Base table or view not found: 1146 Table 'Developer_Evaluation_Database.ut_indicator_en' doesn't exist
+Stack Trace:
+#0 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Database\Schema\Collection.php(96): Cake\Database\Schema\Collection->_reflect('Column', 'ut_indicator_en', Array, Object(Cake\Database\Schema\Table))
+#1 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Database\Schema\CachedCollection.php(65): Cake\Database\Schema\Collection->describe('ut_indicator_en', Array)
+#2 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\ORM\Table.php(426): Cake\Database\Schema\CachedCollection->describe('ut_indicator_en')
+#3 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\ORM\Table.php(502): Cake\ORM\Table->schema()
+#4 C:\-- Projects --\dfaNew\vendor\cakephp\bake\src\Shell\Task\ModelTask.php(194): Cake\ORM\Table->primaryKey()
+#5 C:\-- Projects --\dfaNew\vendor\cakephp\bake\src\Shell\Task\ModelTask.php(109): Bake\Shell\Task\ModelTask->getAssociations(Object(Cake\ORM\Table))
+#6 C:\-- Projects --\dfaNew\vendor\cakephp\bake\src\Shell\Task\ModelTask.php(95): Bake\Shell\Task\ModelTask->bake('UtIndicatorEn')
+#7 C:\-- Projects --\dfaNew\vendor\cakephp\bake\src\Shell\BakeShell.php(241): Bake\Shell\Task\ModelTask->main('UtIndicatorEn')
+#8 [internal function]: Bake\Shell\BakeShell->all('ut_Indicator_en')
+#9 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Console\Shell.php(380): call_user_func_array(Array, Array)
+#10 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Console\ShellDispatcher.php(204): Cake\Console\Shell->runCommand(Array, true)
+#11 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Console\ShellDispatcher.php(175): Cake\Console\ShellDispatcher->_dispatch()
+#12 C:\-- Projects --\dfaNew\vendor\cakephp\cakephp\src\Console\ShellDispatcher.php(126): Cake\Console\ShellDispatcher->dispatch()
+#13 C:\-- Projects --\dfaNew\bin\cake.php(33): Cake\Console\ShellDispatcher::run(Array)
+#14 {main}
+
+
