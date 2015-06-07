@@ -36,13 +36,10 @@ class TimeperiodComponent extends Component
 	 
     public function getTimePeriodDataByParams(array $parameters, array $fields,$type='all')
     {
-        
         //        App::import('Model', 'UTIndicatorEn');
-        //        $UTIndicatorEn = new UTIndicatorEn();
-        
+        //        $UTIndicatorEn = new UTIndicatorEn();        
 		$UTTimeperiod = TableRegistry::get('UTTimeperiod');
         return $UTIndicatorEn->getTimePeriodByParams($parameters, $fields);
-
     }
 	
 	/**

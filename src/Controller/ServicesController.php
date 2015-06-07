@@ -67,9 +67,9 @@ class ServicesController extends AppController
             case 301:
 			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
 			
-				echo	$TimePeriodvalue = $this->request->query['TimePeriodData'];
+				$TimePeriodvalue = $this->request->query['TimePeriodData'];
 			
-               $getDataByTimeperiod  = $this->getDataByTimeperiod($TimePeriodvalue);
+               $getDataByTimeperiod  = $this->Timeperiod->getDataByTimeperiod($TimePeriodvalue);
 			   pr($getDataByTimeperiod);die;
 			}
                 break;

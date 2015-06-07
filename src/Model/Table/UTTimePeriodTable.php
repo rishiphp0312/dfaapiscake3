@@ -42,40 +42,37 @@ class UTTimeperiodTable extends Table
 	   
 	   
 		if(isset($id) && !empty($id))        
-           $options['conditions'] = array('UTTimeperiod.TimePeriod_NId'=>$id);
+          $options['conditions'] = array('UTTimeperiod.TimePeriod_NId'=>$id);
 
-        // Find all the articles.
-        // At this point the query has not run.
-        $query = $this->find($type, $options);
+         // Find all the articles.
+         // At this point the query has not run.
+         $query = $this->find($type, $options);
 
-        // Calling execute will execute the query
-        // and return the result set.
-        $results = $query->all();
+         // Calling execute will execute the query
+         // and return the result set.
+         $results = $query->all();
 
-        // Once we have a result set we can get all the rows
-        $data = $results->toArray();
-        return $data;
+         // Once we have a result set we can get all the rows
+         $data = $results->toArray();
+         return $data;
     }
 
 
     /**
     *  getDataByTimeperiod method
-    *  @param $timeperiodvalue The value on which you will get details on baisis of timeperiodvalue. {DEFAULT : empty}
+    *  @param $timeperiodvalue The value on which you will get details on baisis of  the timeperiodvalue. {DEFAULT : empty}
     *  @return  array
     */
 	 
     public function getDataByTimeperiod($timeperiodvalue)
     {
-        $options = [];
-        
+       
 		if(!empty($timeperiodvalue))       
-		$timperioddetails = $this->find()->where(['TimePeriod'=>$timeperiodvalue])->first();
+		$timperioddetails = $this->find()->Select(['TimePeriod','Periodicity','TimePeriod_NId','EndDate','StartDate'])->where(['TimePeriod'=>$timeperiodvalue])->toArray();
 	    else
-		$timperioddetails = $this->find()->where()->all();
-	    	
-		pr($timperioddetails);
-		die;
-        return $this->find('all', $options);
+		$timperioddetails = $this->find()->where()->all()->toArray();
+       
+		return $timperioddetails;
 
     }
 	
@@ -98,21 +95,23 @@ class UTTimeperiodTable extends Table
 			
 				$data = $this->newEntity();
 				$data->TimePeriod     = $timeperiodvalue;
-				$data->StartDate      = date('Y-m-d');
-				$data->EndDate        = date('Y-m-d');
+				$numberofdays_dec     = cal_days_in_month(CAL_GREGORIAN, 12, date('Y')); // 31
+                //echo "There were {$number} days in August 2003";
+				$data->StartDate      = date('Y').'-01-01';
+				$data->EndDate        = date('Y').'-12-'.$numberofdays_dec;
 				$data->Periodicity    = $Periodicity;
 				if($this->save($data)){
-					       $msg['id']      = $id = $this->id;   // Record saved new id returned 
-					       $msg['success'] = 'Record saved successfully!!';
-						   return $msg;
+					 $msg['id']      = $TimePeriod_NId = $this->id;   // Record saved new id returned 
+					 $msg['success'] = 'Record saved successfully!!';
+					 return $msg;
 				}else{
-					return $msg['error']='Error while saving details';  
+					 return $msg['error']='Error while saving details';  
 				}			
 			}else{                                   // Already exists
-				return  $msg['error']='Error while saving details';				
+				     return  $msg['error']='Error while saving details';				
 			}
 		}else{
-				return $msg['error']='No time period value ';			
+				     return $msg['error']='No time period value ';			
 		}
 	}// end of function 
 	
@@ -142,10 +141,10 @@ class UTTimeperiodTable extends Table
 					return $msg['error'] = 'Error while deletion';  
 				}			
 			}else{                                   // Already exists
-				    return $msg['error']    = 'Entity not found';				
+				    return $msg['error'] = 'Entity not found';				
 			}
 		}else{
-				    return $msg['error']     = 'No time period value ';			
+				    return $msg['error'] = 'No time period value ';			
 		}
 	}// end of function 
 
