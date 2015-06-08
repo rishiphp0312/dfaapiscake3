@@ -43,6 +43,22 @@ class SubgroupComponent extends Component
         return $UTIndicatorEn->getDataByParams($conditions, $fields);
 
     }
+	
+	 /**
+     * savesingleSubgroupTypeName method is used to add new subgroup type      *
+     * @param Subgroup_Type_Name is used for subgroup type name. {DEFAULT : empty}
+     * @param Subgroup_Type_Order is used for subgroup type order {DEFAULT : 1}
+	 * @param Subgroup_Type_Global {DEFAULT : 0}
+     * @return void
+     */
+    public function savesingleSubgroupTypeName($Subgroup_Type_Name,$Subgroup_Type_Order,$Subgroup_Type_Global)
+    {
+        
+        $UTSubgroupTypeEnTable = TableRegistry::get('UTSubgroupTypeEn');
+
+        return $UTSubgroupTypeEnTable->savesingleSubgroupTypeName($Subgroup_Type_Name,$Subgroup_Type_Order,$Subgroup_Type_Global);
+
+    }
 
 
 }

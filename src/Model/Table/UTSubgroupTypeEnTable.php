@@ -45,8 +45,8 @@ class UTSubgroupTypeEnTable extends Table
 	/**
      * savesingleSubgroupTypeName method 
      * @param  $Subgroup_Type_Name Subgroup  type Name which will be saved in database if exists already nothing will be happened.
-     * @param  $Subgroup_Type_Order is optional if it is passed then fine else by default its value will be A {DEFAULT : 1}
-     * @param  $Subgroup_Type_Global is optional if it is passed then fine else by default its value will be A {DEFAULT : 0}
+     * @param  $Subgroup_Type_Order is optional  {DEFAULT : 1}
+     * @param  $Subgroup_Type_Global is optional  {DEFAULT : 0}
      * @return void
     */
 		
@@ -62,11 +62,10 @@ class UTSubgroupTypeEnTable extends Table
 				$data = $this->newEntity();
 				$data->Subgroup_Type_GID     = uniqid();
 				$data->Subgroup_Type_Name    = $Subgroup_Type_Name;
-				$data->Subgroup_Type_Global  = 0;
-				$data->Subgroup_Type_Order    = 1;
+				$data->Subgroup_Type_Global  = $Subgroup_Type_Global;
+				$data->Subgroup_Type_Order   = $Subgroup_Type_Order;
 				
 				if($this->save($data)){
-					// $msg['id']      = $TimePeriod_NId = $this->id;   // Record saved new id returned 
 					 $msg['success'] = 'Record saved successfully!!';
 					 return $msg;
 				}else{

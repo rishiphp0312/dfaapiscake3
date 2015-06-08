@@ -27,7 +27,7 @@ class UTTimeperiodTable extends Table
 
     /**
      * getTimePeriodById method
-     * @param array $id The WHERE conditions for the Query. {DEFAULT : null}
+     * @param array $id get the records on basis of passed id . {DEFAULT : null}
      * @param array $fields columns which will be fetched from table. {DEFAULT : empty}
 	 * @param type  by default its value will be all user can pass  first or count also
      * @return void

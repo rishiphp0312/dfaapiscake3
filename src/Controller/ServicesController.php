@@ -26,7 +26,7 @@ use Cake\View\Exception\MissingTemplateException;
 class ServicesController extends AppController
 {
     //Loading Componenets
-    public $components = ['Indicator','Timeperiod'];
+    public $components = ['Indicator','Timeperiod','Subgroup'];
 
     /**
 	* 
@@ -73,7 +73,19 @@ class ServicesController extends AppController
 			   pr($getDataByTimeperiod);die;
 			}
                 break;
-            default:
+				
+				
+            case 204:
+			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
+			
+				echo $TimePeriodvalue = $this->request->query['TimePeriodData'];
+				//die;
+			
+               $getDataByTimeperiod  = $this->Timeperiod->getTimeperiodDataById($TimePeriodvalue);
+			   pr($getDataByTimeperiod);die;
+			}
+                break;
+				
                 //$returnData = [];
 				
 				case 301:
@@ -96,8 +108,7 @@ class ServicesController extends AppController
 			   pr($getDataByTimeperiod);die;
 			}
                 break;
-            default:
-			case 303:
+            case 303:
 				// service for getting  subgroup name 
 			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
 			
@@ -109,13 +120,13 @@ class ServicesController extends AppController
                 break;
 				
 			case 304:
-				// service for getting  subgroup type name 
-			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
+				// service for saving  subgroup type name 
+			if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
 			
-				$TimePeriodvalue = $this->request->query['TimePeriodData'];
+				$subgrouptypename = $this->request->query['subgrouptypename'];
 			
-               $getDataByTimeperiod  = $this->Timeperiod->getDataByTimeperiod($TimePeriodvalue);
-			   pr($getDataByTimeperiod);die;
+               $savedataforUTSubgroupTypeEn  = $this->Subgroup->savesingleSubgroupTypeName($subgrouptypename);
+			   pr($savedataforUTSubgroupTypeEn);die;
 			}
                 break;
             default:
