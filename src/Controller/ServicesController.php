@@ -43,7 +43,7 @@ class ServicesController extends AppController
             case 1:
                 $returnData = $this->Indicator->getDataByIds(15);
                 break;
-            case 2:
+            case 201:
 			
 			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
 				// echo   $TimePeriodvalue = $_REQUEST['TimePeriodData'];
@@ -53,7 +53,7 @@ class ServicesController extends AppController
 			   } 
 			   //die('hua');               
 			   break;
-            case 3:
+            case 202:
 			
 			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
 			
@@ -64,7 +64,52 @@ class ServicesController extends AppController
 			
                 break;
 
-            case 301:
+            case 203:
+			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
+			
+				$TimePeriodvalue = $this->request->query['TimePeriodData'];
+			
+               $getDataByTimeperiod  = $this->Timeperiod->getDataByTimeperiod($TimePeriodvalue);
+			   pr($getDataByTimeperiod);die;
+			}
+                break;
+            default:
+                //$returnData = [];
+				
+				case 301:
+				// service for saving subgrouptype name 
+			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
+			
+				$TimePeriodvalue = $this->request->query['TimePeriodData'];
+			
+               $getDataByTimeperiod  = $this->Timeperiod->getDataByTimeperiod($TimePeriodvalue);
+			   pr($getDataByTimeperiod);die;
+			}
+                break;
+				case 302:
+				// service for saving subgroup name 
+			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
+			
+				$TimePeriodvalue = $this->request->query['TimePeriodData'];
+			
+               $getDataByTimeperiod  = $this->Timeperiod->getDataByTimeperiod($TimePeriodvalue);
+			   pr($getDataByTimeperiod);die;
+			}
+                break;
+            default:
+			case 303:
+				// service for getting  subgroup name 
+			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
+			
+				$TimePeriodvalue = $this->request->query['TimePeriodData'];
+			
+               $getDataByTimeperiod  = $this->Timeperiod->getDataByTimeperiod($TimePeriodvalue);
+			   pr($getDataByTimeperiod);die;
+			}
+                break;
+				
+			case 304:
+				// service for getting  subgroup type name 
 			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
 			
 				$TimePeriodvalue = $this->request->query['TimePeriodData'];
