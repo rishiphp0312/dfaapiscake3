@@ -20,7 +20,7 @@ class SubgroupComponent extends Component
     public function getDataByIds($ids = null, $fields = [], $type = 'all' )
     {
         
-        $UTIndicatorEn = TableRegistry::get('UTIndicatorEn');
+        $UTIndicatorEn = TableRegistry::get('Indicator');
 
         return $UTIndicatorEn->getDataByIds($ids, $fields, $type);
 
@@ -37,7 +37,7 @@ class SubgroupComponent extends Component
     public function getDataByParams(array $conditions, array $fields)
     {
         
-        App::import('Model', 'UTIndicatorEn');
+        App::import('Model', 'Indicator');
         $UTIndicatorEn = new UTIndicatorEn();
 
         return $UTIndicatorEn->getDataByParams($conditions, $fields);
@@ -54,7 +54,7 @@ class SubgroupComponent extends Component
     public function savesingleSubgroupTypeName($Subgroup_Type_Name,$Subgroup_Type_Order,$Subgroup_Type_Global)
     {
         
-        $UTSubgroupTypeEnTable = TableRegistry::get('UTSubgroupTypeEn');
+        $UTSubgroupTypeEnTable = TableRegistry::get('SubgroupType');
 
         return $UTSubgroupTypeEnTable->savesingleSubgroupTypeName($Subgroup_Type_Name,$Subgroup_Type_Order,$Subgroup_Type_Global);
 

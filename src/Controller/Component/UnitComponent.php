@@ -5,18 +5,18 @@ use Cake\Controller\Component;
 use Cake\ORM\TableRegistry;
 
 /**
- * Indicator Component
+ * Unit Component
  */
-class IndicatorComponent extends Component
+class UnitComponent extends Component
 {
     
     // The other component your component uses
     public $components = [];
-    public $IndicatorObj = NULL;
+    public $UnitObj = NULL;
 
     public function beforeFilter()
     {
-        $this->IndicatorObj = TableRegistry::get('Indicator');
+        $this->UnitObj = TableRegistry::get('Unit');
     }
 
     /**
@@ -28,7 +28,7 @@ class IndicatorComponent extends Component
      */
     public function getDataByIds($ids = null, $fields = [], $type = 'all' )
     {
-        return $this->IndicatorObj->getDataByIds($ids, $fields, $type);
+        return $this->UnitObj->getDataByIds($ids, $fields, $type);
     }
 
 
@@ -41,7 +41,7 @@ class IndicatorComponent extends Component
      */
     public function getDataByParams(array $fields, array $conditions)
     {
-        return $this->IndicatorObj->getDataByParams($conditions, $fields);
+        return $this->UnitObj->getDataByParams($conditions, $fields);
     }
 
 
@@ -53,7 +53,7 @@ class IndicatorComponent extends Component
      */
     public function deleteByIds($ids = null)
     {
-        return $this->IndicatorObj->deleteByIds($ids);
+        return $this->UnitObj->deleteByIds($ids);
     }
 
 
@@ -65,7 +65,7 @@ class IndicatorComponent extends Component
      */
     public function deleteByParams($conditions = [])
     {
-        return $this->IndicatorObj->deleteByParams($conditions);
+        return $this->UnitObj->deleteByParams($conditions);
     }
 
 
@@ -77,7 +77,19 @@ class IndicatorComponent extends Component
      */
     public function insertData($fieldsArray = [])
     {
-        return $this->IndicatorObj->insertData($fieldsArray);
+        return $this->UnitObj->insertData($fieldsArray);
+    }
+
+    
+    /**
+     * insertBulkData method
+     *
+     * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
+     * @return void
+     */
+    public function insertBulkData($fieldsArray = [])
+    {
+        return $this->UnitObj->insertBulkData($fieldsArray);
     }
 
 
@@ -89,7 +101,7 @@ class IndicatorComponent extends Component
      */
     public function updateDataByParams($fieldsArray = [], $conditions = [])
     {
-        return $this->IndicatorObj->updateDataByParams($fieldsArray, $conditions);
+        return $this->UnitObj->updateDataByParams($fieldsArray, $conditions);
     }
 
 }
