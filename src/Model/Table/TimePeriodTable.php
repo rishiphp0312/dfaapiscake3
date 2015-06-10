@@ -1,7 +1,7 @@
 <?php  
 namespace App\Model\Table;
 
-use App\Model\Entity\User;
+use App\Model\Entity\TimePeriod;
 use Cake\ORM\Table;
 
 
@@ -11,12 +11,15 @@ use Cake\ORM\Table;
 class TimePeriodTable extends Table
 {
 
+	public $delim1  = '-';
+    public $delim2  = '.';
     /**
      * Initialize method
      *
      * @param array $config The configuration for the Table.
      * @return void
      */
+	 
     public function initialize(array $config)
     {
         $this->table('UT_TimePeriod');
@@ -31,30 +34,28 @@ class TimePeriodTable extends Table
      * @param array $fields The Fields to SELECT from the Query. {DEFAULT : empty}
      * @return void
      */
+	 
     public function getDataByIds($ids = null, array $fields, $type = 'all' ){
-        $options = [];
+        
+		$options = [];
 		
-        if(isset($fields) && !empty($fields))
-        $options['fields'] = $fields;	    		
-	
         if(isset($ids) && !empty($ids))
         $options['conditions'] = ['TimePeriod_NId IN'=>$ids];
-
+	    
+		if(isset($fields) && !empty($fields))
+         $options['fields'] = $fields;	    		
+        
 		if($type=='list'){
-			
-			  if(isset($fields) && !empty($fields))
-              $options['fields'] = array('keyField' => $fields[0],'valueField' => $fields[1]);		      
-			  
-			  $query = $this->find($type, $options['fields'],$options['conditions']);	
-		
+			 $options['keyField']   = $fields[0];	    		
+             $options['valueField'] = $fields[1];	  
+  		     $query = $this->find($type, $options);
 		}else{
-			
     		  $query = $this->find($type, $options);
-		
 		}
 		
         $results = $query->hydrate(false)->all();	
-        $data = $results->toArray();		
+        $data = $results->toArray();
+         
         // Once we have a result set we can get all the rows
 		
         return $data;
@@ -167,14 +168,11 @@ class TimePeriodTable extends Table
 		    $options['conditions'] = array('Periodicity'=>$periodicity);
 		}	
 	   
-		if(isset($timeperiodvalue) && !empty($timeperiodvalue)) {
-			
+		if(isset($timeperiodvalue) && !empty($timeperiodvalue)) {			
 			$timperioddetails = $this->find('all',$options);
 			$results = $timperioddetails->hydrate(false)->all();
 			// Once we have a result set we can get all the rows
             $data = $results->toArray();
-            
-
 		}  
 		
 	     
@@ -183,43 +181,6 @@ class TimePeriodTable extends Table
     }
 	
 	
-	/**
-     * savesingleTimePeriod method 
-     * @param  $timeperiodvalue timeperiod which will be saved in database if exists already nothing will be happened. {DEFAULT : empty}
-     * @param  $Periodicity is optional if it is passed then fine else by default its value will be A {DEFAULT : A}
-     * @return void
-    */
-		
-	public function savesingleTimePeriod($timeperiodvalue,$Periodicity='A'){
-	
-		if(isset($timeperiodvalue) && !empty($timeperiodvalue)){            
-			
-			//numrows if numrows >0 then record already exists else insert new row
-		    $numrows = $this->find()->where(['TimePeriod'=>$timeperiodvalue])->count();
-			
-			if(isset($numrows) &&  $numrows ==0){  // new record
-			
-				$data = $this->newEntity();
-				$data->TimePeriod     = $timeperiodvalue;
-				$numberofdays_dec     = cal_days_in_month(CAL_GREGORIAN, 12, date('Y')); // 31
-                //echo "There were {$number} days in August 2003";
-				$data->StartDate      = date('Y').'-01-01';
-				$data->EndDate        = date('Y').'-12-'.$numberofdays_dec;
-				$data->Periodicity    = $Periodicity;
-				if($this->save($data)){
-					 $msg['id']      = $TimePeriod_NId = $this->id;   // Record saved new id returned 
-					 $msg['success'] = 'Record saved successfully!!';
-					 return $msg;
-				}else{
-					 return $msg['error']='Error while saving details';  
-				}			
-			}else{                                   // Already exists
-				     return  $msg['error']='Error while saving details';				
-			}
-		}else{
-				     return $msg['error']='No time period value ';			
-		}
-	}// end of function 
 	
 
 	/**
@@ -228,9 +189,9 @@ class TimePeriodTable extends Table
      * @return void
     */
 	 
-    public function insertData($fieldsArray = []){
-        
-		echo $timeperiodvalue = $fieldsArray['TimePeriod'];		
+    public function insertData($fieldsArray){
+		
+		$timeperiodvalue = $fieldsArray['TimePeriod'];		
 		
 		if(isset($timeperiodvalue) && !empty($timeperiodvalue)){            
 			
@@ -240,17 +201,17 @@ class TimePeriodTable extends Table
 		if(isset($numrows) &&  $numrows ==0){  // new record
 		//Create New Entity
 		$data = $this->newEntity();
+		
 		$data->TimePeriod     = $timeperiodvalue;
 		$numberofdays_dec     = cal_days_in_month(CAL_GREGORIAN, 12, date('Y')); // 31
-		//echo "There were {$number} days in August 2003";
-		$data->StartDate      = date('Y').'-01-01';
-		$data->EndDate        = date('Y').'-12-'.$numberofdays_dec;
+		$timeformatData       = $this->checkTimePeriodFormat($timeperiodvalue);
+		$data->StartDate      = $timeformatData['StartDate'];
+		$data->EndDate        = $timeformatData['EndDate'];
 		$data->Periodicity    = $fieldsArray['Periodicity'];
 	
         //Create new row and Save the Data
         if($this->save($data)){
-			 $id = $this->id;
-             $msg['success'] = 'Record saved successfully!!';	
+             $msg['success'] = 'Record saved successfully!!';
         } else {
              $msg['error']   = 'Error while saving details';  
         }		
@@ -260,12 +221,111 @@ class TimePeriodTable extends Table
 		
 		}
 		
-     return $msg;        
+        return $msg;        
 
     }
-    
 	
+	
+    /*
+	Function returns the end and start date after checking the format of timeperiod
+	*/
+	
+	public function checkTimePeriodFormat($timeperiodvalue=''){
 		
+		$pos_delim1 = strpos($timeperiodvalue, $this->delim1);
+	    $pos_delim2 = strpos($timeperiodvalue, $this->delim2);
+
+		if ($pos_delim1 >0  && $pos_delim2 == false) {
+			//case only hypen
+		
+			return $this->dataTimeFormatReturned($timeperiodvalue,$this->delim1);
+		}
+		
+		if ($pos_delim1 == false  && $pos_delim2 >0) {
+		  // case only period   
+			return $this->dataTimeFormatReturned($timeperiodvalue,$this->delim2);
+			
+		}
+		
+		if ($pos_delim1 >0  && $pos_delim2 >0) {
+		      //case both hypen and period
+			  return $this->dataTimeFormatReturned($timeperiodvalue,'Both');
+		}
+		
+		if ($pos_delim1 == false  && $pos_delim2 == false) {
+		      //case nothing occurs either hypen or period	
+			  
+			  return $this->dataTimeFormatReturned($timeperiodvalue,'NA');
+		}
+	}// end of function checkTimePeriodFormat
+	
+	/*
+	Function returns the end and start date according to the the format of timeperiod
+	$type its type of separator passed can be . or -	
+	*/
+	
+	public function dataTimeFormatReturned($timeperiodvalue,$type){
+		
+		
+		if($type == '.'){
+			// case 2012.02
+			$explodedelim2 = explode($this->delim2,$timeperiodvalue);
+			$year  = $explodedelim2[0]; //start and end year  
+			$month = $explodedelim2[1]; // start month 			
+			$numberofdays_end_month  = cal_days_in_month(CAL_GREGORIAN, 12, $year); // 31			
+
+			$startyear = $year.'-'.$month.'-01'; 
+			$endyear   = $year.'-'.$month.'-'.$numberofdays_end_month; 
+			return array('StartDate'=>$startyear,'EndDate'=>$endyear,'success'=>true);
+			
+		}elseif($type == 'Both'){
+			// case 2012.02-2013.06
+			$explodedelim1 = explode($this->delim1,$timeperiodvalue); //  explode hypen 
+			
+			// first breaking - values 
+			$firstdate = $explodedelim1[0];
+			$lastdate = $explodedelim1[1];
+			
+			$explodefirstdate = explode($this->delim2,$firstdate);  //  explode period
+			$explodelastdate  = explode($this->delim2,$lastdate);   //  explode period
+
+			
+			$year1    = $explodefirstdate[0]; // start year
+			$month1   = $explodefirstdate[1]; // start month
+
+			$year2    = $explodelastdate[0]; // end year
+			$month2   = $explodelastdate[1]; // end month  
+			
+			$numberofdays_end_month = cal_days_in_month(CAL_GREGORIAN, $month2, $year2); // 31
+			$startyear = $year1.'-'.$month1.'-01';
+			$endyear   = $year2.'-'.$month2.'-'.$numberofdays_end_month;
+			
+			return array('StartDate'=>$startyear,'EndDate'=>$endyear,'success'=>true);
+			
+		}elseif($type == '-'){ // case 2012-2013
+			
+			$explodedelim1 = explode($this->delim1,$timeperiodvalue);
+			$year1    = $explodedelim1[0]; // start year
+			$year2   = $explodedelim1[1];  // end  year 	
+			$numberofdays_end_month  = cal_days_in_month(CAL_GREGORIAN, 12, $year2); // 31			
+			$startyear = $year1.'-01-01';
+			$endyear   = $year2.'-12-'.$numberofdays_end_month;
+			return array('StartDate'=>$startyear,'EndDate'=>$endyear,'success'=>true);
+			
+		}else{
+			// case 2012
+			$numberofdays_end_month  = cal_days_in_month(CAL_GREGORIAN, 12, $timeperiodvalue); // 31			
+			$startyear = $timeperiodvalue.'-01-01';
+			$endyear   = $timeperiodvalue.'-12-'.$numberofdays_end_month;
+			return array('StartDate'=>$startyear,'EndDate'=>$endyear,'success'=>true);	
+			
+		}
+		
+		
+	}
+	
+	
+	
 	
 
 }

@@ -1,7 +1,7 @@
 <?php  
 namespace App\Model\Table;
 
-use App\Model\Entity\User;
+use App\Model\Entity\SubgroupType;
 use Cake\ORM\Table;
 
 
@@ -19,7 +19,7 @@ class SubgroupTypeTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('UT_Subgroup_type_en');
+        $this->table('UT_Subgroup_Type_en');
         $this->primaryKey('Subgroup_Type_NId');
         $this->addBehavior('Timestamp');
     }
@@ -42,44 +42,7 @@ class SubgroupTypeTable extends Table
     }
 	
 	
-	/**
-     * savesingleSubgroupTypeName method 
-     * @param  $Subgroup_Type_Name Subgroup  type Name which will be saved in database if exists already nothing will be happened.
-     * @param  $Subgroup_Type_Order is optional  {DEFAULT : 1}
-     * @param  $Subgroup_Type_Global is optional  {DEFAULT : 0}
-     * @return void
-    */
-		
-	public function savesingleSubgroupTypeName($Subgroup_Type_Name,$Subgroup_Type_Order =1,$Subgroup_Type_Global=0){
 	
-		if(isset($Subgroup_Type_Name) && !empty($Subgroup_Type_Name)){            
-			
-			//numrows if numrows >0 then record already exists else insert new row
-		    $numrows = $this->find()->where(['Subgroup_Type_Name'=>$Subgroup_Type_Name])->count();
-			
-			if(isset($numrows) &&  $numrows ==0){  // new record
-			
-				$data = $this->newEntity();
-				$data->Subgroup_Type_GID     = uniqid();
-				$data->Subgroup_Type_Name    = $Subgroup_Type_Name;
-				$data->Subgroup_Type_Global  = $Subgroup_Type_Global;
-				$data->Subgroup_Type_Order   = $Subgroup_Type_Order;
-				
-				if($this->save($data)){
-					 $msg['success'] = 'Record saved successfully!!';
-					 return $msg;
-				}else{
-					 return $msg['error']='Error while saving details';  
-				}			
-			}else{                                   // Already exists
-				     return  $msg['error']='Error while saving details';				
-			}
-		}else{
-				     return $msg['error']='No time period value ';			
-		}
-	}// end of function 
-	
-
 	
 		
 	/**
@@ -111,5 +74,65 @@ class SubgroupTypeTable extends Table
 				    return $msg['error'] = 'No time period value ';			
 		}
 	}// end of function 
+	
+	
+	
+	
+	/**
+     * insertData  method 
+       @return void
+    */
+		
+	public function insertData($fieldsArray){
+	
+	   echo  $Subgroup_Type_Name = $fieldsArray['Subgroup_Type_Name'];		
+		
+		if(isset($Subgroup_Type_Name) && !empty($Subgroup_Type_Name)){            
+			
+			//numrows if numrows >0 then record already exists else insert new row
+		    echo $numrows = $this->find()->where(['Subgroup_Type_Name'=>$Subgroup_Type_Name])->count();
+		
+			if(isset($numrows) &&  $numrows ==0){  // new record
+			   
+			    //$options           = array();
+				//$options['fields'] = array('MAX(Subgroup_Type_Order)');
+			    //$conditions['fields'] = array('Subgroup_Type_Order');
+				$query = $this->find();
+				$results = $query->hydrate(false)->select(['max' => $query->func()->max('Subgroup_Type_Order')]);
+
+				//pr($results);			
+								//$query =  $this->find('all',$options) ;
+				//pr($query);die;
+				$results = $results->all();
+				pr($results);die;				
+
+
+               // Once we have a result set we can get all the rows
+                $maxordervalue = $results->toArray();
+				pr($maxordervalue);die;
+				echo $maxvalue      = $maxordervalue['maxvalue'];
+					die('hua');
+				$data = $this->newEntity();
+				
+				$data->Subgroup_Type_GID     = $fieldsArray['Subgroup_Type_GID'];		
+				$data->Subgroup_Type_Name    = $fieldsArray['Subgroup_Type_Name'];
+				$data->Subgroup_Type_Global  = (isset($fieldsArray['Subgroup_Type_Global']) && !empty($fieldsArray['Subgroup_Type_Global']))?$fieldsArray['Subgroup_Type_Global']:0;
+				$data->Subgroup_Type_Order  = (isset($fieldsArray['Subgroup_Type_Order']) && !empty($fieldsArray['Subgroup_Type_Order']))?$fieldsArray['Subgroup_Type_Order']:($maxvalue+1);
+				
+				if($this->save($data)){
+					 $msg['success'] = 'Record saved successfully!!'.pr($maxordervalue);die;
+					 return $msg;
+				}else{
+					 return $msg['error']='Error while saving details';  
+				}			
+			}else{                                   // Already exists
+				     return  $msg['error']='Record Already exists!!';				
+			}
+		}else{
+				     return $msg['error']='No time period value ';			
+		}
+	}// end of function 
+	
+
 
 }

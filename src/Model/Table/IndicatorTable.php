@@ -20,7 +20,8 @@ class IndicatorTable extends Table
     public function initialize(array $config)
     {
         $this->table('UT_Indicator_en');
-        //$this->primaryKey('Indicator_NId');
+        $this->primaryKey('Indicator_NId');
+        $this->displayField('Indicator_Name'); //used for find('list')
         $this->addBehavior('Timestamp');
     }
 
@@ -142,6 +143,29 @@ class IndicatorTable extends Table
             return 0;
         }        
 
+    }
+    
+
+    /**
+     * insertOrUpdateBulkData method
+     *
+     * @param array $dataArray Data rows to insert. {DEFAULT : empty}
+     * @return void
+     */
+    public function insertOrUpdateBulkData($dataArray = [])
+    {
+        //Create New Entities (multiple entities for multiple rows/records)
+        $entities = $this->newEntities($dataArray);
+        
+        echo '<pre>'; print_r($entities); exit;
+
+        foreach ($entities as $entity) {
+            if (!$entity->errors()) {
+                //Create new row and Save the Data
+                $this->save($entity);
+            }
+        }
+        
     }
 
 

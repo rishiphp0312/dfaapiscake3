@@ -14,8 +14,13 @@ class TimePeriod extends Entity
      *
      * @var array
      */
-    protected $_accessible = [
-        
+	  protected $_accessible = [
+        'TimePeriod_NId' => true,
+        'TimePeriod' => true,
+        'StartDate' => true,
+        'EndDate' => true,
+        'Periodicity' => true
     ];
+   
 
 }

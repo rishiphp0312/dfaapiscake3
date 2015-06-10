@@ -79,6 +79,18 @@ class IndicatorComponent extends Component
     {
         return $this->IndicatorObj->insertData($fieldsArray);
     }
+    
+    
+    /**
+     * insertOrUpdateBulkData method
+     *
+     * @param array $dataArray Fields to insert with their Data. {DEFAULT : empty}
+     * @return void
+     */
+    public function insertOrUpdateBulkData($dataArray = [])
+    {
+        return $this->IndicatorObj->insertOrUpdateBulkData($dataArray);
+    }
 
 
     /**

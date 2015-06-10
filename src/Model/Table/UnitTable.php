@@ -141,6 +141,27 @@ class UnitTable extends Table
 
 
     /**
+     * insertBulkData method
+     *
+     * @param array $dataArray Data rows to insert. {DEFAULT : empty}
+     * @return void
+     */
+    public function insertOrUpdateBulkData($dataArray = [])
+    {
+        //Create New Entities (multiple entities for multiple rows/records)
+        $entities = $this->newEntities($dataArray);
+
+        foreach ($entities as $entity) {
+            if (!$entity->errors()) {
+                //Create new row and Save the Data
+                $this->save($entity);
+            }
+        }
+        
+    }
+
+
+    /**
      * updateDataByParams method
      *
      * @param array $fieldsArray Fields to update with their Data. {DEFAULT : empty}

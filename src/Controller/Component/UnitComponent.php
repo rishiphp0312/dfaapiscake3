@@ -82,14 +82,14 @@ class UnitComponent extends Component
 
     
     /**
-     * insertBulkData method
+     * insertOrUpdateBulkData method
      *
-     * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
+     * @param array $dataArray Fields to insert with their Data. {DEFAULT : empty}
      * @return void
      */
-    public function insertBulkData($fieldsArray = [])
+    public function insertBulkData($dataArray = [])
     {
-        return $this->UnitObj->insertBulkData($fieldsArray);
+        return $this->UnitObj->insertOrUpdateBulkData($dataArray);
     }
 
 

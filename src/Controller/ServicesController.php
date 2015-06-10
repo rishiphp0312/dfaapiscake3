@@ -26,7 +26,7 @@ use Cake\View\Exception\MissingTemplateException;
 class ServicesController extends AppController
 {
     //Loading Componenets
-    public $components = ['Indicator', 'Unit', 'Timeperiod','Subgroup'];
+    public $components = ['Indicator', 'Unit', 'Timeperiod','Subgroup','Common'];
 
     /**
 	* 
@@ -49,8 +49,8 @@ class ServicesController extends AppController
 
             case 102: //Select Data using Conditions -- Indicator table
                 
-                $fields = ['Indicator_Name', 'Indicator_Info'];
-                $conditions = ['Indicator_GId IN'=>['POPDEN', 'AREA']];
+                $fields = [_INDICATOR_INDICATOR_NAME, _INDICATOR_INDICATOR_INFO];
+                $conditions = [_INDICATOR_INDICATOR_GID.' IN'=>['POPDEN', 'AREA']];
                 
                 //getDataByParams(array $fields, array $conditions)
                 $returnData = $this->Indicator->getDataByParams($fields, $conditions); 
@@ -59,12 +59,12 @@ class ServicesController extends AppController
             case 103: //Delete Data using Indicator_NId -- Indicator table
                 
                 //deleteByIds($ids = null)
-                $returnData = $this->Indicator->deleteByIds([1,2]); 
+                $returnData = $this->Indicator->deleteByIds([383,384,385]); 
                 break;
 
             case 104: //Delete Data using Conditions -- Indicator table
                 
-                $conditions = ['Indicator_GId IN'=>['TEST_GID', 'TEST_GID2']];
+                $conditions = [_INDICATOR_INDICATOR_GID.' IN'=>['TEST_GID', 'TEST_GID2']];
 
                 //deleteByParams(array $conditions)
                 $returnData = $this->Indicator->deleteByParams($conditions); 
@@ -106,14 +106,102 @@ class ServicesController extends AppController
                 endif;
 
                 break;
+                
+            case 107: //Bulk Insert/Update Data -- Indicator table
+                
+                //if($this->request->is('post')):
+                    //The following line should do the same like App::import() in the older version of cakePHP
+                    require_once(ROOT . DS . 'vendor' . DS  . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
 
-            case 107: //Select Data using Unit_NId -- Unit table
+                    $filename = 'C:\-- Projects --\Indicator.xls';
+                    $insertFieldsArr = [];
+                    $insertDataArr = [];
+                    $insertDataNames = [];
+                    $insertDataGids = [];
+                    $insertDataKeys = [_INDICATOR_INDICATOR_NAME, _INDICATOR_INDICATOR_GID, _INDICATOR_HIGHISGOOD];
+
+                    $objPHPExcel = \PHPExcel_IOFactory::load($filename);
+                
+                    foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
+                        $worksheetTitle     = $worksheet->getTitle();
+                        $highestRow         = $worksheet->getHighestRow(); // e.g. 10
+                        $highestColumn      = $worksheet->getHighestColumn(); // e.g 'F'
+                        $highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumn);
+                    
+                        for ($row = 1; $row <= $highestRow; ++ $row) {
+
+                            for ($col = 0; $col < $highestColumnIndex; ++ $col) {
+                                $cell = $worksheet->getCellByColumnAndRow($col, $row);
+                                $val = $cell->getValue();
+                                $dataType = \PHPExcel_Cell_DataType::dataTypeForValue($val);
+                            
+                                if($row >= 6){                                
+                                    $insertDataArr[$row][] = $val;
+                                }else{
+                                    continue;
+                                }
+
+                                /*
+                                if($row == 1){
+                                    $insertFieldsArr[] = $val;
+                                }else{
+                                    $insertDataArr[$row][$insertFieldsArr[$col]] = $val;
+                                }*/
+                            }
+
+                            if(isset($insertDataArr[$row])):
+                            
+                                $insertDataArr[$row] = array_combine($insertDataKeys, $insertDataArr[$row]);
+                                $insertDataArr[$row] = array_filter($insertDataArr[$row]);
+
+                                //We don't need this row if the name field is empty
+                                if(!isset($insertDataArr[$row][_INDICATOR_INDICATOR_NAME])){
+                                    unset($insertDataArr[$row]);
+                                }else if(!isset($insertDataArr[$row][_INDICATOR_INDICATOR_GID])){
+                                    $insertDataNames[] = $insertDataArr[$row][_INDICATOR_INDICATOR_NAME];
+                                }else{
+                                    $insertDataGids[] = $insertDataArr[$row][_INDICATOR_INDICATOR_GID];
+                                }
+
+                            endif;
+
+                        }
+                    }
+                
+                    $dataArray = array_values(array_filter($insertDataArr));
+
+                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
+                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
+
+                    //Get Indicator Ids based on Indicator Name
+                    if(!empty($insertDataNames)){
+                        //getDataByName(array $dataArray = $this->request->data)
+                        //$returnData = $this->Indicator->getDataByName($dataArray);
+                    }
+
+                    //Get Indicator Ids based on Indicator GID
+                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
+                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
+
+                    //Update Indicator based on Indicator Name
+                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
+                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
+
+                    //Update Indicator based on Indicator GID
+                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
+                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
+
+                //endif;
+
+                break;
+
+            case 201: //Select Data using Unit_NId -- Unit table
 
                 //getDataByIds($ids = null, $fields = [], $type = 'all' )
                 $returnData = $this->Unit->getDataByIds([10,41]); 
                 break;
 
-            case 108: //Select Data using Conditions -- Unit table
+            case 202: //Select Data using Conditions -- Unit table
                 
                 $fields = ['Unit_Name', 'Unit_Global'];
                 $conditions = ['Unit_GId IN'=>['POPDEN', 'AREA']];
@@ -122,20 +210,20 @@ class ServicesController extends AppController
                 $returnData = $this->Unit->getDataByParams($fields, $conditions); 
                 break;
 
-            case 109: //Delete Data using Unit_NId -- Unit table
+            case 203: //Delete Data using Unit_NId -- Unit table
                 
                 //deleteByIds($ids = null)
                 $returnData = $this->Unit->deleteByIds([42]); 
                 break;
 
-            case 110: //Delete Data using Conditions -- Unit table
+            case 204: //Delete Data using Conditions -- Unit table
                 
                 $conditions = ['Unit_GId IN'=>['SOME_001_TEST', 'SOME_003_TEST']];
 
                 //deleteByParams(array $conditions)
                 $returnData = $this->Unit->deleteByParams($conditions);
 
-            case 111: //Insert New Data -- Unit table
+            case 205: //Insert New Data -- Unit table
                 
                 $this->request->data = [
                                     'Unit_NId'=>'43',
@@ -151,7 +239,7 @@ class ServicesController extends AppController
 
                 break;
 
-            case 112: //Update Data using Conditions -- Unit table
+            case 206: //Update Data using Conditions -- Unit table
                 
                 $fields = [
                           'Unit_Name'=>'Custom_test_name3',
@@ -164,9 +252,9 @@ class ServicesController extends AppController
                     $returnData = $this->Unit->updateDataByParams($fields, $conditions);
                 endif;
 
-                break;
+            break;
 
-            case 113: //Bulk Insert Data -- Unit table
+            case 207: //Bulk Insert/Update Data -- Unit table
                 
                 //The following line should do the same like App::import() in the older version of cakePHP
                 require_once(ROOT . DS . 'vendor' . DS  . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
@@ -174,7 +262,6 @@ class ServicesController extends AppController
                 $filename = 'C:\-- Projects --\Bulk_unit_test_file.xlsx';
                 $insertFieldsArr = [];
                 $insertDataArr = [];
-                $dataArr = [];
 
                 $objPHPExcel = \PHPExcel_IOFactory::load($filename);
                 
@@ -190,7 +277,6 @@ class ServicesController extends AppController
                             $cell = $worksheet->getCellByColumnAndRow($col, $row);
                             $val = $cell->getValue();
                             $dataType = \PHPExcel_Cell_DataType::dataTypeForValue($val);
-                            //echo $val . '(Type ' . $dataType . ')<br>';
                             
                             if($row == 1){
                                 $insertFieldsArr[] = $val;
@@ -202,55 +288,69 @@ class ServicesController extends AppController
                     }
                 }
                 
-                $preparedData['Unit'] = array_values($insertDataArr);
-                
-                echo '<pre>'; print_r($preparedData); exit;
+                $dataArray = array_values($insertDataArr);
 
                 if($this->request->is('post')):
-                    //insertData(array $fieldsArray = $this->request->data)
-                    $returnData = $this->Unit->insertBulkData($preparedData);
+                    //insertOrUpdateBulkData(array $Indicator = $this->request->data)
+                    $returnData = $this->Unit->insertOrUpdateBulkData($dataArray);
                 endif;
 
-                break;
+            break;
 
            
 			// nos starting with 301 are for timeperiod
 				
-			case 309:
+			case 301:
 				// service for getting the Timeperiod details on basis of ids
  				// can be one or multiple in form of array // passing  $ids, array $fields ,$type default is all
-			    $ids     = array(2,3);
-			    $fields  = array();
-			    $fields  = array('TimePeriod_NId','TimePeriod'); // fields can be blank also 
-			    $type    = 'all'; // type can be list or all only 
-                $getDataByTimeperiod  = $this->Timeperiod->getDataByIds($ids,$fields,$type);
-			  
-                break;	
+			    if($this->request->is('post')){
+			
+					$ids     = array(2,3);
+					$fields  = array();
+					$fields  = array('TimePeriod_NId','TimePeriod'); // fields can be blank also 
+					$type    = 'list'; // type can be list or all only 
+					$getDataByTimeperiod  = $this->Timeperiod->getDataByIds($ids,$fields,$type);
+					$returnData['data'] = $getDataByTimeperiod;
+					$returnData['success'] = true;	
+					
 				
-			case 310:
-				// service for getting the Timeperiod details on basis of Timeperiod 
-				// passing  $TimePeriodvalue,  $periodicity
+				}else{
+					$returnData[] = false;
+					$returnData['success'] = false;
+					$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+				}  
+            
+			break;	
+				
+			case 302:
+			//  service for getting the Timeperiod details on basis of Timeperiod //by rishi 
+			//  passing  $TimePeriodvalue,  $periodicity is optional
 			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
+				
+				$TimePeriodvalue       = $this->request->query['TimePeriodData'];			
+				$Periodicityvalue      = $this->request->query['periodicity'];			
+                $getDataByTimeperiod   = $this->Timeperiod->getDataByTimeperiod($TimePeriodvalue,$Periodicityvalue);
+			    $returnData['data']    = $getDataByTimeperiod;
+				$returnData['success'] = true;	
+				
+			}else{				
+				$returnData[] = false;
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}  
+			break;	
 			
-				$TimePeriodvalue = $this->request->query['TimePeriodData'];			
-				$Periodicityvalue = $this->request->query['periodicity'];			
-                $getDataByTimeperiod  = $this->Timeperiod->getDataByTimeperiod($TimePeriodvalue,$Periodicityvalue);
-			    pr($getDataByTimeperiod);
-				die;
-			}
-			    break;	
-			
-			case 311:
+			case 303:
 				// service for getting the Timeperiod details on basis of any parameter  
 				// passing array $fields, array $conditions
+			
 			if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod'])){
 				
 				$conditions = array();
 			    
 				if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod']))
                 $conditions['TimePeriod'] = $this->request->query['TimePeriod'];	
-						
-
+					
     			if(isset($_REQUEST['periodicity']) && !empty($_REQUEST['periodicity']))
 				$conditions['periodicity'] = $this->request->query['periodicity'];	
 			
@@ -262,33 +362,58 @@ class ServicesController extends AppController
 
 			    $fields = array();
 				
-                $getDataByTimeperiod  = $this->Timeperiod->getDataByParams( $fields ,$conditions);			   
+                $getDataByTimeperiod  = $this->Timeperiod->getDataByParams( $fields ,$conditions);
+				$returnData['data'] = $getDataByTimeperiod;
+				$returnData['success'] = true;					
 			   
+			}else{
+				
+				$returnData[] = false;
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}
             
-			    break;
+			break;
 			
-			case 312:
+			case 304:
 				// service for deleteing the timeperiod using  timeperiod value 
 			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
 			
 				$TimePeriodvalue = $this->request->query['TimePeriodData'];			
-                $deleteByTimeperiod  = $this->Timeperiod->deleteByTimePeriod($TimePeriodvalue);
-			    pr($deleteByTimeperiod);
-			}
-                break;
+                $deleteByTimeperiod  = $this->Timeperiod->deleteByTimePeriod($TimePeriodvalue);			   
+			    $returnData['message'] = 'Record deleted successfully';
+				$returnData['success'] = true;	
+				$returnData['returnvalue'] = $deleteByTimeperiod;
 				
-			case 313:
+			}else{
+				
+				$returnData[] = false;
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}
+			
+            break;
+				
+			case 305:
 				// service for deleteing the timeperiod using  id it can be one  or mutiple  
 			if(isset($_REQUEST['TimePeriodids']) && !empty($_REQUEST['TimePeriodids'])){
 			    //$TimePeriodids = $this->request->query['TimePeriodids'];			
 				$ids  = [7,8];			
                 $deleteallTimeperiodIDS   = $this->Timeperiod->deleteByIds($ids);
-			    pr($deleteallTimeperiodIDS);
-			}
-                break;	
+			    $returnData['message'] = 'Record deleted successfully';
+				$returnData['success'] = true;		
+				$returnData['returnvalue'] = $deleteallTimeperiodIDS;
 				
-			case 314:
+			}else{				
+				
+				$returnData[] = false;
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}
+			
+            break;
+				
+			case 306:
 				// service for deleteing the timeperiod using  any parameters   
 			if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod'])){
 			    //$TimePeriodids = $this->request->query['TimePeriodids'];			
@@ -296,9 +421,8 @@ class ServicesController extends AppController
 			    
 				if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod']))
                 $conditions['TimePeriod'] = $this->request->query['TimePeriod'];	
-						
-
-    			if(isset($_REQUEST['periodicity']) && !empty($_REQUEST['periodicity']))
+				
+				if(isset($_REQUEST['periodicity']) && !empty($_REQUEST['periodicity']))
 				$conditions['periodicity'] = $this->request->query['periodicity'];	
 			
 				if(isset($_REQUEST['StartDate']) && !empty($_REQUEST['StartDate']))
@@ -308,36 +432,70 @@ class ServicesController extends AppController
                 $conditions['TimePeriod_NId'] = $this->request->query['TimePeriod_NId'];
 			
                 $deleteallTimeperiod  = $this->Timeperiod->deleteByParams($conditions);
-			    pr($deleteallTimeperiod);
-			}
-                break;	
-           case 315:
-				// service for saving  details of timeperiod 
-			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
-			
-				//$TimePeriodvalue = $this->request->query['TimePeriodData'];
+				$returnData['message'] = 'Records deleted successfully';
+				$returnData['success'] = true;		
+				$returnData['returnvalue'] = $deleteallTimeperiod;
+				
+			}else{
+				
+				$returnData[] = false;
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}	
+				
+           case 307: 
+			// service for saving  details of timeperiod 
+			//if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
+			if($this->request->is('post')){
+				 
 				 $data = array();
-				 //$data = $this->request->data();
-				 $data['TimePeriod']  = $_REQUEST['TimePeriodData'];
-				 $data['Periodicity'] = $_REQUEST['Periodicity']='A';
+				 $data['TimePeriod']   = $_REQUEST['TimePeriodData']=2090;
+				 $data['Periodicity']  = $_REQUEST['Periodicity']='C';
+				 $data['TimePeriod_NId']  = $_REQUEST['TimePeriod_NId']=300;
+			     $this->request->data  = $data;
+                 $getDataByTimeperiod  = $this->Timeperiod->insertData($this->request->data);
+			  	 $returnData['success'] = true;		
+				 $returnData['message'] = 'Record inserted successfully!!';
+				 $returnData['returnvalue'] = $getDataByTimeperiod;
 				
-               $getDataByTimeperiod  = $this->Timeperiod->insertData($data);
-			   pr($getDataByTimeperiod);
-			   //die;
-			}
-                break;
+			}else{	
+			
+				$returnData[] = false;
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}	
+            
+			break;
 				
-			case 401:
-				// service for saving  subgroup type name 
-			if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
-			
-				$subgrouptypename = $this->request->query['subgrouptypename'];
-			
-               $savedataforUTSubgroupTypeEn  = $this->Subgroup->savesingleSubgroupTypeName($subgrouptypename);
-			   pr($savedataforUTSubgroupTypeEn);die;
-			}
+			case 350:
+			// service built for testing of timeperiod format
+			//$timeperiodvalue=$_REQUEST['TimePeriodData']='2013.06-2015.08';			
+			// $data = $this->checkTimePeriodFormat($timeperiodvalue);
+	        
+			// pr($data);
+			//die;			
+			break;
 
-                break;
+			
+			// service no. starting with 401 are for subgroup type 
+			case 401:
+			// service for saving  subgroup type name 
+			//if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
+			
+			 $data = array();
+			 $data['Subgroup_Type_NId']    = $_REQUEST['Subgroup_Type_NId']=200;
+			 $data['Subgroup_Type_Name']   = $_REQUEST['Subgroup_Type_Name']='animals';
+			 $data['Subgroup_Type_GID']    = $_REQUEST['Subgroup_Type_GID']=$this->Common->guid();
+			 $data['Subgroup_Type_Order']  = $_REQUEST['Subgroup_Type_Order'];
+			 $data['Subgroup_Type_Global'] = $_REQUEST['Subgroup_Type_Global'];
+			 $this->request->data          = $data;
+			
+             $savedataforUTSubgroupTypeEn  = $this->Subgroup->insertDataSubgroupType($this->request->data);
+			 pr($savedataforUTSubgroupTypeEn);
+			
+			//}
+
+            break;
 
             default:
                 
@@ -346,6 +504,25 @@ class ServicesController extends AppController
 
         echo '<pre>'; print_r($returnData);exit;
         return $returnData;
+		
+		 }// service query ends here 
+		 
 
-    }
-}
+		// - METHOD TO GET RETURN DATA
+	public function returnData($data, $convertJson='_YES') {
+		
+		$data['IsLoggedIn'] = false;
+		if ($this->Auth->user()) {
+			$data['IsLoggedIn'] = true;
+		}
+		if($convertJson == '_YES') {
+			$data = json_encode($data);
+		}
+
+		return $data;
+		
+	}
+		
+	
+
+   } 
