@@ -26,21 +26,79 @@ class SubgroupTypeTable extends Table
 
 
 
+    
+	/**
+     * getDataByIds method
+     * @param array $id The WHERE conditions with ids only for the Query. {DEFAULT : null}
+     * @param array $fields The Fields to SELECT from the Query. {DEFAULT : empty}
+     * @return void
+     */
+	 
+    public function getDataByIds($ids = null, array $fields, $type = 'all' ){
+        
+		$options = [];
+		
+        if(isset($ids) && !empty($ids))
+        $options['conditions'] = ['Subgroup_Type_NId IN'=>$ids];
+	    
+		if(isset($fields) && !empty($fields))
+         $options['fields'] = $fields;	    		
+        
+		if($type=='list'){
+			 $options['keyField']   = $fields[0];	    		
+             $options['valueField'] = $fields[1];	  
+  		     $query = $this->find($type, $options);
+		}else{
+    		  $query = $this->find($type, $options);
+		}
+		
+        $results = $query->hydrate(false)->all();	
+        $data = $results->toArray();         
+        // Once we have a result set we can get all the rows		
+        return $data;
+    }
+	
+	
+	
     /**
+     * getDataByParams method     *
+     * @param array $conditions The WHERE conditions for the Query. {DEFAULT : empty}
+     * @param array $fields The Fields to SELECT from the Query. {DEFAULT : empty}
+     * @return void
+     */
+    public function getDataByParams(array $fields, array $conditions){
+        
+		$options = [];
+		
+        if(!empty($fields))
+           $options['fields']     = $fields;
+        if(!empty($conditions))
+           $options['conditions'] = $conditions;
+	   
+        $query = $this->find('all', $options);		
+        $results = $query->hydrate(false)->all();
+		// Once we have a result set we can get all the rows
+        $data = $results->toArray();
+        return $data;
+
+    }
+	
+	
+	/**
     *  getDataBySubgroupTypeName method
-    *  @param $Subgroup_Type_Name The value on which you will get details on basis of  the Subgroup type name. {DEFAULT : empty}
+    *  @param $Subgroup_Type_Name The value on which you will get all details corresponding to the  Subgroup type name. {DEFAULT : empty}
     *  @return  array
     */
 	 
     public function getDataBySubgroupTypeName($Subgroup_Type_Name)
-    {        
+    {   
+	    $Subgroup_Namedetails=array();  
+		
 		if(!empty($Subgroup_Type_Name))       
-		$Subgroup_Namedetails = $this->find('all')->where(['Subgroup_Type_Name'=>$Subgroup_Type_Name])->all()->toArray();
-	    else
-		$Subgroup_Namedetails = $this->find()->where()->all()->toArray();        		   
+		$Subgroup_Namedetails = $this->find('all')->where(['Subgroup_Type_Name'=>$Subgroup_Type_Name])->hydrate(false)->first();
+	    		   
 		return $Subgroup_Namedetails;
     }
-	
 	
 	
 	
@@ -93,32 +151,27 @@ class SubgroupTypeTable extends Table
 		    $numrows = $this->find()->where(['Subgroup_Type_Name'=>$Subgroup_Type_Name])->count();
 		
 			if(isset($numrows) &&  $numrows ==0){  // new record
-			   
-				$query         = $this->find();
-				$results       = $query->select(['max' => $query->func()->max('Subgroup_Type_Order')])->first();
-				$ordervalue    = $results->max;
-				$maxordervalue = $ordervalue+1;
-				
-				if(isset($maxordervalue) && !empty($maxordervalue))
-				$fieldsArray['Subgroup_Type_Order'] = $maxordervalue;
-			     else
-			    $fieldsArray['Subgroup_Type_Order'] = '';				
+			
+				if(empty($fieldsArray['Subgroup_Type_Order'])){
+					
+				  $query         = $this->find();
+				  $results       = $query->select(['max' => $query->func()->max('Subgroup_Type_Order')])->first();
+				  $ordervalue    = $results->max;
+				  $maxordervalue = $ordervalue+1;
+				  $fieldsArray['Subgroup_Type_Order'] = $maxordervalue;	
+				}
 				
                 //Create New Entity
                 $Subgroup_Type = $this->newEntity();
 
                 //Update New Entity Object with data
                 $Subgroup_Type = $this->patchEntity($Subgroup_Type, $fieldsArray);
-				pr($Subgroup_Type);
-				die;
 				
 				if ($this->save($Subgroup_Type)) {
 					$msg['success'] = 'Record saved successfully!!';
 				}else{
 				    $msg['error']   = 'Error while saving details';  
 				}
-				
-			
 			}else{         // Subgroup_Type_Name Already exists
 				    $msg['error']   = 'Record Already exists!!';				
 			}

@@ -25,8 +25,10 @@ use Cake\View\Exception\MissingTemplateException;
  */
 class ServicesController extends AppController
 {
-    //Loading Componenets
-    public $components = ['Indicator', 'Unit', 'Timeperiod','Subgroup','Common'];
+    //Loading Components
+     
+	public $components = ['Indicator', 'Unit', 'Timeperiod','Subgroup','Common','ExcelReader'];
+    //public $components = ['Indicator', 'Unit', 'Timeperiod','Subgroup','Common'];
 
     /**
 	* 
@@ -513,7 +515,7 @@ class ServicesController extends AppController
 			
 			case 501:
 			// service for saving  subgroup  name 
-			//if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
+			if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
 			 // Subgroup_NId is auto increment 
 			 $data = array();
 			 $data['Subgroup_Name']   = $_REQUEST['Subgroup_Name'] = 'cat';
@@ -522,10 +524,90 @@ class ServicesController extends AppController
 			 $this->request->data     = $data;
              $saveDataforSubgroupType = $this->Subgroup->insertDataSubgroup($this->request->data);
 			 pr($saveDataforSubgroupType);
-			 die;
-			//}
+			 //die;
+			}
 
             break;
+			
+		
+			case 502:
+			
+            // service for saving bulk upload data  for subgroup
+			//require_once(ROOT . DS . 'vendor' . DS  . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
+			$filename = WWW_ROOT.DS.'Import IC IUS.xls'; 		
+			
+			try { 
+		
+			    $excelDataArray = $this->ExcelReader->loadExcelFile($filename);
+			    // $excelDataArray = array_values($data);
+				
+				$SubgroupTypeordervalue = 1;
+				 
+				if(isset($excelDataArray['columndetails']) && count($excelDataArray['columndetails'])>0){
+				 foreach($excelDataArray['columndetails'] as $subgrptypeExcelIndex => $subgrptypeExcelValue){	
+                    // code for subgrouptype save starts here 
+					if($subgrptypeExcelIndex >8){
+						//echo $subgrpExcelValue;
+					    //pr($subgrpExcelIndex);
+						 $excelSubgroupTypeDataArray = array();
+						 $excelSubgroupTypeDataArray['Subgroup_Type_Name']  = trim($subgrptypeExcelValue);
+						 $excelSubgroupTypeDataArray['Subgroup_Type_GID']   = $this->Common->guid();
+						 $excelSubgroupTypeDataArray['Subgroup_Type_Order'] = $SubgroupTypeordervalue;
+						 $this->request->data  = $excelSubgroupTypeDataArray;
+						 $saveDataforSubgroupType = $this->Subgroup->insertDataSubgroupType($this->request->data);
+						 $SubgroupTypeordervalue++;
+						 
+					 }  // closing of  subgrpExcelIndex >8
+					    // code for subgrouptype save ends
+					}	// end of foreach 			
+				} // end of if of subgroup type 				
+				// start of the if of subgroup type 
+				
+				if(isset($excelDataArray['exceldata']) && count($excelDataArray['exceldata'])>0){
+			   		foreach($excelDataArray['exceldata'] as $subgrpExcelIndex=>$subgrpExcelValueArray){	
+					    pr($subgrpExcelValueArray);
+						$subgroupTypeorderindex=0;
+						foreach($subgrpExcelValueArray as $subgrpTypename => $subgrpNameExcelValue){	
+						// pr($subgrpTypename);
+						//  pr($subgrpNameExcelValue);                        
+						if($subgroupTypeorderindex>8){ // condition for subgroup type data only
+											
+						$excelSubgroupDataArray = array();
+						$getsubgrouptypeid = $this->Subgroup->getDataBySubgroupTypeName($subgrpTypename);
+						
+						if(isset($subgrpNameExcelValue) && !empty($subgrpNameExcelValue)){
+							
+							$excelSubgroupDataArray['Subgroup_Name'] = $subgrpNameExcelValue;					
+							$excelSubgroupDataArray['Subgroup_GId']  = $this->Common->guid();	
+							$excelSubgroupDataArray['Subgroup_Type'] = $getsubgrouptypeid['Subgroup_Type_NId'];						
+							$saveDataforSubgroup = $this->Subgroup->insertDataSubgroup($excelSubgroupDataArray);
+
+					    }
+						}	//subgroupTypeorderindex				
+						$subgroupTypeorderindex++;
+						/*  
+					    step 1 check whether the data value exists in 
+					    subgroup table or not 
+						step 2 get the subgrouptype from subgroup table using function to get id
+												  
+						
+					*/
+				   } // end of inner foreach of exceldata  	
+				 }  // end of foreach of exceldata  	   
+			   }  // end of if of exceldata  
+		
+			} catch (Exception $e) {  
+			   echo 'Exception occured while loading the project list file';  
+			   exit;  
+			}  
+pr($data);		
+			
+			die('hua');	
+			
+			
+				
+			break;
+			
 
             default:
                 

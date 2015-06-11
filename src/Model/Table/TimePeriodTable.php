@@ -85,8 +85,43 @@ class TimePeriodTable extends Table
         return $data;
 
     }
+	
+	
+	/**
+    *  getDataByTimeperiod method
+    *  @param $timeperiodvalue The value on which you will get details on basis of the timeperiodvalue. {DEFAULT : empty}
+    *  @param  $periodicity is optional parameter {DEFAULT : empty}
+    */
+	 
+    public function getDataByTimeperiod($timeperiodvalue,$periodicity='')
+    {
+        $options =[];
+		
+		if(isset($timeperiodvalue) && !empty($timeperiodvalue)) {
+		    $options['conditions'] = array('TimePeriod'=>$timeperiodvalue);
+		}	
+		
+		if(isset($periodicity) && !empty($periodicity)) {
+		    $options['conditions'] = array('Periodicity'=>$periodicity);
+		}	
+	   
+		if(isset($timeperiodvalue) && !empty($timeperiodvalue)) {			
+			$timperioddetails = $this->find('all',$options);
+			//$results = $timperioddetails->hydrate(false)->all();
+			// Once we have a result set we can get all the rows
+           // $data = $results->toArray();
+		   $data = $timperioddetails->hydrate(false)->first();
+			// Once we have a result set we can get all the rows
+            
+		}  
+		
+	     
+		return $data;
+
+    }
 
 
+	
     /**
      * deleteByIds method
      * @param array $ids it can be one or more to delete the timeperiod rows . {DEFAULT : null}
@@ -150,35 +185,7 @@ class TimePeriodTable extends Table
     
 	
 
-    /**
-    *  getDataByTimeperiod method
-    *  @param $timeperiodvalue The value on which you will get details on basis of the timeperiodvalue. {DEFAULT : empty}
-    *  @param  $periodicity is optional parameter {DEFAULT : empty}
-    */
-	 
-    public function getDataByTimeperiod($timeperiodvalue,$periodicity='')
-    {
-        $options =[];
-		
-		if(isset($timeperiodvalue) && !empty($timeperiodvalue)) {
-		    $options['conditions'] = array('TimePeriod'=>$timeperiodvalue);
-		}	
-		
-		if(isset($periodicity) && !empty($periodicity)) {
-		    $options['conditions'] = array('Periodicity'=>$periodicity);
-		}	
-	   
-		if(isset($timeperiodvalue) && !empty($timeperiodvalue)) {			
-			$timperioddetails = $this->find('all',$options);
-			$results = $timperioddetails->hydrate(false)->all();
-			// Once we have a result set we can get all the rows
-            $data = $results->toArray();
-		}  
-		
-	     
-		return $data;
-
-    }
+    
 	
 	
 	

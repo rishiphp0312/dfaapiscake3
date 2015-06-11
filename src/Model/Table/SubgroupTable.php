@@ -25,6 +25,63 @@ class SubgroupTable extends Table
     }
 
 
+	 /**
+     * getDataByIds method
+     * @param array $id The WHERE conditions with ids only for the Query. {DEFAULT : null}
+     * @param array $fields The Fields to SELECT from the Query. {DEFAULT : empty}
+     * @return void
+     */
+	 
+    public function getDataByIds($ids = null, array $fields, $type = 'all' ){
+        
+		$options = [];
+		
+        if(isset($ids) && !empty($ids))
+        $options['conditions'] = ['Subgroup_NId IN'=>$ids];
+	    
+		if(isset($fields) && !empty($fields))
+         $options['fields'] = $fields;	    		
+        
+		if($type=='list'){
+			 $options['keyField']   = $fields[0];	    		
+             $options['valueField'] = $fields[1];	  
+  		     $query = $this->find($type, $options);
+		}else{
+    		  $query = $this->find($type, $options);
+		}
+		
+        $results = $query->hydrate(false)->all();	
+        $data = $results->toArray();
+         
+        // Once we have a result set we can get all the rows
+		
+        return $data;
+    }
+
+
+    /**
+     * getDataByParams method     *
+     * @param array $conditions The WHERE conditions for the Query. {DEFAULT : empty}
+     * @param array $fields The Fields to SELECT from the Query. {DEFAULT : empty}
+     * @return void
+     */
+    public function getDataByParams(array $fields, array $conditions){
+        
+		$options = [];
+		
+        if(!empty($fields))
+           $options['fields']     = $fields;
+        if(!empty($conditions))
+           $options['conditions'] = $conditions;
+	   
+        $query = $this->find('all', $options);
+		
+        $results = $query->hydrate(false)->all();
+		// Once we have a result set we can get all the rows
+        $data = $results->toArray();
+        return $data;
+
+    }
 
     /**
     *  getDataBySubgroupName method
@@ -34,53 +91,14 @@ class SubgroupTable extends Table
 	 
     public function getDataBySubgroupName($SubgroupName)
     {        
+	    $Subgroup_Namedetails =array();
 		if(!empty($SubgroupName))       
-		$Subgroup_Namedetails = $this->find('all')->where(['Subgroup_Name'=>$SubgroupName])->all()->toArray();
-	    else
-		$Subgroup_Namedetails = $this->find()->where()->all()->toArray();        		   
+		$Subgroup_Namedetails = $this->find('all')->where(['Subgroup_Name'=>$SubgroupName])->hydrate(false)->first();
+	   		   
 		return $Subgroup_Namedetails;
     }
 	
 	
-	/**
-     * savesingleSubgroup method 
-     * @param  $Subgroup_Name Subgroup Name which will be saved in database if exists already nothing will be happened.
-     * @param  $Subgroup_Type the type which it belongs to 
-     * @param  $Subgroup_Order is optional if it is passed then fine else by default its value will be A {DEFAULT : 1}
-     * @param  $Subgroup_Global is optional if it is passed then fine else by default its value will be A {DEFAULT : 0}
-     * @return void
-    */
-		
-	public function savesingleSubgroup($Subgroup_Name,$Subgroup_Type,$Subgroup_Order =1,$Subgroup_Global=0){
-	
-		if(isset($Subgroup_Name) && !empty($Subgroup_Name)){            
-			
-			//numrows if numrows >0 then record already exists else insert new row
-		    $numrows = $this->find()->where(['Subgroup_Name'=>$Subgroup_Name])->count();
-			
-			if(isset($numrows) &&  $numrows ==0){  // new record
-			
-				$data = $this->newEntity();
-				$data->Subgroup_GId     = uniqid();
-				$data->Subgroup_Name    = $Subgroup_Name;
-				$data->Subgroup_Global  = date('Y-m-d');
-				$data->Subgroup_Type    = date('Y-m-d');
-				$data->Subgroup_Order   = date('Y-m-d');
-				
-				if($this->save($data)){
-					// $msg['id']      = $TimePeriod_NId = $this->id;   // Record saved new id returned 
-					 $msg['success'] = 'Record saved successfully!!';
-					 return $msg;
-				}else{
-					 return $msg['error']='Error while saving details';  
-				}			
-			}else{                                   // Already exists
-				     return  $msg['error']='Error while saving details';				
-			}
-		}else{
-				     return $msg['error']='No time period value ';			
-		}
-	}// end of function 
 	
 
 	
@@ -134,18 +152,17 @@ class SubgroupTable extends Table
 			//numrows if numrows >0 then record already exists else insert new row
 		    $numrows = $this->find()->where(['Subgroup_Name'=>$Subgroup_Name])->count();
 		
-			if(isset($numrows) &&  $numrows ==0){  // new record
+			if(isset($numrows) &&  $numrows ==0){  // new record			   
+				
+				if(empty($fieldsArray['Subgroup_Order'])){
+					
+					$query         = $this->find();
+					$results       = $query->select(['max' => $query->func()->max('Subgroup_Order')])->first();
+					$ordervalue    = $results->max;
+					$maxordervalue = $ordervalue+1;
+					$fieldsArray['Subgroup_Order'] = $maxordervalue;	
+				}
 			   
-				$query         = $this->find();
-				$results       = $query->select(['max' => $query->func()->max('Subgroup_Order')])->first();
-				$ordervalue    = $results->max;
-				$maxordervalue = $ordervalue+1;
-				
-				if(isset($maxordervalue) && !empty($maxordervalue))
-				$fieldsArray['Subgroup_Order'] = $maxordervalue;
-			    else
-			    $fieldsArray['Subgroup_Order'] = '';				
-				
                 //Create New Entity
                 $Subgroup = $this->newEntity();
 				pr( $Subgroup);
@@ -159,10 +176,10 @@ class SubgroupTable extends Table
 				}
 			
 			}else{         // Subgroup Already exists
-				     $msg['error']   = 'Record Already exists!!';				
+				    $msg['error']   = 'Record Already exists!!';				
 			}
 		}else{
-				     $msg['error']   = 'No time period value ';			
+				    $msg['error']   = 'No time period value ';			
 		}
          return $msg;		
 	}// end of function 

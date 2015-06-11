@@ -47,6 +47,60 @@ class SubgroupComponent extends Component
        return $this->SubgroupObj->insertData($fieldsArray);
 	
     }
+	
+	 /**
+     * getDataByParamsSubgroupType method
+     * @param array $conditions Conditions on which to search. {DEFAULT : empty}
+     * @param array $fields Fields to fetch. {DEFAULT : empty}
+     * @return void
+     */
+	 
+    public function getDataByParamsSubgroupType(array $fields, array $conditions)
+    {
+       return $this->SubgroupTypeObj->getDataByParams($fields,$conditions);
+	
+    }
+	
+	 /**
+     * getDataByParamsSubgroup method
+     * @param array $conditions Conditions on which to search. {DEFAULT : empty}
+     * @param array $fields Fields to fetch. {DEFAULT : empty}
+     * @return void
+     */
+	 
+    public function getDataByParamsSubgroup(array $fields, array $conditions)
+    {
+       return $this->SubgroupObj->getDataByParams($fields,$conditions);
+	
+    }
+	
+	/**
+    *  getDataBySubgroupTypeName method
+    *  @param $Subgroup_Type_Name The value on which you will get all details corresponding to the  Subgroup type name.
+    *  @return  array
+    */
+	 
+    public function getDataBySubgroupTypeName($Subgroup_Type_Name)
+    {        
+		  return $this->SubgroupTypeObj->getDataBySubgroupTypeName($Subgroup_Type_Name);
+	
+    }
+	
+	/**
+    *  getDataBySubgroupName method
+    *  @param $Subgroup_Type_Name The value on which you will get all details corresponding to the  Subgroup type name.
+    *  @return  array
+    */
+	 
+    public function getDataBySubgroupName($Subgroup_Type_Name)
+    {        
+		  return $this->SubgroupObj->getDataBySubgroupName($Subgroup_Type_Name);
+	
+    }
+	
+	
+	
+	 
 
 
 }
