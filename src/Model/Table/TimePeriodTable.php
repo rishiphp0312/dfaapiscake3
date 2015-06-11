@@ -199,7 +199,9 @@ class TimePeriodTable extends Table
 		$numrows = $this->find()->where(['TimePeriod'=>$timeperiodvalue])->count();
 		
 		if(isset($numrows) &&  $numrows ==0){  // new record
+		
 		//Create New Entity
+		
 		$data = $this->newEntity();
 		
 		$data->TimePeriod     = $timeperiodvalue;
@@ -214,7 +216,7 @@ class TimePeriodTable extends Table
              $msg['success'] = 'Record saved successfully!!';
         } else {
              $msg['error']   = 'Error while saving details';  
-        }		
+        }	
 		}else{
 			 $msg['error']  = 'Timeperiod already exist ';	
 		}

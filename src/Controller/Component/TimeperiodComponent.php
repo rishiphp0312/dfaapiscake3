@@ -28,7 +28,8 @@ class TimeperiodComponent extends Component
      * @param  $type the the type of list user needs it can be list or first or count . {DEFAULT : all}
      * @return void
     */
-    public function getDataByIds($ids, $fields=[] , $type='all'){ 
+    public function getDataByIds($ids, $fields=[] , $type='all')
+	{ 
         return $this->TimeperiodObj->getDataByIds($ids, $fields, $type);
     }
 
@@ -39,7 +40,8 @@ class TimeperiodComponent extends Component
      * @param array $fields Fields to fetch. {DEFAULT : empty}
      * @return void
      */
-    public function getDataByParams(array $fields,array $conditions){
+    public function getDataByParams(array $fields,array $conditions)
+	{
         return $this->TimeperiodObj->getDataByParams($fields,$conditions);
     }
 	
@@ -49,7 +51,8 @@ class TimeperiodComponent extends Component
      * @return void
     */
 	 
-    public function getDataByTimeperiod($timeperiodvalue,$periodicity =''){      
+    public function getDataByTimeperiod($timeperiodvalue,$periodicity ='')
+	{      
         return $this->TimeperiodObj->getDataByTimeperiod($timeperiodvalue,$periodicity );
 
     }
@@ -62,7 +65,8 @@ class TimeperiodComponent extends Component
      * @param  $ids the ids which needs to be deleted . {DEFAULT : null}
      * @return void
      */
-    public function deleteByIds($ids = null){
+    public function deleteByIds($ids = null)
+	{
         return $this->TimeperiodObj->deleteByIds($ids);
     }
 
@@ -73,7 +77,8 @@ class TimeperiodComponent extends Component
      * @param array $conditions Fields to fetch. {DEFAULT : empty}
      * @return void
      */
-    public function deleteByParams($conditions = []){
+    public function deleteByParams($conditions = [])
+	{
         return $this->TimeperiodObj->deleteByParams($conditions);
     }
 
@@ -83,7 +88,8 @@ class TimeperiodComponent extends Component
      * @return void
     */
 	 
-    public function deleteByTimePeriod($timeperiodvalue){   
+    public function deleteByTimePeriod($timeperiodvalue)
+	{   
         return $this->TimeperiodObj->deleteByTimePeriod($timeperiodvalue);
 
     }
@@ -95,55 +101,17 @@ class TimeperiodComponent extends Component
      * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
      * @return void
      */
-    public function insertData($fieldsArray = []){
+    public function insertDataTimeperiod($fieldsArray = [])
+	{
         return $this->TimeperiodObj->insertData($fieldsArray);
     }
 
     
-    /**
-     * insertBulkData method
-     *
-     * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
-     * @return void
-     */
-    public function insertBulkData($fieldsArray = []){
-        return $this->TimeperiodObj->insertBulkData($fieldsArray);
-    }
-
-	
+   
 	
 
 
-    /**
-     * getTimePeriodDataByParams method     *  
-     * @param array $parameters Conditions on which data will be filtered. {DEFAULT : empty}
-     * @param array $field columns which will be fetched from table. {DEFAULT : empty}
-	 * @param type  by default its value will be all user can pass  first or count also
-     * @return void
-    */
-	 
-    public function getTimePeriodDataByParams(array $parameters, array $fields,$type='all'){
-       
-        return $this->TimeperiodObj->getTimePeriodByParams($parameters, $fields);
-    }
-	
-	/**
-     * savesingleTimePeriodData method     *  
-     * @param array $timeperiodvalue timeperiod which will be saved in database if exists already nothing will be happened. {DEFAULT : empty}
-     * @return void
-    */
-	 
-    public function savesingleTimePeriodData($timeperiodvalue=null){
-		
-        return $this->TimeperiodObj->savesingleTimePeriod($timeperiodvalue);
-
-    }
-	
-	
-	
-	
-	
-	
+ 
 
 
 }

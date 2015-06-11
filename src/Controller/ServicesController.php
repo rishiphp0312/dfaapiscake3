@@ -89,6 +89,7 @@ class ServicesController extends AppController
                     //insertData(array $fieldsArray = $this->request->data)
                     $returnData = $this->Indicator->insertData($this->request->data);
                 endif;
+				
 
                 break;
 
@@ -299,6 +300,8 @@ class ServicesController extends AppController
 
            
 			// nos starting with 301 are for timeperiod
+			
+			
 				
 			case 301:
 				// service for getting the Timeperiod details on basis of ids
@@ -321,6 +324,8 @@ class ServicesController extends AppController
 				}  
             
 			break;	
+			
+			
 				
 			case 302:
 			//  service for getting the Timeperiod details on basis of Timeperiod //by rishi 
@@ -338,7 +343,9 @@ class ServicesController extends AppController
 				$returnData['success'] = false;
 				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}  
-			break;	
+			break;
+
+			
 			
 			case 303:
 				// service for getting the Timeperiod details on basis of any parameter  
@@ -375,6 +382,8 @@ class ServicesController extends AppController
             
 			break;
 			
+			
+			
 			case 304:
 				// service for deleteing the timeperiod using  timeperiod value 
 			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
@@ -393,6 +402,8 @@ class ServicesController extends AppController
 			}
 			
             break;
+			
+			
 				
 			case 305:
 				// service for deleteing the timeperiod using  id it can be one  or mutiple  
@@ -411,7 +422,9 @@ class ServicesController extends AppController
 				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}
 			
-            break;
+            break;			
+			
+			
 				
 			case 306:
 				// service for deleteing the timeperiod using  any parameters   
@@ -442,21 +455,22 @@ class ServicesController extends AppController
 				$returnData['success'] = false;
 				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}	
-				
-           case 307: 
+			break;	
+			
+			
+			
+            case 307: 
 			// service for saving  details of timeperiod 
-			//if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
-			if($this->request->is('post')){
-				 
-				 $data = array();
-				 $data['TimePeriod']   = $_REQUEST['TimePeriodData']=2090;
-				 $data['Periodicity']  = $_REQUEST['Periodicity']='C';
-				 $data['TimePeriod_NId']  = $_REQUEST['TimePeriod_NId']=300;
-			     $this->request->data  = $data;
-                 $getDataByTimeperiod  = $this->Timeperiod->insertData($this->request->data);
-			  	 $returnData['success'] = true;		
-				 $returnData['message'] = 'Record inserted successfully!!';
-				 $returnData['returnvalue'] = $getDataByTimeperiod;
+			if($this->request->is('post')){				 
+				$data = array();
+				$data['TimePeriod']   = $_REQUEST['TimePeriodData']=2091;
+				$data['Periodicity']  = $_REQUEST['Periodicity']='C';
+				// $data['TimePeriod_NId']  = $_REQUEST['TimePeriod_NId']=300;
+			    $this->request->data  = $data;
+                $getDataByTimeperiod  = $this->Timeperiod->insertDataTimeperiod($this->request->data);
+			  	$returnData['success'] = true;		
+				$returnData['message'] = 'Record inserted successfully!!';
+				$returnData['returnvalue'] = $getDataByTimeperiod;
 				
 			}else{	
 			
@@ -464,8 +478,9 @@ class ServicesController extends AppController
 				$returnData['success'] = false;
 				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}	
-            
 			break;
+			
+			
 				
 			case 350:
 			// service built for testing of timeperiod format
@@ -481,18 +496,33 @@ class ServicesController extends AppController
 			case 401:
 			// service for saving  subgroup type name 
 			//if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
-			
+			 // Subgroup_Type_NId is auto increment 
 			 $data = array();
-			 $data['Subgroup_Type_NId']    = $_REQUEST['Subgroup_Type_NId']=200;
-			 $data['Subgroup_Type_Name']   = $_REQUEST['Subgroup_Type_Name']='animals';
+			 $data['Subgroup_Type_Name']   = $_REQUEST['Subgroup_Type_Name']= 'animals112';
 			 $data['Subgroup_Type_GID']    = $_REQUEST['Subgroup_Type_GID']=$this->Common->guid();
-			 $data['Subgroup_Type_Order']  = $_REQUEST['Subgroup_Type_Order'];
-			 $data['Subgroup_Type_Global'] = $_REQUEST['Subgroup_Type_Global'];
 			 $this->request->data          = $data;
+             $saveDataforSubgroupType = $this->Subgroup->insertDataSubgroupType($this->request->data);
+			 pr($saveDataforSubgroupType);
 			
-             $savedataforUTSubgroupTypeEn  = $this->Subgroup->insertDataSubgroupType($this->request->data);
-			 pr($savedataforUTSubgroupTypeEn);
+			//}
+
+            break;
 			
+			
+			// service no. starting from  501 are for subgroup
+			
+			case 501:
+			// service for saving  subgroup  name 
+			//if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
+			 // Subgroup_NId is auto increment 
+			 $data = array();
+			 $data['Subgroup_Name']   = $_REQUEST['Subgroup_Name'] = 'cat';
+			 $data['Subgroup_Type']   = $_REQUEST['Subgroup_Type'] =  213;
+			 $data['Subgroup_GId']    = $_REQUEST['Subgroup_GId']  =  $this->Common->guid();
+			 $this->request->data     = $data;
+             $saveDataforSubgroupType = $this->Subgroup->insertDataSubgroup($this->request->data);
+			 pr($saveDataforSubgroupType);
+			 die;
 			//}
 
             break;

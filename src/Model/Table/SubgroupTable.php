@@ -1,7 +1,7 @@
 <?php  
 namespace App\Model\Table;
 
-use App\Model\Entity\User;
+use App\Model\Entity\Subgroup;
 use Cake\ORM\Table;
 
 
@@ -114,5 +114,58 @@ class SubgroupTable extends Table
 				    return $msg['error'] = 'No time period value ';			
 		}
 	}// end of function 
+	
+	
+	/**
+    * 
+	* insertData method       
+    * @param  $fieldsArray contains  posted data 
+    * @return void
+    *
+	*/
+	
+	public function insertData($fieldsArray){
+	
+	    $Subgroup_Name = $fieldsArray['Subgroup_Name'];		
+	    $Subgroup_Type = $fieldsArray['Subgroup_Type'];		
+		
+		if(isset($Subgroup_Name) && !empty($Subgroup_Name)){            
+			
+			//numrows if numrows >0 then record already exists else insert new row
+		    $numrows = $this->find()->where(['Subgroup_Name'=>$Subgroup_Name])->count();
+		
+			if(isset($numrows) &&  $numrows ==0){  // new record
+			   
+				$query         = $this->find();
+				$results       = $query->select(['max' => $query->func()->max('Subgroup_Order')])->first();
+				$ordervalue    = $results->max;
+				$maxordervalue = $ordervalue+1;
+				
+				if(isset($maxordervalue) && !empty($maxordervalue))
+				$fieldsArray['Subgroup_Order'] = $maxordervalue;
+			    else
+			    $fieldsArray['Subgroup_Order'] = '';				
+				
+                //Create New Entity
+                $Subgroup = $this->newEntity();
+				pr( $Subgroup);
+                //Update New Entity Object with data
+                $Subgroup = $this->patchEntity($Subgroup, $fieldsArray);
+				
+				if ($this->save($Subgroup)) {
+					$msg['success'] = 'Record saved successfully!!';
+				}else{
+				    $msg['error']   = 'Error while saving details';  
+				}
+			
+			}else{         // Subgroup Already exists
+				     $msg['error']   = 'Record Already exists!!';				
+			}
+		}else{
+				     $msg['error']   = 'No time period value ';			
+		}
+         return $msg;		
+	}// end of function 
+	
 
 }
