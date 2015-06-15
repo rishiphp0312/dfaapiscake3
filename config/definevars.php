@@ -41,10 +41,27 @@ define('_SUBGROUP_SUBGROUP_NAME', 'Subgroup_Name'),
 define('_SUBGROUP_SUBGROUP_GID', 'Subgroup_GId'),
 define('_SUBGROUP_SUBGROUP_GLOBAL', 'Subgroup_Global'),
 define('_SUBGROUP_SUBGROUP_TYPE', 'Subgroup_Type'),
-define('_SUBGROUP_SUBGROUP_ORDER', 'Subgroup_Order')
+define('_SUBGROUP_SUBGROUP_ORDER', 'Subgroup_Order'),
 
 
 
+// subgroup_vals table
+
+define('_SUBGROUP_SUBGROUP_VAL_NID', 'Subgroup_Val_NId'),
+define('_SUBGROUP_SUBGROUP_VAL', 'Subgroup_Val'),
+define('_SUBGROUP_SUBGROUP_VAL_GID', 'Subgroup_Val_GId'),
+define('_SUBGROUP_SUBGROUP_VAL_GLOBAL', 'Subgroup_Val_Global'),
+define('_SUBGROUP_SUBGROUP_VAL_ORDER', 'Subgroup_Val_Order'),
+
+
+// Time Period table
+
+define('_TIMEPERIOD_TIMEPERIOD_NID', 'TimePeriod_NId'),
+define('_TIMEPERIOD_TIMEPERIOD', 'TimePeriod'),
+define('_TIMEPERIOD_STARTDATE', 'StartDate'),
+define('_TIMEPERIOD_ENDDATE', 'EndDate'),
+define('_TIMEPERIOD_PERIODICITY', 'Periodicity'),
+  
 ]
 
 ?>
