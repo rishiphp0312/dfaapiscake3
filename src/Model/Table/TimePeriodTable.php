@@ -23,7 +23,7 @@ class TimePeriodTable extends Table
     public function initialize(array $config)
     {
         $this->table('UT_TimePeriod');
-        $this->primaryKey('TimePeriod_NId');
+        $this->primaryKey(_TIMEPERIOD_TIMEPERIOD_NID);
         $this->addBehavior('Timestamp');
     }
 
@@ -40,21 +40,29 @@ class TimePeriodTable extends Table
 		$options = [];
 		
         if(isset($ids) && !empty($ids))
-        $options['conditions'] = ['TimePeriod_NId IN'=>$ids];
+        $options['conditions'] = [_TIMEPERIOD_TIMEPERIOD_NID.' IN'=>$ids];
 	    
 		if(isset($fields) && !empty($fields))
-         $options['fields'] = $fields;	    		
-        
-		if($type=='list'){
+         $options['fields'] = $fields;	    
+
+		if($type=='list' &&  empty($fields))
+         $options['fields'] = array(_TIMEPERIOD_TIMEPERIOD_NID,_TIMEPERIOD_TIMEPERIOD);
+	 
+	 
+	   	if(empty($type))
+         $type = 'all';	
+	 
+       	if($type=='list'){
 			 $options['keyField']   = $fields[0];	    		
              $options['valueField'] = $fields[1];	  
   		     $query = $this->find($type, $options);
 		}else{
     		  $query = $this->find($type, $options);
 		}
-		
+		        //pr($query);die;
+
         $results = $query->hydrate(false)->all();	
-        $data = $results->toArray();
+		$data = $results->toArray();
          
         // Once we have a result set we can get all the rows
 		
@@ -69,7 +77,6 @@ class TimePeriodTable extends Table
      * @return void
      */
     public function getDataByParams(array $fields, array $conditions){
-        
 		$options = [];
 		
         if(!empty($fields))
@@ -80,6 +87,7 @@ class TimePeriodTable extends Table
         $query = $this->find('all', $options);
 		
         $results = $query->hydrate(false)->all();
+		//pr($results);die;
 		// Once we have a result set we can get all the rows
         $data = $results->toArray();
         return $data;
@@ -98,11 +106,11 @@ class TimePeriodTable extends Table
         $options =[];
 		
 		if(isset($timeperiodvalue) && !empty($timeperiodvalue)) {
-		    $options['conditions'] = array('TimePeriod'=>$timeperiodvalue);
+		    $options['conditions'] = array(_TIMEPERIOD_TIMEPERIOD=>$timeperiodvalue);
 		}	
 		
 		if(isset($periodicity) && !empty($periodicity)) {
-		    $options['conditions'] = array('Periodicity'=>$periodicity);
+		    $options['conditions'] = array(_TIMEPERIOD_PERIODICITY=>$periodicity);
 		}	
 	   
 		if(isset($timeperiodvalue) && !empty($timeperiodvalue)) {			
@@ -129,7 +137,7 @@ class TimePeriodTable extends Table
      */
     public function deleteByIds($ids = null){
         
-		$result = $this->deleteAll(['TimePeriod_NId IN' => $ids]);
+		$result = $this->deleteAll([_TIMEPERIOD_TIMEPERIOD_NID.' IN' => $ids]);
 
         return $result;
     }
@@ -162,21 +170,20 @@ class TimePeriodTable extends Table
 	
 		if(isset($timeperiodvalue) && !empty($timeperiodvalue)){        			 
         	//deleteentity  checks whether record exists or not 
-			$deleteentity = $this->find()->where(['TimePeriod'=>$timeperiodvalue])->first();
+			$deleteentity = $this->find()->where([_TIMEPERIOD_TIMEPERIOD=>$timeperiodvalue])->first();
 			
 			if(isset($deleteentity) &&  !empty($deleteentity)){  
 			
 				if($result = $this->delete($deleteentity)){
-					$msg['success']       = 'Record deleted successfully!!';
-				    return $msg;
+				    return 1;
 				}else{
-					return $msg['error'] = 'Error while deletion';  
+					return 0;
 				}			
 			}else{                                   // Already exists
-				    return $msg['error'] = 'Entity not found';				
+				    return 0;
 			}
-		}else{
-				    return $msg['error'] = 'No time period value ';			
+		}else{     
+					return 0;
 		}
 	}// end of function 
 
@@ -198,12 +205,21 @@ class TimePeriodTable extends Table
 	 
     public function insertData($fieldsArray){
 		
-		$timeperiodvalue = $fieldsArray['TimePeriod'];		
+		$timeperiodvalue = $fieldsArray[_TIMEPERIOD_TIMEPERIOD];		
+		
+        $conditions = array();
+	    
+		if(isset($fieldsArray[_TIMEPERIOD_TIMEPERIOD]) && !empty($fieldsArray[_TIMEPERIOD_TIMEPERIOD]))            
+		$conditions[_TIMEPERIOD_TIMEPERIOD] = $fieldsArray[_TIMEPERIOD_TIMEPERIOD];		
+		
+		if(isset($fieldsArray[_TIMEPERIOD_TIMEPERIOD_NID]) && !empty($fieldsArray[_TIMEPERIOD_TIMEPERIOD_NID]))            
+		$conditions[_TIMEPERIOD_TIMEPERIOD_NID.' !='] = $fieldsArray[_TIMEPERIOD_TIMEPERIOD_NID];
+
 		
 		if(isset($timeperiodvalue) && !empty($timeperiodvalue)){            
 			
 		//numrows if numrows >0 then record already exists else insert new row
-		$numrows = $this->find()->where(['TimePeriod'=>$timeperiodvalue])->count();
+		$numrows = $this->find()->where($conditions)->count();
 		
 		if(isset($numrows) &&  $numrows ==0){  // new record
 		
@@ -214,19 +230,20 @@ class TimePeriodTable extends Table
 		$data->TimePeriod     = $timeperiodvalue;
 		$numberofdays_dec     = cal_days_in_month(CAL_GREGORIAN, 12, date('Y')); // 31
 		$timeformatData       = $this->checkTimePeriodFormat($timeperiodvalue);
-		$data->StartDate      = $timeformatData['StartDate'];
-		$data->EndDate        = $timeformatData['EndDate'];
-		$data->Periodicity    = $fieldsArray['Periodicity'];
+		$data->StartDate      = $timeformatData[_TIMEPERIOD_STARTDATE];
+		$data->EndDate        = $timeformatData[_TIMEPERIOD_ENDDATE];
+		$data->Periodicity    = $fieldsArray[_TIMEPERIOD_PERIODICITY];
 	
         //Create new row and Save the Data
         if($this->save($data)){
-             $msg['success'] = 'Record saved successfully!!';
-        } else {
-             $msg['error']   = 'Error while saving details';  
-        }	
+			return 1;
+		} else {
+            return 0;  
+        }
+		
 		}else{
-			 $msg['error']  = 'Timeperiod already exist ';	
-		}
+		    return 0;  
+        }
 		
 		}
 		

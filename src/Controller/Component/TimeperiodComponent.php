@@ -28,7 +28,7 @@ class TimeperiodComponent extends Component
      * @param  $type the the type of list user needs it can be list or first or count . {DEFAULT : all}
      * @return void
     */
-    public function getDataByIds($ids, $fields=[] , $type='all')
+    public function getDataByIds($ids, $fields=[] , $type)
 	{ 
         return $this->TimeperiodObj->getDataByIds($ids, $fields, $type);
     }
@@ -96,12 +96,12 @@ class TimeperiodComponent extends Component
 	
 
     /**
-     * insertData method
+     * insertUpdateDataTimeperiod method to save or update data 
      *
-     * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
+     * @param array $fieldsArray Fields to insert or update  with their Data. {DEFAULT : empty}
      * @return void
      */
-    public function insertDataTimeperiod($fieldsArray = [])
+    public function insertUpdateDataTimeperiod($fieldsArray = [])
 	{
         return $this->TimeperiodObj->insertData($fieldsArray);
     }

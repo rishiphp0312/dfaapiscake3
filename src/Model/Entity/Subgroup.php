@@ -15,11 +15,11 @@ class Subgroup extends Entity
      * @var array
      */
    protected $_accessible = [
-        'Subgroup_NId' => true,
-        'Subgroup_Name' => true,
-        'Subgroup_GId' => true,
-        'Subgroup_Global' => true,
-        'Subgroup_Type' => true,      
-        'Subgroup_Order' => true       
+        _SUBGROUP_SUBGROUP_NID => true,
+        _SUBGROUP_SUBGROUP_NAME => true,
+        _SUBGROUP_SUBGROUP_GID => true,
+        _SUBGROUP_SUBGROUP_GLOBAL => true,
+        _SUBGROUP_SUBGROUP_TYPE => true,      
+        _SUBGROUP_SUBGROUP_ORDER => true       
     ];
 }

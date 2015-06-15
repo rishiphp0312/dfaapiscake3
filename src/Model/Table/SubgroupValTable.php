@@ -1,14 +1,13 @@
 <?php  
 namespace App\Model\Table;
-
-use App\Model\Entity\SubgroupType;
+use App\Model\Entity\SubgroupVal;
 use Cake\ORM\Table;
 
 
 /**
- * SubgroupTypeTable Model
+ * SubgroupValTable Model
  */
-class SubgroupTypeTable extends Table
+class SubgroupValTable extends Table
 {
 
     /**
@@ -19,8 +18,8 @@ class SubgroupTypeTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('UT_Subgroup_Type_en');
-        $this->primaryKey(_SUBGROUPTYPE_SUBGROUP_TYPE_NID);
+        $this->table('Ut_subgroup_vals_en');
+        $this->primaryKey(_SUBGROUP_SUBGROUP_VAL_NID);
         $this->addBehavior('Timestamp');
     }
 
@@ -39,14 +38,11 @@ class SubgroupTypeTable extends Table
 		$options = [];
 		
         if(isset($ids) && !empty($ids))
-        $options['conditions'] = [_SUBGROUPTYPE_SUBGROUP_TYPE_NID.' IN'=>$ids];
+        $options['conditions'] = [_SUBGROUP_SUBGROUP_VAL_NID.' IN'=>$ids];
 	    
 		if(isset($fields) && !empty($fields))
-         $options['fields'] = $fields;
-	 
-		if($type=='list' &&  empty($fields))
-         $options['fields'] = array(_SUBGROUPTYPE_SUBGROUP_TYPE_NID,_SUBGROUPTYPE_SUBGROUP_TYPE_NAME);
-		
+         $options['fields'] = $fields;	    		
+        
 	   	if(empty($type))
          $type = 'all';	
 		
@@ -78,6 +74,7 @@ class SubgroupTypeTable extends Table
 		
         if(!empty($fields))
            $options['fields']     = $fields;
+	   
         if(!empty($conditions))
            $options['conditions'] = $conditions;
 	   
@@ -96,12 +93,12 @@ class SubgroupTypeTable extends Table
     *  @return  array
     */
 	 
-    public function getDataBySubgroupTypeName($Subgroup_Type_Name)
+    public function getDataBySubgroupVal($SubgroupVal)
     {   
-	    $Subgroup_Namedetails=array();  
+	    $Subgroup_Namedetails = array();  
 		
-		if(!empty($Subgroup_Type_Name))       
-		$Subgroup_Namedetails = $this->find('all')->where([_SUBGROUPTYPE_SUBGROUP_TYPE_NAME=>$Subgroup_Type_Name])->hydrate(false)->first();
+		if(!empty($SubgroupVal))       
+		$Subgroup_Namedetails = $this->find('all')->where([_SUBGROUP_SUBGROUP_VAL=>$SubgroupVal])->hydrate(false)->first();
 	    		   
 		return $Subgroup_Namedetails;
     }
@@ -141,69 +138,7 @@ class SubgroupTypeTable extends Table
 	
 	
 	
-		
 	
-	    /**
-     * deleteByIds method
-     * @param array $ids it can be one or more to delete the Subgroup  rows . {DEFAULT : null}
-     * @return void
-     */
-    public function deleteByIds($ids = null){
-        
-		$result = $this->deleteAll([_SUBGROUPTYPE_SUBGROUP_TYPE_NID.' IN' => $ids]);
-
-        return $result;
-    }
-
-        
-    
-	/**
-     * deleteByParams method
-     *
-     * @param array $conditions on the basis of which record will be deleted . 
-     * @return void
-    */
-    
-	public function deleteByParams(array $conditions){
-        pr($conditions);
-		//die;
-		$result = $this->deleteAll($conditions);
-		if($result>0)
-			return $result;
-        return 0;
-    }
-	
-	/**
-    * 
-	* deleteBySubgroupTypeName method       
-    * @param  $SubgroupTypevalue Subgrouptype  name   if exists  will be deleted. 
-    * @return void
-    *
-	*/
-		
-	public function deleteBySubgroupTypeName($SubgroupTypevalue){
-		
-		if(isset($SubgroupTypevalue) && !empty($SubgroupTypevalue)){            
-	
-        	//deleteentity  checks whether record exists or not 
-		    $deleteentity = $this->find()->where([_SUBGROUPTYPE_SUBGROUP_TYPE_NAME=>$SubgroupTypevalue])->first();
-			if(isset($deleteentity) &&  !empty($deleteentity)){  
-			
-				if($result = $this->delete($deleteentity)){
-					return 1;
-					}else{
-					return 0;
-				}			
-			}else{                                   // Already exists
-					return 0;
-			}
-		}else{
-				    return 0;	
-		}
-	}// end of function 
-	
-
-
 	/**
      * insertData  method 
        @return void
@@ -216,12 +151,12 @@ class SubgroupTypeTable extends Table
 		if(isset($fieldsArray[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME]) && !empty($fieldsArray[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME]))            
 		$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME] = $fieldsArray[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME];		
 		
-		if(isset($fieldsArray[_SUBGROUP_SUBGROUP_NID]) && !empty($fieldsArray[_SUBGROUP_SUBGROUP_NID]))            
-		$conditions[_SUBGROUP_SUBGROUP_NID.' !='] = $fieldsArray[_SUBGROUP_SUBGROUP_NID];
+		if(isset($fieldsArray[_SUBGROUPTYPE_SUBGROUP_TYPE_NID]) && !empty($fieldsArray[_SUBGROUPTYPE_SUBGROUP_TYPE_NID]))            
+		$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NID.' !='] = $fieldsArray[_SUBGROUPTYPE_SUBGROUP_TYPE_NID];
 	
 	    //echo $Subgroup_Type_Name;
 		//pr($conditions);die;
-		$Subgroup_Type_Name = $fieldsArray[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME];
+		$Subgroup_Type_Name =$fieldsArray[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME];
 		if(isset($Subgroup_Type_Name) && !empty($Subgroup_Type_Name)){            
 			
 			//numrows if numrows >0 then record already exists else insert new row
@@ -245,16 +180,24 @@ class SubgroupTypeTable extends Table
                 $Subgroup_Type = $this->patchEntity($Subgroup_Type, $fieldsArray);
 				//pr($Subgroup_Type);die;
 				if ($this->save($Subgroup_Type)) {
-					return 1;					  				
+					
+					if(isset($fieldsArray[_SUBGROUPTYPE_SUBGROUP_TYPE_NID]) && !empty($fieldsArray[_SUBGROUPTYPE_SUBGROUP_TYPE_NID]))
+					$msg['success'] = 'Record updated  successfully!!';				
+					else
+					$msg['success'] = 'Record saved successfully!!';
+				
 				}else{
-				    return 0;  
+				    $msg['error']   = 'Error while saving details';  
 				}
-			}else{             // Subgroup_Type_Name Already exists
-				    return 0;  
+			}else{         // Subgroup_Type_Name Already exists
+				    $msg['error']   = 'Record Already exists!!';				
 			}
 		}else{
-			    return 0;  
-			}
-		}// end of function 
+				    $msg['error']   = 'No subgroup type  value ';			
+		}
+         return $msg;		
+	}// end of function 
+	
+
 
 }

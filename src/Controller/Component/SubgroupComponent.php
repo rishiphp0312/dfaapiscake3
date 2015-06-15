@@ -30,7 +30,7 @@ class SubgroupComponent extends Component
      * @return void
      */
 	 
-    public function insertDataSubgroupType($fieldsArray)
+    public function insertUpdateDataSubgroupType($fieldsArray)
     {
         return $this->SubgroupTypeObj->insertData($fieldsArray);
 
@@ -42,11 +42,43 @@ class SubgroupComponent extends Component
      * @return void
      */
 	 
-    public function insertDataSubgroup($fieldsArray)
+    public function insertUpdateDataSubgroup($fieldsArray)
     {
        return $this->SubgroupObj->insertData($fieldsArray);
 	
     }
+	
+	
+	
+	/*
+     * getDataByIdsSubgroupType method
+     *
+     * @param array $ids the ids can be multiple or single to get filtered records . {DEFAULT : empty}
+     * @param array $fields Fields to fetch. {DEFAULT : empty}
+     * @param  $type the the type of list user needs it can be list or all . {DEFAULT : all}
+     * @return void
+    */
+    public function getDataByIdsSubgroupType($ids,$fields=[],$type)
+	{ 
+        return $this->SubgroupTypeObj->getDataByIds($ids, $fields, $type);
+    }
+	
+	
+	
+	/**
+     * getDataByIdsSubgroup method
+     *
+     * @param array $ids the ids can be multiple or single to get filtered records . {DEFAULT : empty}
+     * @param array $fields Fields to fetch. {DEFAULT : empty}
+     * @param  $type the the type of list user needs it can be list  or all . {DEFAULT : all}
+     * @return void
+    */
+    public function getDataByIdsSubgroup($ids, $fields=[] , $type)
+	{
+        return $this->SubgroupObj->getDataByIds($ids, $fields, $type);
+    }
+	
+	
 	
 	 /**
      * getDataByParamsSubgroupType method
@@ -88,16 +120,87 @@ class SubgroupComponent extends Component
 	
 	/**
     *  getDataBySubgroupName method
-    *  @param $Subgroup_Type_Name The value on which you will get all details corresponding to the  Subgroup type name.
+    *  @param $Subgroup_Name The value on which you will get all details corresponding to the  Subgroup  name.
     *  @return  array
     */
 	 
-    public function getDataBySubgroupName($Subgroup_Type_Name)
+    public function getDataBySubgroupName($Subgroup_Name)
     {        
-		  return $this->SubgroupObj->getDataBySubgroupName($Subgroup_Type_Name);
+		  return $this->SubgroupObj->getDataBySubgroupName($Subgroup_Name);
 	
     }
 	
+	
+	/**
+    * deleteByIds method for SubgroupType
+    *
+  	* @param  $ids the ids which needs to be deleted . {DEFAULT : null}
+    * @return void
+    */
+    public function deleteByIdsSubgroupType($ids = null)
+	{
+        return $this->SubgroupTypeObj->deleteByIds($ids);
+    }
+	
+	
+	/**
+    * deleteByIds method for Subgroup
+    *
+    * @param  $ids the ids which needs to be deleted . {DEFAULT : null}
+    * @return void
+    */
+    public function deleteByIdsSubgroup($ids = null)
+	{
+        return $this->SubgroupObj->deleteByIds($ids);
+    }
+
+
+
+    /**
+    * deleteByParams  method for SubgroupType
+    *
+    * @param array $conditions Fields to fetch. {DEFAULT : empty}
+    * @return void
+    */
+    public function deleteByParamsSubgroupType($conditions = [])
+	{
+        return $this->SubgroupTypeObj->deleteByParams($conditions);
+    }
+
+	
+
+    /**
+    * deleteByParams  method for Subgroup
+    *
+    * @param array $conditions Fields to fetch. {DEFAULT : empty}
+    * @return void
+    */
+    public function deleteByParamsSubgroup($conditions = [])
+	{
+        return $this->SubgroupObj->deleteByParams($conditions);
+    }
+
+	/**
+     * @param $SubgroupTypevalue the SubgroupType name value which will be deleted .
+     * @return void
+    */
+	 
+    public function deleteBySubgroupTypeName($SubgroupTypevalue)
+	{   
+        return $this->SubgroupTypeObj->deleteBySubgroupTypeName($SubgroupTypevalue);
+
+    }
+	
+	/**
+     * @param $Subgroupvalue the Subgroup name  value which will be deleted .
+     * @return void
+    */
+	 
+    public function deleteBySubgroupName($Subgroupvalue)
+	{   
+        return $this->SubgroupObj->deleteBySubgroupName($Subgroupvalue);
+
+    }
 	
 	
 	 

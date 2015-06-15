@@ -20,7 +20,7 @@ class SubgroupTable extends Table
     public function initialize(array $config)
     {
         $this->table('UT_Subgroup_en');
-        $this->primaryKey('Subgroup_NId');
+        $this->primaryKey(_SUBGROUP_SUBGROUP_NID);
         $this->addBehavior('Timestamp');
     }
 
@@ -32,16 +32,20 @@ class SubgroupTable extends Table
      * @return void
      */
 	 
-    public function getDataByIds($ids = null, array $fields, $type = 'all' ){
+    public function getDataByIds($ids = null, array $fields, $type  ){
         
 		$options = [];
 		
         if(isset($ids) && !empty($ids))
-        $options['conditions'] = ['Subgroup_NId IN'=>$ids];
+        $options['conditions'] = [_SUBGROUP_SUBGROUP_NID.' IN'=>$ids];
 	    
 		if(isset($fields) && !empty($fields))
-         $options['fields'] = $fields;	    		
-        
+         $options['fields'] = $fields;	
+	 
+	   	if(empty($type))
+         $type = 'all';	
+
+		
 		if($type=='list'){
 			 $options['keyField']   = $fields[0];	    		
              $options['valueField'] = $fields[1];	  
@@ -51,7 +55,10 @@ class SubgroupTable extends Table
 		}
 		
         $results = $query->hydrate(false)->all();	
-        $data = $results->toArray();
+        
+		$data = $results->toArray();
+		pr($data);
+		die;
          
         // Once we have a result set we can get all the rows
 		
@@ -93,45 +100,73 @@ class SubgroupTable extends Table
     {        
 	    $Subgroup_Namedetails =array();
 		if(!empty($SubgroupName))       
-		$Subgroup_Namedetails = $this->find('all')->where(['Subgroup_Name'=>$SubgroupName])->hydrate(false)->first();
+		$Subgroup_Namedetails = $this->find('all')->where([_SUBGROUP_SUBGROUP_NAME=>$SubgroupName])->hydrate(false)->first();
 	   		   
 		return $Subgroup_Namedetails;
     }
 	
 	
-	
+	    /**
+     * deleteByIds method
+     * @param array $ids it can be one or more to delete the Subgroup  rows . {DEFAULT : null}
+     * @return void
+     */
+    public function deleteByIds($ids = null){
+        
+		$result = $this->deleteAll([_SUBGROUP_SUBGROUP_NID.' IN' => $ids]);
+		if($result>0)
+		return $result;
+        return 0;
+    }
 
+        
+    
+	/**
+     * deleteByParams method
+     *
+     * @param array $conditions on the basis of which record will be deleted . 
+     * @return void
+    */
+    
+	public function deleteByParams(array $conditions){
+       // pr($conditions);die;
+		$result = $this->deleteAll($conditions);
+		if($result>0)
+			return $result;
+        return 0;
+    }
 	
-		
 	/**
     * 
-	* deletesingleSubgroup method       
-    * @param  $Subgroupvalue contains  Subgroup name  which will be deleted from database if exists 
+	* deleteBySubgroupName method       
+    * @param  $Subgroupvalue Subgroup name   if exists  will be deleted. 
     * @return void
     *
 	*/
 		
-	public function deletesingleSubgroup($Subgroupvalue){
-	
+	public function deleteBySubgroupName($Subgroupvalue){
+		
 		if(isset($Subgroupvalue) && !empty($Subgroupvalue)){            
 	
         	//deleteentity  checks whether record exists or not 
-		    $deleteentity = $this->find()->where(['Subgroup_Name'=>$Subgroupvalue])->first();
+		    $deleteentity = $this->find()->where([_SUBGROUP_SUBGROUP_NAME=>$Subgroupvalue])->first();
 			if(isset($deleteentity) &&  !empty($deleteentity)){  
 			
 				if($result = $this->delete($deleteentity)){
-					$msg['success']       = 'Record deleted successfully!!';
-				    return $msg;
-				}else{
-					return $msg['error'] = 'Error while deletion';  
+						return 1;
+					}else{
+						return 0;  
 				}			
 			}else{                                   // Already exists
-				    return $msg['error'] = 'Entity not found';				
+				    return 0; 	
 			}
 		}else{
-				    return $msg['error'] = 'No time period value ';			
+				    return 0; 		
 		}
 	}// end of function 
+
+
+
 	
 	
 	/**
@@ -144,20 +179,30 @@ class SubgroupTable extends Table
 	
 	public function insertData($fieldsArray){
 	
-	    $Subgroup_Name = $fieldsArray['Subgroup_Name'];		
-	    $Subgroup_Type = $fieldsArray['Subgroup_Type'];		
+	    $Subgroup_Name = $fieldsArray[_SUBGROUP_SUBGROUP_NAME];		
+	   
+        $conditions = array();
+	    
+		if(isset($fieldsArray[_SUBGROUP_SUBGROUP_NAME]) && !empty($fieldsArray[_SUBGROUP_SUBGROUP_NAME]))            
+		$conditions[_SUBGROUP_SUBGROUP_NAME] = $fieldsArray[_SUBGROUP_SUBGROUP_NAME];		
+		
+		if(isset($fieldsArray[_SUBGROUP_SUBGROUP_NID]) && !empty($fieldsArray[_SUBGROUP_SUBGROUP_NID]))            
+		$conditions[_SUBGROUP_SUBGROUP_NID.' !='] = $fieldsArray[_SUBGROUP_SUBGROUP_NID];
+	
+	    //pr($conditions);die;
+		
 		
 		if(isset($Subgroup_Name) && !empty($Subgroup_Name)){            
 			
 			//numrows if numrows >0 then record already exists else insert new row
-		    $numrows = $this->find()->where(['Subgroup_Name'=>$Subgroup_Name])->count();
+		    $numrows = $this->find()->where($conditions)->count();
 		
 			if(isset($numrows) &&  $numrows ==0){  // new record			   
 				
-				if(empty($fieldsArray['Subgroup_Order'])){
+				if(empty($fieldsArray[_SUBGROUP_SUBGROUP_ORDER])){
 					
 					$query         = $this->find();
-					$results       = $query->select(['max' => $query->func()->max('Subgroup_Order')])->first();
+					$results       = $query->select(['max' => $query->func()->max(_SUBGROUP_SUBGROUP_ORDER)])->first();
 					$ordervalue    = $results->max;
 					$maxordervalue = $ordervalue+1;
 					$fieldsArray['Subgroup_Order'] = $maxordervalue;	
@@ -165,23 +210,22 @@ class SubgroupTable extends Table
 			   
                 //Create New Entity
                 $Subgroup = $this->newEntity();
-				pr( $Subgroup);
+				//		pr( $Subgroup);
                 //Update New Entity Object with data
                 $Subgroup = $this->patchEntity($Subgroup, $fieldsArray);
 				
 				if ($this->save($Subgroup)) {
-					$msg['success'] = 'Record saved successfully!!';
+					return 1;
 				}else{
-				    $msg['error']   = 'Error while saving details';  
-				}
-			
+					return 0;					
+				}			
 			}else{         // Subgroup Already exists
-				    $msg['error']   = 'Record Already exists!!';				
+				    return 0;							
 			}
 		}else{
-				    $msg['error']   = 'No time period value ';			
+				    return 0;					
 		}
-         return $msg;		
+        	
 	}// end of function 
 	
 

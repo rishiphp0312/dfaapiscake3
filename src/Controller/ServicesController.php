@@ -39,7 +39,9 @@ class ServicesController extends AppController
     public function serviceQuery($case = null)
     {
         $this->autoRender = false;
-        $returnData = [];
+        $this->layout = '';
+		$convertJson = '_YES';
+		$returnData = [];
         
         switch($case):
 
@@ -303,42 +305,63 @@ class ServicesController extends AppController
            
 			// nos starting with 301 are for timeperiod
 			
+			// Read  cases of Timeperiod 
 			
 				
 			case 301:
 				// service for getting the Timeperiod details on basis of ids
- 				// can be one or multiple in form of array // passing  $ids, array $fields ,$type default is all
-			    if($this->request->is('post')){
-			
-					$ids     = array(2,3);
-					$fields  = array();
-					$fields  = array('TimePeriod_NId','TimePeriod'); // fields can be blank also 
-					$type    = 'list'; // type can be list or all only 
-					$getDataByTimeperiod  = $this->Timeperiod->getDataByIds($ids,$fields,$type);
-					$returnData['data'] = $getDataByTimeperiod;
-					$returnData['success'] = true;	
-					
+				// can be one or multiple in form of array 
+				// parameters  $ids, array $fields ,$type default is all
+				$ids     = array(2,3);
+				$fields  = array(_TIMEPERIOD_TIMEPERIOD_NID,_TIMEPERIOD_TIMEPERIOD); // fields can be blank also 
+				$ids     = [2,3];
+				if(isset($_REQUEST['ids']) && !empty($_REQUEST['ids'])){
+					$ids   = $_REQUEST['ids']; 
+				}
 				
+				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
+					$fields    = $_REQUEST['fields']; 
+				}
+				//$fields  = array(_SUBGROUPTYPE_SUBGROUP_TYPE_NAME,_SUBGROUPTYPE_SUBGROUP_TYPE_NID); // fields can be blank also 
+				//$type    = 'list'; // type can be list or all only 
+				$type    = '';
+				if(isset($_REQUEST['type']) && !empty($_REQUEST['type'])){
+					$type    = $_REQUEST['type']; 
+				}
+				
+				$getDataByTimeperiod  = $this->Timeperiod->getDataByIds($ids,$fields,$type);
+				if(isset($getDataByTimeperiod) && count($getDataByTimeperiod)>0)
+				{
+					$returnData['data']   = $getDataByTimeperiod;
+					$returnData['success'] = true;	
+						
 				}else{
-					$returnData[] = false;
-					$returnData['success'] = false;
-					$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-				}  
+					$returnData['success'] = false;							
+					$returnData['message'] = 'No records found';
+				}
             
 			break;	
 			
 			
 				
 			case 302:
-			//  service for getting the Timeperiod details on basis of Timeperiod //by rishi 
-			//  passing  $TimePeriodvalue,  $periodicity is optional
-			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
+			//  service for getting the Timeperiod details on basis of Timeperiod 
+			//  passing  $TimePeriodvalue as Timeperiod value ,  $periodicity is optional
+			if(isset($_REQUEST['TimePeriodvalue']) && !empty($_REQUEST['TimePeriodvalue'])){
 				
-				$TimePeriodvalue       = $this->request->query['TimePeriodData'];			
-				$Periodicityvalue      = $this->request->query['periodicity'];			
+				$TimePeriodvalue       = trim($this->request->query['TimePeriodvalue']);			
+				$Periodicityvalue      = trim($this->request->query['periodicity']);			
                 $getDataByTimeperiod   = $this->Timeperiod->getDataByTimeperiod($TimePeriodvalue,$Periodicityvalue);
-			    $returnData['data']    = $getDataByTimeperiod;
-				$returnData['success'] = true;	
+                if(isset($getDataByTimeperiod) && count($getDataByTimeperiod)>0)
+				{
+					$returnData['data']   = $getDataByTimeperiod;
+					$returnData['success'] = true;	
+						
+				}else{
+					$returnData['success'] = false;							
+					$returnData['message'] = 'No records found';
+				}
+            				
 				
 			}else{				
 				$returnData[] = false;
@@ -353,49 +376,61 @@ class ServicesController extends AppController
 				// service for getting the Timeperiod details on basis of any parameter  
 				// passing array $fields, array $conditions
 			
-			if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod'])){
+			if(!empty($_REQUEST['TimePeriod']) || !empty($_REQUEST['periodicity']) || !empty($_REQUEST['EndDate']) || !empty($_REQUEST['StartDate']) || !empty($_REQUEST['TimePeriod_NId'])){
 				
 				$conditions = array();
 			    
 				if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod']))
-                $conditions['TimePeriod'] = $this->request->query['TimePeriod'];	
+                $conditions[_TIMEPERIOD_TIMEPERIOD] = trim($this->request->query['TimePeriod']);	
 					
     			if(isset($_REQUEST['periodicity']) && !empty($_REQUEST['periodicity']))
-				$conditions['periodicity'] = $this->request->query['periodicity'];	
+				$conditions[_TIMEPERIOD_PERIODICITY] = trim($this->request->query['periodicity']);	
 			
 				if(isset($_REQUEST['StartDate']) && !empty($_REQUEST['StartDate']))
-                $conditions['StartDate'] = $this->request->query['StartDate'];	
+                $conditions[_TIMEPERIOD_STARTDATE] = trim($this->request->query['StartDate']);	
+			
+			    if(isset($_REQUEST['EndDate']) && !empty($_REQUEST['EndDate']))
+                $conditions[_TIMEPERIOD_ENDDATE] = trim($this->request->query['EndDate']);	
 			
 			    if(isset($_REQUEST['TimePeriod_NId']) && !empty($_REQUEST['TimePeriod_NId']))
-                $conditions['TimePeriod_NId'] = $this->request->query['TimePeriod_NId'];	
+                $conditions[_TIMEPERIOD_TIMEPERIOD_NID] = trim($this->request->query['TimePeriod_NId']);	
 
 			    $fields = array();
 				
                 $getDataByTimeperiod  = $this->Timeperiod->getDataByParams( $fields ,$conditions);
-				$returnData['data'] = $getDataByTimeperiod;
-				$returnData['success'] = true;					
+				if(isset($getDataByTimeperiod) && count($getDataByTimeperiod)>0)
+				{
+					$returnData['data']   = $getDataByTimeperiod;
+					$returnData['success'] = true;	
+						
+				}else{
+					$returnData['success'] = false;							
+					$returnData['message'] = 'No records found';
+				}
 			   
 			}else{
 				
-				$returnData[] = false;
 				$returnData['success'] = false;
 				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}
-            
 			break;
 			
 			
-			
+			// Delete cases of Time period 
 			case 304:
-				// service for deleteing the timeperiod using  timeperiod value 
-			if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData'])){
+				// service for deleting the Time period using  Time period value 
+			if(isset($_REQUEST['TimePeriodvalue']) && !empty($_REQUEST['TimePeriodvalue'])){
 			
-				$TimePeriodvalue = $this->request->query['TimePeriodData'];			
+				$TimePeriodvalue = trim($this->request->query['TimePeriodvalue']);			
                 $deleteByTimeperiod  = $this->Timeperiod->deleteByTimePeriod($TimePeriodvalue);			   
-			    $returnData['message'] = 'Record deleted successfully';
-				$returnData['success'] = true;	
-				$returnData['returnvalue'] = $deleteByTimeperiod;
-				
+			    if($deleteByTimeperiod){
+					
+					$returnData['message'] = 'Record deleted successfully';
+					$returnData['success'] = true;	
+					$returnData['returnvalue'] = $deleteByTimeperiod;			
+				}else{	
+					$returnData['success'] = false;	
+				}							
 			}else{
 				
 				$returnData[] = false;
@@ -408,18 +443,22 @@ class ServicesController extends AppController
 			
 				
 			case 305:
-				// service for deleteing the timeperiod using  id it can be one  or mutiple  
+				// service for deleting the Time period using  id it can be one  or mutiple  
 			if(isset($_REQUEST['TimePeriodids']) && !empty($_REQUEST['TimePeriodids'])){
-			    //$TimePeriodids = $this->request->query['TimePeriodids'];			
-				$ids  = [7,8];			
+			    //$TimePeriodids = trim($this->request->query['TimePeriodids']);			
+				$ids  = [4,5];			
                 $deleteallTimeperiodIDS   = $this->Timeperiod->deleteByIds($ids);
-			    $returnData['message'] = 'Record deleted successfully';
-				$returnData['success'] = true;		
-				$returnData['returnvalue'] = $deleteallTimeperiodIDS;
-				
+			    if($deleteallTimeperiodIDS){
+					
+					$returnData['message'] = 'Record deleted successfully';
+					$returnData['success'] = true;		
+					$returnData['returnvalue'] = $deleteallTimeperiodIDS;
+					
+				}else{					
+					$returnData['success'] = false;	
+				}
 			}else{				
-				
-				$returnData[] = false;
+			
 				$returnData['success'] = false;
 				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}
@@ -429,110 +468,514 @@ class ServicesController extends AppController
 			
 				
 			case 306:
-				// service for deleteing the timeperiod using  any parameters   
-			if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod'])){
+				// service for deleting the time period using  any parameters   
+			if(!empty($_REQUEST['TimePeriod']) || !empty($_REQUEST['periodicity']) || !empty($_REQUEST['EndDate']) || !empty($_REQUEST['StartDate']) || !empty($_REQUEST['TimePeriod_NId'])){
 			    //$TimePeriodids = $this->request->query['TimePeriodids'];			
 				$conditions = array();
-			    
-				if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod']))
-                $conditions['TimePeriod'] = $this->request->query['TimePeriod'];	
 				
-				if(isset($_REQUEST['periodicity']) && !empty($_REQUEST['periodicity']))
-				$conditions['periodicity'] = $this->request->query['periodicity'];	
+				if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod']))
+                $conditions[_TIMEPERIOD_TIMEPERIOD] = trim($this->request->query['TimePeriod']);	
+					
+    			if(isset($_REQUEST['periodicity']) && !empty($_REQUEST['periodicity']))
+				$conditions[_TIMEPERIOD_PERIODICITY] = trim($this->request->query['periodicity']);	
 			
 				if(isset($_REQUEST['StartDate']) && !empty($_REQUEST['StartDate']))
-                $conditions['StartDate'] = $this->request->query['StartDate'];	
+                $conditions[_TIMEPERIOD_STARTDATE] = trim($this->request->query['StartDate']);	
+			
+			    if(isset($_REQUEST['EndDate']) && !empty($_REQUEST['EndDate']))
+                $conditions[_TIMEPERIOD_ENDDATE] = trim($this->request->query['EndDate']);	
 			
 			    if(isset($_REQUEST['TimePeriod_NId']) && !empty($_REQUEST['TimePeriod_NId']))
-                $conditions['TimePeriod_NId'] = $this->request->query['TimePeriod_NId'];
-			
+                $conditions[_TIMEPERIOD_TIMEPERIOD_NID] = trim($this->request->query['TimePeriod_NId']);	
+			    					
                 $deleteallTimeperiod  = $this->Timeperiod->deleteByParams($conditions);
-				$returnData['message'] = 'Records deleted successfully';
-				$returnData['success'] = true;		
-				$returnData['returnvalue'] = $deleteallTimeperiod;
-				
-			}else{
-				
-				$returnData[] = false;
-				$returnData['success'] = false;
-				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+				if($deleteallTimeperiod){
+					$returnData['message'] = 'Record deleted successfully';
+					$returnData['success'] = true;		
+					$returnData['returnvalue'] = $deleteallTimeperiod;						
+				}else{
+				    $returnData['success'] = false;					
+				}				
+			}else{				
+					$returnData['success'] = false;
+					$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}	
 			break;	
 			
 			
-			
+			/// cases for saving Time period 
             case 307: 
 			// service for saving  details of timeperiod 
-			if($this->request->is('post')){				 
 				$data = array();
-				$data['TimePeriod']   = $_REQUEST['TimePeriodData']=2091;
-				$data['Periodicity']  = $_REQUEST['Periodicity']='C';
-				// $data['TimePeriod_NId']  = $_REQUEST['TimePeriod_NId']=300;
-			    $this->request->data  = $data;
-                $getDataByTimeperiod  = $this->Timeperiod->insertDataTimeperiod($this->request->data);
-			  	$returnData['success'] = true;		
-				$returnData['message'] = 'Record inserted successfully!!';
-				$returnData['returnvalue'] = $getDataByTimeperiod;
 				
-			}else{	
+				$_REQUEST['TimePeriodData']=2070;
+				$_REQUEST['Periodicity']='D';
+				$_REQUEST['TimePeriod_NId']=8;
+				
+				if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData']))
+				$data[_TIMEPERIOD_TIMEPERIOD]   = trim($_REQUEST['TimePeriodData']);
 			
-				$returnData[] = false;
-				$returnData['success'] = false;
-				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-			}	
+				if(isset($_REQUEST['Periodicity']) && !empty($_REQUEST['Periodicity']))
+				$data[_TIMEPERIOD_PERIODICITY]  = trim($_REQUEST['Periodicity']);
+				
+				if(isset($_REQUEST['TimePeriod_NId']) && !empty($_REQUEST['TimePeriod_NId']))			
+				$data[_TIMEPERIOD_TIMEPERIOD_NID]  = trim($_REQUEST['TimePeriod_NId']);
+			
+			    $saveTimeperiodDetails  = $this->Timeperiod->insertUpdateDataTimeperiod($data);
+			  	if($saveTimeperiodDetails){				
+					$returnData['success']     = true;		
+					$returnData['message']     = 'Record inserted successfully!!';
+					$returnData['returnvalue'] = $saveTimeperiodDetails;					
+				}else{					
+					$returnData['success'] = false;							
+				}
+				
 			break;
 			
 			
-				
-			case 350:
-			// service built for testing of timeperiod format
-			//$timeperiodvalue=$_REQUEST['TimePeriodData']='2013.06-2015.08';			
-			// $data = $this->checkTimePeriodFormat($timeperiodvalue);
-	        
-			// pr($data);
-			//die;			
-			break;
-
 			
 			// service no. starting with 401 are for subgroup type 
-			case 401:
-			// service for saving  subgroup type name 
-			//if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
-			 // Subgroup_Type_NId is auto increment 
-			 $data = array();
-			 $data['Subgroup_Type_Name']   = $_REQUEST['Subgroup_Type_Name']= 'animals112';
-			 $data['Subgroup_Type_GID']    = $_REQUEST['Subgroup_Type_GID']=$this->Common->guid();
-			 $this->request->data          = $data;
-             $saveDataforSubgroupType = $this->Subgroup->insertDataSubgroupType($this->request->data);
-			 pr($saveDataforSubgroupType);
 			
+			case 401:
+			 // service for saving or updating the  subgroup type name 
+			 // if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
+			 $data = array();
+			 $_REQUEST['Subgroup_Type_NId']  = 223;
+			 $_REQUEST['Subgroup_Type_Name'] = 'Subgroup_Type_Name78';
+			 
+			 if(isset($_REQUEST['Subgroup_Type_Name']) && !empty($_REQUEST['Subgroup_Type_Name']))			 
+			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME]   = $_REQUEST['Subgroup_Type_Name'] ;
+			 
+			 if(isset($_REQUEST['Subgroup_Type_Order']) && !empty($_REQUEST['Subgroup_Type_Order']))
+			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER]  = $_REQUEST['Subgroup_Type_Order'];
+			 
+			 if(isset($_REQUEST['Subgroup_Type_Global']) && !empty($_REQUEST['Subgroup_Type_Global']))
+			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_GLOBAL]  = $_REQUEST['Subgroup_Type_Global'];
+		 
+			 if(isset($_REQUEST['Subgroup_Type_NId']) && !empty($_REQUEST['Subgroup_Type_NId']))
+			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_NID]  = $_REQUEST['Subgroup_Type_NId'];
+		 		 
+			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_GID]    =  $this->Common->guid();
+			 
+			 $saveDataforSubgroupType = $this->Subgroup->insertUpdateDataSubgroupType($data);
+			 if($saveDataforSubgroupType){
+				 	$returnData['success'] = true;		
+					$returnData['message'] = 'Record inserted successfully!!';
+					$returnData['returnvalue'] = $saveDataforSubgroupType;
+				
+			 }else{
+				 
+				 	$returnData['success'] = false;		
+			 }
+			 //pr($saveDataforSubgroupType);
+			 //die;
 			//}
 
             break;
+			
+			
+			case 402:
+			// service for getting the subgroup   details on basis of ids
+			// can be one or multiple in form of array // passing  $ids, array $fields ,$type default is all
+		
+				$ids     = [2,3];
+				//$fields  = array(_SUBGROUPTYPE_SUBGROUP_TYPE_NID,_SUBGROUPTYPE_SUBGROUP_TYPE_NAME); // fields can be blank also 
+				//$type    = 'list'; // type can be list or all only 
+				if(isset($_REQUEST['ids']) && !empty($_REQUEST['ids'])){
+					$ids   = $_REQUEST['ids']; 
+				}
+				
+				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
+					$fields    = $_REQUEST['fields']; 
+				}
+				if(isset($_REQUEST['type']) && !empty($_REQUEST['type'])){
+					$type    = $_REQUEST['type']; 
+				}
+				
+				$SubgrouptypeDetails  = $this->Subgroup->getDataByIdsSubgroupType($ids,$fields,$type);
+				if(isset($SubgrouptypeDetails) && count($SubgrouptypeDetails)>0){
+					$returnData['data']   = $SubgrouptypeDetails;
+					$returnData['success'] = true;	
+						
+				}else{
+					$returnData['success'] = false;	
+					
+				}
+			
+		    break;
+			
+			
+			case 403:
+			//  service for getting the subgroup  details on basis of subgroup name  
+			//  passing  $subgrouptypename
+			if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
+				
+				$subgrouptypevalue         = trim($this->request->query['subgrouptypename']);			
+                $SubgroupTypeDetails       = $this->Subgroup->getDataBySubgroupTypeName($subgrouptypevalue);
+			    if(isset($SubgroupTypeDetails) && count($SubgroupTypeDetails)>0){
+					$returnData['data']        = $SubgroupTypeDetails;
+					$returnData['success'] = true;							
+				}else{
+					$returnData['success'] = false;				
+				}				
+			}else{
+    			$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}  
+			break;
+			
+			case 404:
+				// service for getting the Subgroup type   details on basis of any parameter  
+				// passing array $fields, array $conditions			
+					
+				$conditions = array(); 
+			 
+			 
+				if(isset($_REQUEST['Subgroup_Type_NId']) && !empty($_REQUEST['Subgroup_Type_NId']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NID] = $this->request->query['Subgroup_Type_NId'];	
+					
+				if(isset($_REQUEST['Subgroup_Type_Name']) && !empty($_REQUEST['Subgroup_Type_Name']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME] = $this->request->query['Subgroup_Type_Name'];	
+			
+				if(isset($_REQUEST['Subgroup_Type_GID']) && !empty($_REQUEST['Subgroup_Type_GID']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GID] = $this->request->query['Subgroup_Type_GID'];	
+			
+				if(isset($_REQUEST['Subgroup_Type_Order']) && !empty($_REQUEST['Subgroup_Type_Order']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER] = $this->request->query['Subgroup_Type_Order'];	
+			
+				if(isset($_REQUEST['Subgroup_Type_Global']) && !empty($_REQUEST['Subgroup_Type_Global']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GLOBAL] = $this->request->query['Subgroup_Type_Global'];	
+
+				$fields = array();
+				
+				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
+					$fields    = $_REQUEST['fields']; 
+				}
+				
+				$SubgroupTypeDetails   = $this->Subgroup->getDataByParamsSubgroupType( $fields ,$conditions);
+				
+				if(isset($SubgroupTypeDetails)&& count($SubgroupTypeDetails)>0){
+					$returnData['data']  = $SubgroupTypeDetails;
+					$returnData['success'] = true;
+				}
+				else
+				$returnData['success'] = false;
+					
+				
+	        
+			break;
+			
+			
+			// Delete cases of Subgroup type 
+			case 405:
+				// service for deleting the Subgroup Type using   Subgroup Type Name  value 
+			if(isset($_REQUEST['Subgroup_Type_Name']) && !empty($_REQUEST['Subgroup_Type_Name'])){
+			
+				$SubgroupTypeNamevalue = trim($this->request->query['Subgroup_Type_Name']);			
+                $deleteBySubgrouptypeName  = $this->Subgroup->deleteBySubgroupTypeName($SubgroupTypeNamevalue);			   
+			    if($deleteBySubgrouptypeName){
+					$returnData['message'] = 'Record deleted successfully';
+					$returnData['success'] = true;	
+					$returnData['returnvalue'] = $deleteBySubgrouptypeName;						
+				}else{
+					$returnData['success'] = false;					
+				}
+			}else{				
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}
+			
+            break;
+			
+			
+				
+			case 406:
+			
+			   // service for deleting the Subgroup types using subgroup type nids it can be one  or mutiple  
+			if(isset($_REQUEST['Subgroupids']) && !empty($_REQUEST['Subgroupids'])){
+				$ids  = [223,215];			
+                $deletebySubgroupIDS   = $this->Subgroup->deleteByIdsSubgroupType($ids);
+			    if($deletebySubgroupIDS){
+					 $returnData['message'] = 'Record deleted successfully!!';
+					 $returnData['success'] = true;		
+					 $returnData['returnvalue'] = $deletebySubgroupIDS;	
+				}else{
+					$returnData['success'] = false;		
+				}
+			}else{				
+				
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}
+			
+            break;			
+			
+			
+				
+			case 407:
+				
+				// service for deleting the subgroup types using  any parameters 
+				
+				$conditions = array();
+				
+				if(isset($_REQUEST['Subgroup_Type_NId']) && !empty($_REQUEST['Subgroup_Type_NId']))			    
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NID] = $this->request->query['Subgroup_Type_NId'];	
+					
+				if(isset($_REQUEST['Subgroup_Type_Name']) && !empty($_REQUEST['Subgroup_Type_Name']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME] = $this->request->query['Subgroup_Type_Name'];	
+			
+				if(isset($_REQUEST['Subgroup_Type_GID']) && !empty($_REQUEST['Subgroup_Type_GID']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GID] = $this->request->query['Subgroup_Type_GID'];	
+			
+				if(isset($_REQUEST['Subgroup_Type_Order']) && !empty($_REQUEST['Subgroup_Type_Order']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER] = $this->request->query['Subgroup_Type_Order'];	
+			
+				if(isset($_REQUEST['Subgroup_Type_Global']) && !empty($_REQUEST['Subgroup_Type_Global']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GLOBAL] = $this->request->query['Subgroup_Type_Global'];	
+
+    			$deleteallSubgroupType  = $this->Subgroup->deleteByParamsSubgroupType($conditions);
+				if($deleteallSubgroupType>0){
+					$returnData['message'] = 'Records deleted successfully';
+					$returnData['success'] = true;		
+					$returnData['returnvalue'] = $deleteallSubgroupType;
+				
+				}else{
+					$returnData['success'] = false;		
+
+				}
+			break;	
+	
+			
+			
 			
 			
 			// service no. starting from  501 are for subgroup
 			
 			case 501:
 			// service for saving  subgroup  name 
-			if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
+			if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name'])){
 			 // Subgroup_NId is auto increment 
 			 $data = array();
-			 $data['Subgroup_Name']   = $_REQUEST['Subgroup_Name'] = 'cat';
-			 $data['Subgroup_Type']   = $_REQUEST['Subgroup_Type'] =  213;
-			 $data['Subgroup_GId']    = $_REQUEST['Subgroup_GId']  =  $this->Common->guid();
-			 $this->request->data     = $data;
-             $saveDataforSubgroupType = $this->Subgroup->insertDataSubgroup($this->request->data);
-			 pr($saveDataforSubgroupType);
+			 
+			 if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name']))			 
+			 $data[_SUBGROUP_SUBGROUP_NAME]   = trim($_REQUEST['Subgroup_Name']) ;
+			 
+			 if(isset($_REQUEST['Subgroup_Type']) && !empty($_REQUEST['Subgroup_Type']))
+			 $data[_SUBGROUP_SUBGROUP_TYPE]  = trim($_REQUEST['Subgroup_Type']);
+			 
+			 if(isset($_REQUEST['Subgroup_NId']) && !empty($_REQUEST['Subgroup_NId']))
+			 $data[_SUBGROUP_SUBGROUP_NID]  = trim($_REQUEST['Subgroup_NId']);
+			 
+			 
+			 $data[_SUBGROUP_SUBGROUP_GID]    =  $this->Common->guid();
+		     
+			 $saveDataforSubgroupType = $this->Subgroup->insertUpdateDataSubgroup($data);
+			 if($saveDataforSubgroupType){
+				 $returnData['success'] = true;		
+				 $returnData['returnvalue'] = $saveDataforSubgroupType;
+				
+			 }else{
+				  $returnData['success'] = false;					 
+			 }
 			 //die;
 			}
 
             break;
 			
-		
-			case 502:
 			
-            // service for saving bulk upload data  for subgroup
+			case 502:
+			// service for getting the subgroup   details on basis of ids
+			// can be one or multiple in form of array // passing  $ids, array $fields ,$type default is all
+			if($this->request->is('post')){
+		
+				$ids     = [2,3];
+				if(isset($_REQUEST['ids']) && !empty($_REQUEST['ids'])){
+					$ids   = array();
+					$ids   = $_REQUEST['ids']; 
+				}
+				
+				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
+					$fields  = array();
+					$fields    = $_REQUEST['fields']; 
+				}
+				//$fields  = array('Subgroup_NId','Subgroup_Name'); // fields can be blank also 
+				//$type    = ''; // type can be list or all only 
+				if(isset($_REQUEST['type']) && !empty($_REQUEST['type'])){
+					$type    = $_REQUEST['type']; 
+				}
+				
+				$SubgroupDetails  = $this->Subgroup->getDataByIdsSubgroup($ids,$fields,$type);
+				if(isset($SubgroupDetails)&& count($SubgroupDetails)>0){
+					$returnData['data'] = $SubgroupDetails;
+					$returnData['success'] = true;	
+						
+				}else{
+					$returnData['success'] = false;	
+				}
+			}else{
+				$returnData[] = false;
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}  
+			break;	
+			
+			
+				
+			case 503:
+			//  service for getting the subgroup  details on basis of subgroup name  
+			//  passing  $subgroupvalue
+			if(isset($_REQUEST['subgroup']) && !empty($_REQUEST['subgroup'])){
+				
+				$subgroupvalue         = trim($this->request->query['subgroup']);			
+                $SubgroupDetails       = $this->Subgroup->getDataBySubgroupName($subgroupvalue);
+			    if(isset($SubgroupDetails)&& count($SubgroupDetails)>0){					
+					$returnData['data'] = $SubgroupDetails;
+					$returnData['success'] = true;				
+				}else{
+					$returnData['success'] = false;	
+				}
+			}else{				
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}  
+			break;
+
+			
+			
+			case 504:
+				// service for getting the Subgroup  details on basis of any parameter  
+				// passing array $fields, array $conditions			
+				//if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod'])){
+				
+				$conditions = array();
+			    
+				 if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name']))			 
+				 $conditions[_SUBGROUP_SUBGROUP_NAME]   = trim($_REQUEST['Subgroup_Name']) ;
+				 
+				 if(isset($_REQUEST['Subgroup_Type']) && !empty($_REQUEST['Subgroup_Type']))
+				 $conditions[_SUBGROUP_SUBGROUP_TYPE]  = trim($_REQUEST['Subgroup_Type']);
+				 
+				 if(isset($_REQUEST['Subgroup_NId']) && !empty($_REQUEST['Subgroup_NId']))
+				 $conditions[_SUBGROUP_SUBGROUP_NID]  = trim($_REQUEST['Subgroup_NId']);
+				 
+				 
+				if(isset($_REQUEST['Subgroup_GId']) && !empty($_REQUEST['Subgroup_GId']))
+				$conditions[_SUBGROUP_SUBGROUP_GID] = $this->request->query['Subgroup_GId'];	
+							
+				
+				if(isset($_REQUEST['Subgroup_Global']) && !empty($_REQUEST['Subgroup_Global']))
+				$conditions[_SUBGROUP_SUBGROUP_GLOBAL] = $this->request->query['Subgroup_Global'];	
+			
+				if(isset($_REQUEST['Subgroup_Order']) && !empty($_REQUEST['Subgroup_Order']))
+				$conditions[_SUBGROUP_SUBGROUP_ORDER] = $this->request->query['Subgroup_Order'];	
+
+			    $fields = array();
+				
+				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
+					$fields    = $_REQUEST['fields']; 
+				}
+                $SubgroupDetails   = $this->Subgroup->getDataByParamsSubgroup( $fields ,$conditions);
+				
+				
+				if(isset($SubgroupDetails)&& count($SubgroupDetails)>0){
+					
+					$returnData['success'] = true;
+					$returnData['data']  = $SubgroupDetails;
+				}				
+				else
+				    $returnData['success'] = false;
+					
+				
+			break;
+			
+			
+			// Delete cases of Subgroup
+			case 505:
+				// service for deleting the Subgroup using  Subgroup name  value 
+			if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name'])){
+			
+				$Subgroup_Namevalue = $this->request->query['Subgroup_Name'];			
+                $deleteBySubgroupName  = $this->Subgroup->deleteBySubgroupName($Subgroup_Namevalue);			   
+			    if($deleteBySubgroupName>0){
+					$returnData['message'] = 'Record deleted successfully';
+					$returnData['success'] = true;	
+					$returnData['returnvalue'] = $deleteBySubgroupName;
+						
+				}else{
+					$returnData['success'] = false;
+				}
+			}else{
+				
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}
+			
+            break;
+			
+			
+				
+			case 506:
+				// service for deleting the Subgroup  id it can be one  or mutiple  
+			//if(isset($_REQUEST['Subgroupids']) && !empty($_REQUEST['Subgroupids'])){
+				$ids  = [423,424];			
+                $deletebySubgroupIDS   = $this->Subgroup->deleteByIdsSubgroup($ids);
+			    if($deletebySubgroupIDS >0){
+					$returnData['message'] = 'Record deleted successfully';
+					$returnData['success'] = true;		
+					$returnData['returnvalue'] = $deletebySubgroupIDS;
+						
+				}else{
+					$returnData['success'] = false;		
+					
+				}
+			//}else{				
+				
+				//$returnData['success'] = false;
+				//$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			//}
+			
+            break;			
+			
+			
+				
+			case 507:
+				// service for deleting the Subgroup Name using  any parameters   
+							
+				$conditions = array();
+			    
+				if(isset($_REQUEST['Subgroup_Type']) && !empty($_REQUEST['Subgroup_Type']))
+                $conditions[_SUBGROUP_SUBGROUP_TYPE] = trim($this->request->query['Subgroup_Type']);				
+				
+				if(isset($_REQUEST['Subgroup_GId']) && !empty($_REQUEST['Subgroup_GId']))
+				$conditions[_SUBGROUP_SUBGROUP_GID] = trim($this->request->query['Subgroup_GId']);				
+				
+				if(isset($_REQUEST['Subgroup_Order']) && !empty($_REQUEST['Subgroup_Order']))
+				$conditions[_SUBGROUP_SUBGROUP_ORDER] = trim($this->request->query['Subgroup_Order']);	
+			
+				if(isset($_REQUEST['Subgroup_Global']) && !empty($_REQUEST['Subgroup_Global']))
+                $conditions[_SUBGROUP_SUBGROUP_GLOBAL] = trim($this->request->query['Subgroup_Global']);	
+			
+			    if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name']))
+                $conditions[_SUBGROUP_SUBGROUP_NAME] = trim($this->request->query['Subgroup_Name']);
+			
+			    if(isset($_REQUEST['Subgroup_NId']) && !empty($_REQUEST['Subgroup_NId']))
+                $conditions[_SUBGROUP_SUBGROUP_NID] = trim($this->request->query['Subgroup_NId']);
+			
+                $deleteallSubgroup  = $this->Subgroup->deleteByParamsSubgroup($conditions);
+				if($deleteallSubgroup>0){
+					$returnData['message'] = 'Records deleted successfully';
+					$returnData['success'] = true;		
+					$returnData['returnvalue'] = $deleteallSubgroup;
+						
+				}else{
+					$returnData['success'] = false;
+				}
+			break;	
+	
+			// service starting with 60 is for bulk upload of subroups 
+			case 602:
+			
+            // service for saving bulk upload data  for subgroup details 
 			//require_once(ROOT . DS . 'vendor' . DS  . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
 			$filename = WWW_ROOT.DS.'Import IC IUS.xls'; 		
 			
@@ -600,38 +1043,34 @@ class ServicesController extends AppController
 			   echo 'Exception occured while loading the project list file';  
 			   exit;  
 			}  
-pr($data);		
-			
-			die('hua');	
-			
 			
 				
 			break;
-			
 
-            default:
+						
+
+            //default:
                 
         
-        endswitch;
+			endswitch;
+			
+			return $this->returnData($returnData, $convertJson);
+	
+        	//return $this->returnData($returnData, $convertJson);
 
-        echo '<pre>'; print_r($returnData);exit;
-        return $returnData;
 		
 		 }// service query ends here 
 		 
 
 		// - METHOD TO GET RETURN DATA
 	public function returnData($data, $convertJson='_YES') {
-		
-		$data['IsLoggedIn'] = false;
-		if ($this->Auth->user()) {
-			$data['IsLoggedIn'] = true;
-		}
 		if($convertJson == '_YES') {
 			$data = json_encode($data);
 		}
+		pr($data);
+		die;
 
-		return $data;
+		//return $data;
 		
 	}
 		
