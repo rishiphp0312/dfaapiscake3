@@ -277,12 +277,10 @@ class ServicesController extends AppController
                     $highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumn);
                     
                     for ($row = 1; $row <= $highestRow; ++ $row) {
-
                         for ($col = 0; $col < $highestColumnIndex; ++ $col) {
                             $cell = $worksheet->getCellByColumnAndRow($col, $row);
                             $val = $cell->getValue();
-                            $dataType = \PHPExcel_Cell_DataType::dataTypeForValue($val);
-                            
+                            $dataType = \PHPExcel_Cell_DataType::dataTypeForValue($val);                            
                             if($row == 1){
                                 $insertFieldsArr[] = $val;
                             }else{
@@ -433,7 +431,6 @@ class ServicesController extends AppController
 				}							
 			}else{
 				
-				$returnData[] = false;
 				$returnData['success'] = false;
 				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}
@@ -474,19 +471,19 @@ class ServicesController extends AppController
 				$conditions = array();
 				
 				if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod']))
-                $conditions[_TIMEPERIOD_TIMEPERIOD] = trim($this->request->query['TimePeriod']);	
+                $conditions[_TIMEPERIOD_TIMEPERIOD] = trim($_REQUEST['TimePeriod']);	
 					
     			if(isset($_REQUEST['periodicity']) && !empty($_REQUEST['periodicity']))
-				$conditions[_TIMEPERIOD_PERIODICITY] = trim($this->request->query['periodicity']);	
+				$conditions[_TIMEPERIOD_PERIODICITY] = trim($_REQUEST['periodicity']);	
 			
 				if(isset($_REQUEST['StartDate']) && !empty($_REQUEST['StartDate']))
-                $conditions[_TIMEPERIOD_STARTDATE] = trim($this->request->query['StartDate']);	
+                $conditions[_TIMEPERIOD_STARTDATE] = trim($_REQUEST['StartDate']);	
 			
 			    if(isset($_REQUEST['EndDate']) && !empty($_REQUEST['EndDate']))
-                $conditions[_TIMEPERIOD_ENDDATE] = trim($this->request->query['EndDate']);	
+                $conditions[_TIMEPERIOD_ENDDATE] = trim($_REQUEST['EndDate']);	
 			
 			    if(isset($_REQUEST['TimePeriod_NId']) && !empty($_REQUEST['TimePeriod_NId']))
-                $conditions[_TIMEPERIOD_TIMEPERIOD_NID] = trim($this->request->query['TimePeriod_NId']);	
+                $conditions[_TIMEPERIOD_TIMEPERIOD_NID] = trim($_REQUEST['TimePeriod_NId']);	
 			    					
                 $deleteallTimeperiod  = $this->Timeperiod->deleteByParams($conditions);
 				if($deleteallTimeperiod){
@@ -588,6 +585,7 @@ class ServicesController extends AppController
 				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
 					$fields    = $_REQUEST['fields']; 
 				}
+				
 				if(isset($_REQUEST['type']) && !empty($_REQUEST['type'])){
 					$type    = $_REQUEST['type']; 
 				}
@@ -598,8 +596,7 @@ class ServicesController extends AppController
 					$returnData['success'] = true;	
 						
 				}else{
-					$returnData['success'] = false;	
-					
+					$returnData['success'] = false;						
 				}
 			
 		    break;
@@ -628,8 +625,7 @@ class ServicesController extends AppController
 				// service for getting the Subgroup type   details on basis of any parameter  
 				// passing array $fields, array $conditions			
 					
-				$conditions = array(); 
-			 
+				$conditions = array(); 			 
 			 
 				if(isset($_REQUEST['Subgroup_Type_NId']) && !empty($_REQUEST['Subgroup_Type_NId']))
 				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NID] = $this->request->query['Subgroup_Type_NId'];	
@@ -693,7 +689,10 @@ class ServicesController extends AppController
 			
 			   // service for deleting the Subgroup types using subgroup type nids it can be one  or mutiple  
 			if(isset($_REQUEST['Subgroupids']) && !empty($_REQUEST['Subgroupids'])){
-				$ids  = [223,215];			
+				$ids  = [223,215];		
+				if(isset($_REQUEST['Subgroupids']) && !empty($_REQUEST['Subgroupids'])){
+					//$ids  = $_REQUEST['Subgroupids'];		
+				}				
                 $deletebySubgroupIDS   = $this->Subgroup->deleteByIdsSubgroupType($ids);
 			    if($deletebySubgroupIDS){
 					 $returnData['message'] = 'Record deleted successfully!!';
@@ -702,8 +701,7 @@ class ServicesController extends AppController
 				}else{
 					$returnData['success'] = false;		
 				}
-			}else{				
-				
+			}else{			
 				$returnData['success'] = false;
 				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}
@@ -740,14 +738,11 @@ class ServicesController extends AppController
 					$returnData['returnvalue'] = $deleteallSubgroupType;
 				
 				}else{
-					$returnData['success'] = false;		
-
+					$returnData['success'] = false;
 				}
+				
 			break;	
 	
-			
-			
-			
 			
 			// service no. starting from  501 are for subgroup
 			
@@ -765,19 +760,20 @@ class ServicesController extends AppController
 			 
 			 if(isset($_REQUEST['Subgroup_NId']) && !empty($_REQUEST['Subgroup_NId']))
 			 $data[_SUBGROUP_SUBGROUP_NID]  = trim($_REQUEST['Subgroup_NId']);
-			 
-			 
+
 			 $data[_SUBGROUP_SUBGROUP_GID]    =  $this->Common->guid();
 		     
 			 $saveDataforSubgroupType = $this->Subgroup->insertUpdateDataSubgroup($data);
+			 
 			 if($saveDataforSubgroupType){
 				 $returnData['success'] = true;		
-				 $returnData['returnvalue'] = $saveDataforSubgroupType;
-				
+				 $returnData['returnvalue'] = $saveDataforSubgroupType;				
 			 }else{
 				  $returnData['success'] = false;					 
-			 }
-			 //die;
+			 }			
+			}else{				 
+				 $returnData['success'] = false;	
+				 $returnData['message'] = 'Invalid request';	
 			}
 
             break;
@@ -790,12 +786,10 @@ class ServicesController extends AppController
 		
 				$ids     = [2,3];
 				if(isset($_REQUEST['ids']) && !empty($_REQUEST['ids'])){
-					$ids   = array();
 					$ids   = $_REQUEST['ids']; 
 				}
 				
 				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
-					$fields  = array();
 					$fields    = $_REQUEST['fields']; 
 				}
 				//$fields  = array('Subgroup_NId','Subgroup_Name'); // fields can be blank also 
@@ -813,7 +807,6 @@ class ServicesController extends AppController
 					$returnData['success'] = false;	
 				}
 			}else{
-				$returnData[] = false;
 				$returnData['success'] = false;
 				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}  
@@ -839,35 +832,30 @@ class ServicesController extends AppController
 				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}  
 			break;
-
 			
 			
 			case 504:
 				// service for getting the Subgroup  details on basis of any parameter  
 				// passing array $fields, array $conditions			
-				//if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod'])){
-				
 				$conditions = array();
 			    
-				 if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name']))			 
-				 $conditions[_SUBGROUP_SUBGROUP_NAME]   = trim($_REQUEST['Subgroup_Name']) ;
+				if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name']))			 
+				$conditions[_SUBGROUP_SUBGROUP_NAME]   = trim($_REQUEST['Subgroup_Name']) ;
 				 
-				 if(isset($_REQUEST['Subgroup_Type']) && !empty($_REQUEST['Subgroup_Type']))
-				 $conditions[_SUBGROUP_SUBGROUP_TYPE]  = trim($_REQUEST['Subgroup_Type']);
+				if(isset($_REQUEST['Subgroup_Type']) && !empty($_REQUEST['Subgroup_Type']))
+				$conditions[_SUBGROUP_SUBGROUP_TYPE]  = trim($_REQUEST['Subgroup_Type']);
 				 
-				 if(isset($_REQUEST['Subgroup_NId']) && !empty($_REQUEST['Subgroup_NId']))
-				 $conditions[_SUBGROUP_SUBGROUP_NID]  = trim($_REQUEST['Subgroup_NId']);
-				 
+				if(isset($_REQUEST['Subgroup_NId']) && !empty($_REQUEST['Subgroup_NId']))
+				$conditions[_SUBGROUP_SUBGROUP_NID]  = trim($_REQUEST['Subgroup_NId']);
 				 
 				if(isset($_REQUEST['Subgroup_GId']) && !empty($_REQUEST['Subgroup_GId']))
-				$conditions[_SUBGROUP_SUBGROUP_GID] = $this->request->query['Subgroup_GId'];	
-							
+				$conditions[_SUBGROUP_SUBGROUP_GID] = trim($_REQUEST['Subgroup_GId']);	
 				
 				if(isset($_REQUEST['Subgroup_Global']) && !empty($_REQUEST['Subgroup_Global']))
-				$conditions[_SUBGROUP_SUBGROUP_GLOBAL] = $this->request->query['Subgroup_Global'];	
+				$conditions[_SUBGROUP_SUBGROUP_GLOBAL] = trim($_REQUEST['Subgroup_Global']);	
 			
 				if(isset($_REQUEST['Subgroup_Order']) && !empty($_REQUEST['Subgroup_Order']))
-				$conditions[_SUBGROUP_SUBGROUP_ORDER] = $this->request->query['Subgroup_Order'];	
+				$conditions[_SUBGROUP_SUBGROUP_ORDER] = trim($_REQUEST['Subgroup_Order']);	
 
 			    $fields = array();
 				
@@ -894,7 +882,7 @@ class ServicesController extends AppController
 				// service for deleting the Subgroup using  Subgroup name  value 
 			if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name'])){
 			
-				$Subgroup_Namevalue = $this->request->query['Subgroup_Name'];			
+				$Subgroup_Namevalue = trim($_REQUEST['Subgroup_Name']);			
                 $deleteBySubgroupName  = $this->Subgroup->deleteBySubgroupName($Subgroup_Namevalue);			   
 			    if($deleteBySubgroupName>0){
 					$returnData['message'] = 'Record deleted successfully';
@@ -944,35 +932,35 @@ class ServicesController extends AppController
 				$conditions = array();
 			    
 				if(isset($_REQUEST['Subgroup_Type']) && !empty($_REQUEST['Subgroup_Type']))
-                $conditions[_SUBGROUP_SUBGROUP_TYPE] = trim($this->request->query['Subgroup_Type']);				
+                $conditions[_SUBGROUP_SUBGROUP_TYPE] = trim($_REQUEST['Subgroup_Type']);				
 				
 				if(isset($_REQUEST['Subgroup_GId']) && !empty($_REQUEST['Subgroup_GId']))
-				$conditions[_SUBGROUP_SUBGROUP_GID] = trim($this->request->query['Subgroup_GId']);				
+				$conditions[_SUBGROUP_SUBGROUP_GID] = trim($_REQUEST['Subgroup_GId']);				
 				
 				if(isset($_REQUEST['Subgroup_Order']) && !empty($_REQUEST['Subgroup_Order']))
-				$conditions[_SUBGROUP_SUBGROUP_ORDER] = trim($this->request->query['Subgroup_Order']);	
+				$conditions[_SUBGROUP_SUBGROUP_ORDER] = trim($_REQUEST['Subgroup_Order']);	
 			
 				if(isset($_REQUEST['Subgroup_Global']) && !empty($_REQUEST['Subgroup_Global']))
-                $conditions[_SUBGROUP_SUBGROUP_GLOBAL] = trim($this->request->query['Subgroup_Global']);	
+                $conditions[_SUBGROUP_SUBGROUP_GLOBAL] = trim($_REQUEST['Subgroup_Global']);	
 			
 			    if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name']))
-                $conditions[_SUBGROUP_SUBGROUP_NAME] = trim($this->request->query['Subgroup_Name']);
+                $conditions[_SUBGROUP_SUBGROUP_NAME] = trim($_REQUEST['Subgroup_Name']);
 			
 			    if(isset($_REQUEST['Subgroup_NId']) && !empty($_REQUEST['Subgroup_NId']))
-                $conditions[_SUBGROUP_SUBGROUP_NID] = trim($this->request->query['Subgroup_NId']);
+                $conditions[_SUBGROUP_SUBGROUP_NID] = trim($_REQUEST['Subgroup_NId']);
 			
                 $deleteallSubgroup  = $this->Subgroup->deleteByParamsSubgroup($conditions);
 				if($deleteallSubgroup>0){
 					$returnData['message'] = 'Records deleted successfully';
 					$returnData['success'] = true;		
-					$returnData['returnvalue'] = $deleteallSubgroup;
-						
+					$returnData['returnvalue'] = $deleteallSubgroup;						
 				}else{
 					$returnData['success'] = false;
 				}
+				
 			break;	
 	
-			// service starting with 60 is for bulk upload of subroups 
+				// service starting with 60 is for bulk upload of subroups 			
 			case 602:
 			
             // service for saving bulk upload data  for subgroup details 
@@ -982,10 +970,9 @@ class ServicesController extends AppController
 			try { 
 		
 			    $excelDataArray = $this->ExcelReader->loadExcelFile($filename);
-			    // $excelDataArray = array_values($data);
+			    // $excelDataArray = array_values($data);				
+				$SubgroupTypeordervalue = 1;				 
 				
-				$SubgroupTypeordervalue = 1;
-				 
 				if(isset($excelDataArray['columndetails']) && count($excelDataArray['columndetails'])>0){
 				 foreach($excelDataArray['columndetails'] as $subgrptypeExcelIndex => $subgrptypeExcelValue){	
                     // code for subgrouptype save starts here 
@@ -1046,8 +1033,197 @@ class ServicesController extends AppController
 			
 				
 			break;
+			
+			
+			
+			  case 700: //Bulk Insert/Update Data -- Indicator table
+                
+                //if($this->request->is('post')):
+                    //The following line should do the same like App::import() in the older version of cakePHP
+                    require_once(ROOT . DS . 'vendor' . DS  . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
 
+                    $filename = 'C:\-- Projects --\Indicator2.xls';
+                    $insertFieldsArr = [];
+                    $insertDataArr = [];
+                    $insertDataNames = [];
+                    $insertDataGids = [];
+                    $insertDataKeys = [_INDICATOR_INDICATOR_NAME, _INDICATOR_INDICATOR_GID, _INDICATOR_HIGHISGOOD];
+
+                    $objPHPExcel = \PHPExcel_IOFactory::load($filename);
+                
+                    foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
+                        $worksheetTitle     = $worksheet->getTitle();
+                        $highestRow         = $worksheet->getHighestRow(); // e.g. 10
+                        $highestColumn      = $worksheet->getHighestColumn(); // e.g 'F'
+                        $highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumn);
+                    
+                        for ($row = 1; $row <= $highestRow; ++ $row) {
+
+                            for ($col = 0; $col < $highestColumnIndex; ++ $col) {
+                                $cell = $worksheet->getCellByColumnAndRow($col, $row);
+                                $val = $cell->getValue();
+                                $dataType = \PHPExcel_Cell_DataType::dataTypeForValue($val);
+                            
+                                if($row >= 6){                                
+                                    $insertDataArr[$row][] = $val;
+                                }else{
+                                    continue;
+                                }
+
+                                /*
+                                if($row == 1){
+                                    $insertFieldsArr[] = $val;
+                                }else{
+                                    $insertDataArr[$row][$insertFieldsArr[$col]] = $val;
+                                }*/
+                            }
+
+                            if(isset($insertDataArr[$row])):
+                            
+                                $insertDataArr[$row] = array_combine($insertDataKeys, $insertDataArr[$row]);
+                                $insertDataArr[$row] = array_filter($insertDataArr[$row]);
+
+                                //We don't need this row if the name field is empty
+                                if(!isset($insertDataArr[$row][_INDICATOR_INDICATOR_NAME])){
+                                    unset($insertDataArr[$row]);
+                                }else if(!isset($insertDataArr[$row][_INDICATOR_INDICATOR_GID])){
+                                    $insertDataNames[] = $insertDataArr[$row][_INDICATOR_INDICATOR_NAME];
+                                }else{
+                                    $insertDataGids[] = $insertDataArr[$row][_INDICATOR_INDICATOR_GID];
+                                }
+
+                            endif;
+
+                        }
+                    }
+                
+                    $dataArray = array_values(array_filter($insertDataArr));
+
+                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
+                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
+
+                    //Get Indicator Ids based on Indicator Name
+                    if(!empty($insertDataNames)){
+                        //getDataByName(array $dataArray = $this->request->data)
+                        //$returnData = $this->Indicator->getDataByName($dataArray);
+                    }
+
+                    //Get Indicator Ids based on Indicator GID
+                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
+                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
+
+                    //Update Indicator based on Indicator Name
+                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
+                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
+
+                    //Update Indicator based on Indicator GID
+                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
+                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
+
+                //endif;
+
+                break;
+				
+				case 701:
+				//$filename = WWW_ROOT.DS.'Import IC IUS.xls'; 		
+
+                $filename = WWW_ROOT.DS.'Indicator2.xls';
+                $excelDataArray = $this->ExcelReader->exportExcelToCSVFile($filename);
+				
+				break;
+				
+				case 702:
+				ini_set('memory_limit','2G');
+				set_time_limit(0);
+                $filename = WWW_ROOT.DS.'Indicator2.xls';				 
+				$excelDataArray = $this->ExcelReader->loadExcelFile($filename);
+	           
+				$index = 0;
+				
+				$exportcsvarray = array();
+				
+				foreach($excelDataArray as $indexArray=>$valueArray){					
+					foreach($valueArray as $index=>$value){
+						pr($value);
 						
+					if(isset($value['Indicator']) && $value['Indicator']!=''){
+						// comapre gid in db if gid found update row else comapre on name 
+						$Indicatorgid  = $value['Indicator Gid'];
+						$IndicatorName = $value['Indicator'];
+						$HighIsGood = $value['HighIsGood'];
+						$fieldsArray = array('Indicator_Name','Indicator_GId','HighIsGood');
+						
+						$conditions  = array();
+						if(isset($Indicatorgid) && !empty($Indicatorgid))
+						$conditions['Indicator_GId']  = $Indicatorgid;
+                         else
+						$conditions['Indicator_Name']  = $IndicatorName;
+					
+					
+							 
+						$Indicator_NId_details = $this->Indicator->getDataByParams(array('Indicator_NId'),$conditions);
+						
+						if(isset($Indicatorgid) && !empty($Indicatorgid) && isset($Indicator_NId_details[0]->Indicator_NId) && $Indicator_NId_details[0]->Indicator_NId>0){
+							
+							$saveconditions['Indicator_GId']   = $Indicatorgid;
+						    $saveconditions['Indicator_Name']  = $IndicatorName;
+							$saveconditions['HighIsGood']      = $HighIsGood;
+							$Indicator_NId = $Indicator_NId_details[0]->Indicator_NId;
+							$saveconditions['Indicator_NId']  = $Indicator_NId;	
+							$this->Indicator->insertData($saveconditions);
+							unset($saveconditions);
+							
+						}       		
+					    else{
+							 //check on name basis 			
+							
+						}
+						pr($Indicator_NId);
+						die('hua');
+						$this->Indicator->updateDataByParams($fieldsArray,$conditions);
+						//$exportcsvarray[]=	
+				  	}
+				  }die('excelDataArray12345');	
+				}
+									
+					
+					die('excelDataArray');
+					    
+   				
+				
+				//pr( $excelDataArray);
+				die('dfdfd');
+				 // $excelDataArray = array_values($data);				
+				 $SubgroupTypeordervalue = 1;				 
+				
+				 if(isset($excelDataArray['columndetails']) && count($excelDataArray['columndetails'])>0){
+					 foreach($excelDataArray['columndetails'] as $subgrptypeExcelIndex => $subgrptypeExcelValue){	
+	 
+					 
+					 
+					 
+					 }
+				 }
+				
+				  $excelDataArray = $this->ExcelReader->exportExcelToCSVFile($filename);
+
+				 $loadedSheetNames = $objPHPExcelReader->getSheetNames();
+
+		         $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcelReader, 'CSV');
+				 
+				 foreach($loadedSheetNames as $sheetIndex => $loadedSheetName) {
+					$objWriter->setSheetIndex($sheetIndex);
+					$result = $objWriter->save($loadedSheetName.'-rishi.csv');
+				 }
+			
+				
+				break;
+
+				
+				
+				
+
+					
 
             //default:
                 
@@ -1072,7 +1248,29 @@ class ServicesController extends AppController
 
 		//return $data;
 		
-	}
+	}// get total number of fields present in the database
+		function getcsv($no_of_field_names)
+		{
+				$separate = '';
+
+
+				// do the action for all field names as field name
+				foreach ($no_of_field_names as $field_name)
+				{
+				if (preg_match('/\\r|\\n|,|"/', $field_name))
+				{
+				$field_name = '' . str_replace('', $field_name) . '';
+				}
+				echo $separate . $field_name;
+
+				//sepearte with the comma
+				$separate = ',';
+				}
+
+				//make new row and line
+				echo "\r\n";
+		}
+
 		
 	
 
