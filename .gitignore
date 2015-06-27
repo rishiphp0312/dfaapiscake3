@@ -1,4 +1,10 @@
+*.exe
+*.log
+*.sqlite
+/tmp/*
 /vendor/*
 /config/app.php
-/tmp/*
-/logs/*
+/logs/debug.log
+/logs/error.log
+/vendor/symfony/console/Symfony/Component/Console/Resources/bin/hiddeninput.exe
+tmp/**/*

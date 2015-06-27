@@ -221,7 +221,8 @@ return [
             //'port' => 'nonstandard_port_number',
             'username' => 'root',
             'password' => 'root',
-            'database' => 'Developer_Evaluation_Database',
+            //  'database' => 'Developer_Evaluation_Database',
+            'database' => 'dfa_devinfo_data_admin',
             'encoding' => 'utf8',
             'timezone' => 'UTC',
             'cacheMetadata' => true,
@@ -245,6 +246,18 @@ return [
              */
             //'init' => ['SET GLOBAL innodb_stats_on_metadata = 0'],
         ],
+		'dynamic' => [
+        'className' => 'Cake\Database\Connection',
+		'driver' => 'Cake\Database\Driver\Mysql',
+		'persistent' => false,
+		'host' => 'dgps-os',         
+        'username' => 'root',
+		'password' => 'root',
+         'database' => 'dfa_devinfo_data_admin',
+        'encoding' => 'utf8',
+        'timezone' => 'UTC',
+        'cacheMetadata' => true,
+    ],
 
         /**
          * The test connection is used during the test suite.

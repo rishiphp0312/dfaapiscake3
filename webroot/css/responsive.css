@@ -1,0 +1,112 @@
+/**********************************Responsive css***********************/
+@media screen and (max-width: 1600px) {
+    .connection {
+        width: 42%;
+    }
+
+    .database .lft {
+        width: 20%;
+    }
+
+    .database .rgt .add-user {
+        width: 30%;
+    }
+}
+
+@media screen and (max-width: 1440px) {
+    .connection {
+        width: 50%;
+    }
+
+    .database .lft {
+        width: 20%;
+    }
+
+    .database .rgt .add-user {
+        width: 35%;
+    }
+}
+
+@media screen and (max-width: 1366px) {
+    .connection {
+        width: 52%;
+    }
+
+    .database .lft {
+        width: 20%;
+    }
+
+    .database .rgt .add-user {
+        width: 40%;
+    }
+}
+
+@media screen and (max-width: 1280px) {
+    .connection {
+        width: 60%;
+    }
+
+    .database .lft {
+        width: 20%;
+    }
+
+    .database .rgt .add-user {
+        width: 45%;
+    }
+}
+
+@media screen and (max-width: 1152px) {
+    .connection {
+        width: 66%;
+    }
+
+    .database .lft {
+        width: 20%;
+    }
+
+    .database .rgt .add-user {
+        width: 45%;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .connection {
+        width: 70%;
+    }
+
+    .database .lft {
+        width: 20%;
+    }
+
+    .database .rgt .add-user {
+        width: 50%;
+    }
+}
+
+@media screen and (max-width: 980px) {
+    .connection {
+        width: 76%;
+    }
+
+    .database .lft {
+        width: 20%;
+    }
+
+    .database .rgt .add-user {
+        width: 30%;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .connection {
+        width: 90%;
+    }
+
+    .database .lft {
+        width: 20%;
+    }
+
+    .database .rgt .add-user {
+        width: 30%;
+    }
+}

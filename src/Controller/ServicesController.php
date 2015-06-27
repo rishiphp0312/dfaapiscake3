@@ -17,6 +17,8 @@ use App\Controller\AppController;
 use Cake\Core\Configure;
 use Cake\Network\Exception\NotFoundException;
 use Cake\View\Exception\MissingTemplateException;
+use Cake\Event\Event;
+
 
 /**
  * Services Controller
@@ -26,9 +28,24 @@ use Cake\View\Exception\MissingTemplateException;
 class ServicesController extends AppController
 {
     //Loading Components
-     
-	public $components = ['Indicator', 'Unit', 'Timeperiod','Subgroup','Common','ExcelReader'];
-    //public $components = ['Indicator', 'Unit', 'Timeperiod','Subgroup','Common'];
+ 
+	public $components = ['Auth','DevInfoInterface.CommonInterface','Common','ExcelReader'];
+
+    public function initialize()
+    {
+        parent::initialize();
+    }
+	
+	public function beforeFilter(Event $event) 
+	{
+		
+		//parent::beforeFilter($event);
+		// Allow users to register and logout.
+		// You should not add the "login" action to allow list. Doing so would
+		// cause problems with normal functioning of AuthComponent.
+	
+		$this->Auth->allow(['*']);
+	}
 
     /**
 	* 
@@ -39,16 +56,28 @@ class ServicesController extends AppController
     public function serviceQuery($case = null)
     {
         $this->autoRender = false;
-        $this->layout = '';
+        $this->autoLayout = false;//$this->layout = '';
 		$convertJson = '_YES';
 		$returnData = [];
-        
+        $dbConnection = 'test';
+		$dbId = '';
+        $dbConnectionDetails = $this->getDbDetails($dbId);
+
         switch($case):
+
+            case 'test':
+                
+                $params[] = $fields = [_INDICATOR_INDICATOR_NAME, _INDICATOR_INDICATOR_INFO];
+                $params[] = $conditions = [_INDICATOR_INDICATOR_GID.' IN'=>['POPDEN', 'AREA']];
+
+                $returnData = $this->CommonInterface->serviceInterface('Indicator', 'getDataByParams', $params, $dbConnection);
+                break;
 
             case 101: //Select Data using Indicator_NId -- Indicator table
 
                 //getDataByIds($ids = null, $fields = [], $type = 'all' )
-                $returnData = $this->Indicator->getDataByIds([383,384,386]); 
+                $params[] = [317,318,386];
+                $returnData = $this->CommonInterface->serviceInterface('Indicator', 'getDataByIds', $params, $dbConnection);
                 break;
 
             case 102: //Select Data using Conditions -- Indicator table
@@ -56,14 +85,18 @@ class ServicesController extends AppController
                 $fields = [_INDICATOR_INDICATOR_NAME, _INDICATOR_INDICATOR_INFO];
                 $conditions = [_INDICATOR_INDICATOR_GID.' IN'=>['POPDEN', 'AREA']];
                 
+                $params['fields'] = $fields;
+                $params['conditions'] = $conditions;
+
                 //getDataByParams(array $fields, array $conditions)
-                $returnData = $this->Indicator->getDataByParams($fields, $conditions); 
+                $returnData = $this->CommonInterface->serviceInterface('Indicator', 'getDataByParams', $params, $dbConnection);
                 break;
 
             case 103: //Delete Data using Indicator_NId -- Indicator table
                 
                 //deleteByIds($ids = null)
-                $returnData = $this->Indicator->deleteByIds([383,384,385]); 
+                $params[] = [383,384,385];
+                $returnData = $this->CommonInterface->serviceInterface('Indicator', 'deleteByIds', $params, $dbConnection);
                 break;
 
             case 104: //Delete Data using Conditions -- Indicator table
@@ -71,12 +104,14 @@ class ServicesController extends AppController
                 $conditions = [_INDICATOR_INDICATOR_GID.' IN'=>['TEST_GID', 'TEST_GID2']];
 
                 //deleteByParams(array $conditions)
-                $returnData = $this->Indicator->deleteByParams($conditions); 
+                $params['conditions'] = $conditions = [_INDICATOR_INDICATOR_GID.' IN'=>['TEST_GID', 'TEST_GID2']];
+                $returnData = $this->CommonInterface->serviceInterface('Indicator', 'deleteByParams', $params, $dbConnection);
                 break;
 
             case 105: //Insert New Data -- Indicator table
-                
-                $this->request->data = [
+                if($this->request->is('post')):
+
+                    $this->request->data = [
                                     'Indicator_NId'=>'384',
                                     'Indicator_Name'=>'Custom_test_name2',
                                     'Indicator_GId'=>'SOME_001_TEST',
@@ -88,10 +123,10 @@ class ServicesController extends AppController
                                     'Data_Exist'=>'1',
                                     'HighIsGood'=>'1'
                                     ];
-
-                if($this->request->is('post')):
+                
                     //insertData(array $fieldsArray = $this->request->data)
-                    $returnData = $this->Indicator->insertData($this->request->data);
+                    $params['conditions'] = $conditions = $this->request->data;
+                    $returnData = $this->CommonInterface->serviceInterface('Indicator', 'insertData', $params, $dbConnection);
                 endif;
 				
 
@@ -107,7 +142,9 @@ class ServicesController extends AppController
 
                 if($this->request->is('post')):
                     //updateDataByParams(array $fields, array $conditions)
-                    $returnData = $this->Indicator->updateDataByParams($fields, $conditions);
+                    $params['fields'] = $fields;
+                    $params['conditions'] = $conditions;
+                    $returnData = $this->CommonInterface->serviceInterface('Indicator', 'updateDataByParams', $params, $dbConnection);
                 endif;
 
                 break;
@@ -115,118 +152,43 @@ class ServicesController extends AppController
             case 107: //Bulk Insert/Update Data -- Indicator table
                 
                 //if($this->request->is('post')):
-                    //The following line should do the same like App::import() in the older version of cakePHP
-                    require_once(ROOT . DS . 'vendor' . DS  . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
-
-                    $filename = 'C:\-- Projects --\Indicator.xls';
-                    $insertFieldsArr = [];
-                    $insertDataArr = [];
-                    $insertDataNames = [];
-                    $insertDataGids = [];
-                    $insertDataKeys = [_INDICATOR_INDICATOR_NAME, _INDICATOR_INDICATOR_GID, _INDICATOR_HIGHISGOOD];
-
-                    $objPHPExcel = \PHPExcel_IOFactory::load($filename);
+                if(true):
+                    $params[]['filename'] = $filename = 'C:\-- Projects --\Indicator2000.xls';
+                    //$returnData = $this->CommonInterface->bulkUploadXlsOrCsvForIndicator($params);                    
+                    $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForIndicator', $params, $dbConnection);                    
+                endif;
                 
-                    foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
-                        $worksheetTitle     = $worksheet->getTitle();
-                        $highestRow         = $worksheet->getHighestRow(); // e.g. 10
-                        $highestColumn      = $worksheet->getHighestColumn(); // e.g 'F'
-                        $highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumn);
-                    
-                        for ($row = 1; $row <= $highestRow; ++ $row) {
-
-                            for ($col = 0; $col < $highestColumnIndex; ++ $col) {
-                                $cell = $worksheet->getCellByColumnAndRow($col, $row);
-                                $val = $cell->getValue();
-                                $dataType = \PHPExcel_Cell_DataType::dataTypeForValue($val);
-                            
-                                if($row >= 6){                                
-                                    $insertDataArr[$row][] = $val;
-                                }else{
-                                    continue;
-                                }
-
-                                /*
-                                if($row == 1){
-                                    $insertFieldsArr[] = $val;
-                                }else{
-                                    $insertDataArr[$row][$insertFieldsArr[$col]] = $val;
-                                }*/
-                            }
-
-                            if(isset($insertDataArr[$row])):
-                            
-                                $insertDataArr[$row] = array_combine($insertDataKeys, $insertDataArr[$row]);
-                                $insertDataArr[$row] = array_filter($insertDataArr[$row]);
-
-                                //We don't need this row if the name field is empty
-                                if(!isset($insertDataArr[$row][_INDICATOR_INDICATOR_NAME])){
-                                    unset($insertDataArr[$row]);
-                                }else if(!isset($insertDataArr[$row][_INDICATOR_INDICATOR_GID])){
-                                    $insertDataNames[] = $insertDataArr[$row][_INDICATOR_INDICATOR_NAME];
-                                }else{
-                                    $insertDataGids[] = $insertDataArr[$row][_INDICATOR_INDICATOR_GID];
-                                }
-
-                            endif;
-
-                        }
-                    }
-                
-                    $dataArray = array_values(array_filter($insertDataArr));
-
-                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
-                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
-
-                    //Get Indicator Ids based on Indicator Name
-                    if(!empty($insertDataNames)){
-                        //getDataByName(array $dataArray = $this->request->data)
-                        //$returnData = $this->Indicator->getDataByName($dataArray);
-                    }
-
-                    //Get Indicator Ids based on Indicator GID
-                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
-                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
-
-                    //Update Indicator based on Indicator Name
-                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
-                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
-
-                    //Update Indicator based on Indicator GID
-                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
-                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
-
-                //endif;
-
                 break;
 
             case 201: //Select Data using Unit_NId -- Unit table
 
                 //getDataByIds($ids = null, $fields = [], $type = 'all' )
-                $returnData = $this->Unit->getDataByIds([10,41]); 
+                $params[] = [10,41];
+                $returnData = $this->CommonInterface->serviceInterface('Unit', 'getDataByIds', $params, $dbConnection);
                 break;
 
             case 202: //Select Data using Conditions -- Unit table
                 
-                $fields = ['Unit_Name', 'Unit_Global'];
-                $conditions = ['Unit_GId IN'=>['POPDEN', 'AREA']];
+                $params['fields'] = $fields = ['Unit_Name', 'Unit_Global'];
+                $params['conditions'] = $conditions = ['Unit_GId IN'=>['POPDEN', 'AREA']];
 
                 //getDataByParams(array $fields, array $conditions)
-                $returnData = $this->Unit->getDataByParams($fields, $conditions); 
+                $returnData = $this->CommonInterface->serviceInterface('Unit', 'getDataByParams', $params, $dbConnection);
                 break;
 
             case 203: //Delete Data using Unit_NId -- Unit table
                 
                 //deleteByIds($ids = null)
-                $returnData = $this->Unit->deleteByIds([42]); 
+                $params[] = [42];
+                $returnData = $this->CommonInterface->serviceInterface('Unit', 'deleteByIds', $params, $dbConnection);
                 break;
 
             case 204: //Delete Data using Conditions -- Unit table
                 
-                $conditions = ['Unit_GId IN'=>['SOME_001_TEST', 'SOME_003_TEST']];
+                $params['conditions'] = $conditions = ['Unit_GId IN'=>['SOME_001_TEST', 'SOME_003_TEST']];
 
                 //deleteByParams(array $conditions)
-                $returnData = $this->Unit->deleteByParams($conditions);
+                $returnData = $this->CommonInterface->serviceInterface('Unit', 'deleteByParams', $params, $dbConnection);
 
             case 205: //Insert New Data -- Unit table
                 
@@ -239,7 +201,8 @@ class ServicesController extends AppController
 
                 if($this->request->is('post')):
                     //insertData(array $fieldsArray = $this->request->data)
-                    $returnData = $this->Unit->insertData($this->request->data);
+                    $params[] = $this->request->data;
+                    $returnData = $this->CommonInterface->serviceInterface('Unit', 'insertData', $params, $dbConnection);
                 endif;
 
                 break;
@@ -254,48 +217,18 @@ class ServicesController extends AppController
 
                 if($this->request->is('post')):
                     //updateDataByParams(array $fields, array $conditions)
-                    $returnData = $this->Unit->updateDataByParams($fields, $conditions);
+                    $params[] = $fields;
+                    $params[] = $conditions;
+                    $returnData = $this->CommonInterface->serviceInterface('Unit', 'updateDataByParams', $params, $dbConnection);
                 endif;
 
             break;
 
             case 207: //Bulk Insert/Update Data -- Unit table
                 
-                //The following line should do the same like App::import() in the older version of cakePHP
-                require_once(ROOT . DS . 'vendor' . DS  . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
-
-                $filename = 'C:\-- Projects --\Bulk_unit_test_file.xlsx';
-                $insertFieldsArr = [];
-                $insertDataArr = [];
-
-                $objPHPExcel = \PHPExcel_IOFactory::load($filename);
-                
-                foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
-                    $worksheetTitle     = $worksheet->getTitle();
-                    $highestRow         = $worksheet->getHighestRow(); // e.g. 10
-                    $highestColumn      = $worksheet->getHighestColumn(); // e.g 'F'
-                    $highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumn);
-                    
-                    for ($row = 1; $row <= $highestRow; ++ $row) {
-                        for ($col = 0; $col < $highestColumnIndex; ++ $col) {
-                            $cell = $worksheet->getCellByColumnAndRow($col, $row);
-                            $val = $cell->getValue();
-                            $dataType = \PHPExcel_Cell_DataType::dataTypeForValue($val);                            
-                            if($row == 1){
-                                $insertFieldsArr[] = $val;
-                            }else{
-                                $insertDataArr[$row][$insertFieldsArr[$col]] = $val;
-                            }
-                        }
-
-                    }
-                }
-                
-                $dataArray = array_values($insertDataArr);
-
                 if($this->request->is('post')):
-                    //insertOrUpdateBulkData(array $Indicator = $this->request->data)
-                    $returnData = $this->Unit->insertOrUpdateBulkData($dataArray);
+                    $params['filename'] = $filename = 'C:\-- Projects --\Bulk_unit_test_file.xlsx';
+                    $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForUnit', $params, $dbConnection);
                 endif;
 
             break;
@@ -303,99 +236,38 @@ class ServicesController extends AppController
            
 			// nos starting with 301 are for timeperiod
 			
-			// Read  cases of Timeperiod 
 			
-				
 			case 301:
-				// service for getting the Timeperiod details on basis of ids
-				// can be one or multiple in form of array 
-				// parameters  $ids, array $fields ,$type default is all
-				$ids     = array(2,3);
-				$fields  = array(_TIMEPERIOD_TIMEPERIOD_NID,_TIMEPERIOD_TIMEPERIOD); // fields can be blank also 
-				$ids     = [2,3];
-				if(isset($_REQUEST['ids']) && !empty($_REQUEST['ids'])){
-					$ids   = $_REQUEST['ids']; 
-				}
-				
-				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
-					$fields    = $_REQUEST['fields']; 
-				}
-				//$fields  = array(_SUBGROUPTYPE_SUBGROUP_TYPE_NAME,_SUBGROUPTYPE_SUBGROUP_TYPE_NID); // fields can be blank also 
-				//$type    = 'list'; // type can be list or all only 
-				$type    = '';
-				if(isset($_REQUEST['type']) && !empty($_REQUEST['type'])){
-					$type    = $_REQUEST['type']; 
-				}
-				
-				$getDataByTimeperiod  = $this->Timeperiod->getDataByIds($ids,$fields,$type);
-				if(isset($getDataByTimeperiod) && count($getDataByTimeperiod)>0)
-				{
-					$returnData['data']   = $getDataByTimeperiod;
-					$returnData['success'] = true;	
-						
-				}else{
-					$returnData['success'] = false;							
-					$returnData['message'] = 'No records found';
-				}
-            
-			break;	
-			
-			
-				
-			case 302:
-			//  service for getting the Timeperiod details on basis of Timeperiod 
-			//  passing  $TimePeriodvalue as Timeperiod value ,  $periodicity is optional
-			if(isset($_REQUEST['TimePeriodvalue']) && !empty($_REQUEST['TimePeriodvalue'])){
-				
-				$TimePeriodvalue       = trim($this->request->query['TimePeriodvalue']);			
-				$Periodicityvalue      = trim($this->request->query['periodicity']);			
-                $getDataByTimeperiod   = $this->Timeperiod->getDataByTimeperiod($TimePeriodvalue,$Periodicityvalue);
-                if(isset($getDataByTimeperiod) && count($getDataByTimeperiod)>0)
-				{
-					$returnData['data']   = $getDataByTimeperiod;
-					$returnData['success'] = true;	
-						
-				}else{
-					$returnData['success'] = false;							
-					$returnData['message'] = 'No records found';
-				}
-            				
-				
-			}else{				
-				$returnData[] = false;
-				$returnData['success'] = false;
-				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-			}  
-			break;
-
-			
-			
-			case 303:
 				// service for getting the Timeperiod details on basis of any parameter  
 				// passing array $fields, array $conditions
 			
-			if(!empty($_REQUEST['TimePeriod']) || !empty($_REQUEST['periodicity']) || !empty($_REQUEST['EndDate']) || !empty($_REQUEST['StartDate']) || !empty($_REQUEST['TimePeriod_NId'])){
+			if(!empty($_POST['TimePeriod']) || !empty($_POST['periodicity']) || !empty($_POST['EndDate']) || !empty($_POST['StartDate']) || !empty($_POST['TimePeriod_NId'])){
 				
 				$conditions = array();
-			    
-				if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod']))
-                $conditions[_TIMEPERIOD_TIMEPERIOD] = trim($this->request->query['TimePeriod']);	
-					
-    			if(isset($_REQUEST['periodicity']) && !empty($_REQUEST['periodicity']))
-				$conditions[_TIMEPERIOD_PERIODICITY] = trim($this->request->query['periodicity']);	
-			
-				if(isset($_REQUEST['StartDate']) && !empty($_REQUEST['StartDate']))
-                $conditions[_TIMEPERIOD_STARTDATE] = trim($this->request->query['StartDate']);	
-			
-			    if(isset($_REQUEST['EndDate']) && !empty($_REQUEST['EndDate']))
-                $conditions[_TIMEPERIOD_ENDDATE] = trim($this->request->query['EndDate']);	
-			
-			    if(isset($_REQUEST['TimePeriod_NId']) && !empty($_REQUEST['TimePeriod_NId']))
-                $conditions[_TIMEPERIOD_TIMEPERIOD_NID] = trim($this->request->query['TimePeriod_NId']);	
+			    $fields = array();	
 
-			    $fields = array();
+				if(isset($_POST['TimePeriod']) && !empty($_POST['TimePeriod']))
+                $conditions[_TIMEPERIOD_TIMEPERIOD] = trim($_POST['TimePeriod']);	
+					
+    			if(isset($_POST['periodicity']) && !empty($_POST['periodicity']))
+				$conditions[_TIMEPERIOD_PERIODICITY] = trim($_POST['periodicity']);	
+			
+				if(isset($_POST['StartDate']) && !empty($_POST['StartDate']))
+                $conditions[_TIMEPERIOD_STARTDATE] = trim($_POST['StartDate']);	
+			
+			    if(isset($_POST['EndDate']) && !empty($_POST['EndDate']))
+                $conditions[_TIMEPERIOD_ENDDATE] = trim($_POST['EndDate']);	
+			
+			    if(isset($_POST['TimePeriod_NId']) && !empty($_POST['TimePeriod_NId']))
+                $conditions[_TIMEPERIOD_TIMEPERIOD_NID] = trim($_POST['TimePeriod_NId']);
+			
+				$params[]   = $conditions;			
+
+				$params[]	= $fields;
 				
-                $getDataByTimeperiod  = $this->Timeperiod->getDataByParams( $fields ,$conditions);
+				$getDataByTimeperiod = $this->CommonInterface->serviceInterface('Timeperiod', 'getDataByParams', $params, $dbConnection);
+				
+               // $getDataByTimeperiod  = $this->Timeperiod->getDataByParams( $fields ,$conditions);
 				if(isset($getDataByTimeperiod) && count($getDataByTimeperiod)>0)
 				{
 					$returnData['data']   = $getDataByTimeperiod;
@@ -411,81 +283,35 @@ class ServicesController extends AppController
 				$returnData['success'] = false;
 				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
 			}
-			break;
-			
-			
-			// Delete cases of Time period 
-			case 304:
-				// service for deleting the Time period using  Time period value 
-			if(isset($_REQUEST['TimePeriodvalue']) && !empty($_REQUEST['TimePeriodvalue'])){
-			
-				$TimePeriodvalue = trim($this->request->query['TimePeriodvalue']);			
-                $deleteByTimeperiod  = $this->Timeperiod->deleteByTimePeriod($TimePeriodvalue);			   
-			    if($deleteByTimeperiod){
-					
-					$returnData['message'] = 'Record deleted successfully';
-					$returnData['success'] = true;	
-					$returnData['returnvalue'] = $deleteByTimeperiod;			
-				}else{	
-					$returnData['success'] = false;	
-				}							
-			}else{
-				
-				$returnData['success'] = false;
-				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-			}
-			
-            break;
-			
+			break;			
 			
 				
-			case 305:
-				// service for deleting the Time period using  id it can be one  or mutiple  
-			if(isset($_REQUEST['TimePeriodids']) && !empty($_REQUEST['TimePeriodids'])){
-			    //$TimePeriodids = trim($this->request->query['TimePeriodids']);			
-				$ids  = [4,5];			
-                $deleteallTimeperiodIDS   = $this->Timeperiod->deleteByIds($ids);
-			    if($deleteallTimeperiodIDS){
-					
-					$returnData['message'] = 'Record deleted successfully';
-					$returnData['success'] = true;		
-					$returnData['returnvalue'] = $deleteallTimeperiodIDS;
-					
-				}else{					
-					$returnData['success'] = false;	
-				}
-			}else{				
-			
-				$returnData['success'] = false;
-				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-			}
-			
-            break;			
-			
-			
-				
-			case 306:
+			case 302:
 				// service for deleting the time period using  any parameters   
-			if(!empty($_REQUEST['TimePeriod']) || !empty($_REQUEST['periodicity']) || !empty($_REQUEST['EndDate']) || !empty($_REQUEST['StartDate']) || !empty($_REQUEST['TimePeriod_NId'])){
-			    //$TimePeriodids = $this->request->query['TimePeriodids'];			
+			if(!empty($_POST['TimePeriod']) || !empty($_POST['periodicity']) || !empty($_POST['EndDate']) || !empty($_POST['StartDate']) || !empty($_POST['TimePeriod_NId'])){
+				
 				$conditions = array();
 				
-				if(isset($_REQUEST['TimePeriod']) && !empty($_REQUEST['TimePeriod']))
-                $conditions[_TIMEPERIOD_TIMEPERIOD] = trim($_REQUEST['TimePeriod']);	
+				if(isset($_POST['TimePeriod']) && !empty($_POST['TimePeriod']))
+                $conditions[_TIMEPERIOD_TIMEPERIOD] = trim($_POST['TimePeriod']);	
 					
-    			if(isset($_REQUEST['periodicity']) && !empty($_REQUEST['periodicity']))
-				$conditions[_TIMEPERIOD_PERIODICITY] = trim($_REQUEST['periodicity']);	
+    			if(isset($_POST['periodicity']) && !empty($_POST['periodicity']))
+				$conditions[_TIMEPERIOD_PERIODICITY] = trim($_POST['periodicity']);	
 			
-				if(isset($_REQUEST['StartDate']) && !empty($_REQUEST['StartDate']))
-                $conditions[_TIMEPERIOD_STARTDATE] = trim($_REQUEST['StartDate']);	
+				if(isset($_POST['StartDate']) && !empty($_POST['StartDate']))
+                $conditions[_TIMEPERIOD_STARTDATE] = trim($_POST['StartDate']);	
 			
-			    if(isset($_REQUEST['EndDate']) && !empty($_REQUEST['EndDate']))
-                $conditions[_TIMEPERIOD_ENDDATE] = trim($_REQUEST['EndDate']);	
+			    if(isset($_POST['EndDate']) && !empty($_POST['EndDate']))
+                $conditions[_TIMEPERIOD_ENDDATE] = trim($_POST['EndDate']);	
 			
-			    if(isset($_REQUEST['TimePeriod_NId']) && !empty($_REQUEST['TimePeriod_NId']))
-                $conditions[_TIMEPERIOD_TIMEPERIOD_NID] = trim($_REQUEST['TimePeriod_NId']);	
-			    					
-                $deleteallTimeperiod  = $this->Timeperiod->deleteByParams($conditions);
+			    if(isset($_POST['TimePeriod_NId']) && !empty($_POST['TimePeriod_NId']))
+                $conditions[_TIMEPERIOD_TIMEPERIOD_NID] = trim($_POST['TimePeriod_NId']);	
+			    	
+	            $params[]   = $conditions;			
+
+				$deleteallTimeperiod = $this->CommonInterface->serviceInterface('Timeperiod', 'deleteByParams', $params, $dbConnection);
+								
+                //$deleteallTimeperiod  = $this->Timeperiod->deleteByParams($conditions);
 				if($deleteallTimeperiod){
 					$returnData['message'] = 'Record deleted successfully';
 					$returnData['success'] = true;		
@@ -501,24 +327,24 @@ class ServicesController extends AppController
 			
 			
 			/// cases for saving Time period 
-            case 307: 
+            case 303: 
 			// service for saving  details of timeperiod 
-				$data = array();
+				$data = array();			
 				
-				$_REQUEST['TimePeriodData']=2070;
-				$_REQUEST['Periodicity']='D';
-				$_REQUEST['TimePeriod_NId']=8;
-				
-				if(isset($_REQUEST['TimePeriodData']) && !empty($_REQUEST['TimePeriodData']))
-				$data[_TIMEPERIOD_TIMEPERIOD]   = trim($_REQUEST['TimePeriodData']);
+				if(isset($_POST['TimePeriodData']) && !empty($_POST['TimePeriodData']))
+				$data[_TIMEPERIOD_TIMEPERIOD]   = trim($_POST['TimePeriodData']);
 			
-				if(isset($_REQUEST['Periodicity']) && !empty($_REQUEST['Periodicity']))
-				$data[_TIMEPERIOD_PERIODICITY]  = trim($_REQUEST['Periodicity']);
+				if(isset($_POST['Periodicity']) && !empty($_POST['Periodicity']))
+				$data[_TIMEPERIOD_PERIODICITY]  = trim($_POST['Periodicity']);
 				
-				if(isset($_REQUEST['TimePeriod_NId']) && !empty($_REQUEST['TimePeriod_NId']))			
-				$data[_TIMEPERIOD_TIMEPERIOD_NID]  = trim($_REQUEST['TimePeriod_NId']);
+				if(isset($_POST['TimePeriod_NId']) && !empty($_POST['TimePeriod_NId']))			
+				$data[_TIMEPERIOD_TIMEPERIOD_NID]  = trim($_POST['TimePeriod_NId']);
 			
-			    $saveTimeperiodDetails  = $this->Timeperiod->insertUpdateDataTimeperiod($data);
+			    $params[]=$data;
+					
+                $saveTimeperiodDetails = $this->CommonInterface->serviceInterface('Timeperiod', 'insertUpdateDataTimeperiod', $params, $dbConnection);
+					
+			   // $saveTimeperiodDetails  = $this->Timeperiod->insertUpdateDataTimeperiod($data);
 			  	if($saveTimeperiodDetails){				
 					$returnData['success']     = true;		
 					$returnData['message']     = 'Record inserted successfully!!';
@@ -529,342 +355,337 @@ class ServicesController extends AppController
 				
 			break;
 			
+			/// cases for updating  Time period 
+            case 304: 
+			// service for updating  details of timeperiod 
+				$data = array();
+			
+				$_POST['TimePeriod_NId']=12;
+				$_POST['Periodicity']='A';
+				
+				if(isset($_POST['TimePeriodData']) && !empty($_POST['TimePeriodData']))
+				$data[_TIMEPERIOD_TIMEPERIOD]   = trim($_POST['TimePeriodData']);
+			
+				if(isset($_POST['Periodicity']) && !empty($_POST['Periodicity']))
+				$data[_TIMEPERIOD_PERIODICITY]  = trim($_POST['Periodicity']);
+				
+				if(isset($_POST['TimePeriod_NId']) && !empty($_POST['TimePeriod_NId']))			
+				$data[_TIMEPERIOD_TIMEPERIOD_NID]  = trim($_POST['TimePeriod_NId']);
+			
+				
+				$fields = [
+                          'TimePeriod'=>'2029',                          
+                         ];
+                $conditions = $data;
+
+                 //updateDataByParams(array $fields, array $conditions)
+			    $params['fields'] = $fields;
+			    $params['conditions'] = $conditions;
+					
+                $saveTimeperiodDetails = $this->CommonInterface->serviceInterface('Timeperiod', 'updateDataByParams', $params, $dbConnection);
+					
+			   // $saveTimeperiodDetails  = $this->Timeperiod->insertUpdateDataTimeperiod($data);
+			  	if($saveTimeperiodDetails){				
+					$returnData['success']     = true;		
+					$returnData['message']     = 'Record inserted successfully!!';
+					$returnData['returnvalue'] = $saveTimeperiodDetails;					
+				}else{					
+					$returnData['success'] = false;							
+				}
+				pr($returnData);die;
+			break;
+			
 			
 			
 			// service no. starting with 401 are for subgroup type 
 			
 			case 401:
 			 // service for saving or updating the  subgroup type name 
-			 // if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
 			 $data = array();
-			 $_REQUEST['Subgroup_Type_NId']  = 223;
-			 $_REQUEST['Subgroup_Type_Name'] = 'Subgroup_Type_Name78';
 			 
-			 if(isset($_REQUEST['Subgroup_Type_Name']) && !empty($_REQUEST['Subgroup_Type_Name']))			 
-			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME]   = $_REQUEST['Subgroup_Type_Name'] ;
+			 if(isset($_POST['Subgroup_Type_Name']) && !empty($_POST['Subgroup_Type_Name']))			 
+			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME]   = $_POST['Subgroup_Type_Name'] ;
 			 
-			 if(isset($_REQUEST['Subgroup_Type_Order']) && !empty($_REQUEST['Subgroup_Type_Order']))
-			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER]  = $_REQUEST['Subgroup_Type_Order'];
+			 if(isset($_POST['Subgroup_Type_Order']) && !empty($_POST['Subgroup_Type_Order']))
+			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER]  = $_POST['Subgroup_Type_Order'];
 			 
-			 if(isset($_REQUEST['Subgroup_Type_Global']) && !empty($_REQUEST['Subgroup_Type_Global']))
-			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_GLOBAL]  = $_REQUEST['Subgroup_Type_Global'];
+			 if(isset($_POST['Subgroup_Type_Global']) && !empty($_POST['Subgroup_Type_Global']))
+			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_GLOBAL]  = $_POST['Subgroup_Type_Global'];
 		 
-			 if(isset($_REQUEST['Subgroup_Type_NId']) && !empty($_REQUEST['Subgroup_Type_NId']))
-			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_NID]  = $_REQUEST['Subgroup_Type_NId'];
-		 		 
+			 if(isset($_POST['Subgroup_Type_NId']) && !empty($_POST['Subgroup_Type_NId']))
+			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_NID]  = $_POST['Subgroup_Type_NId'];
+		 	
+			 if(isset($_POST['Subgroup_Type_GID']) && !empty($_POST['Subgroup_Type_GID']))
+             $data[_SUBGROUPTYPE_SUBGROUP_TYPE_GID]    = $_POST['Subgroup_Type_GID'];		    
+		     else				 
 			 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_GID]    =  $this->Common->guid();
+		    
+			 $params[]   = $data;			
+
+			 $saveDataforSubgroupType = $this->CommonInterface->serviceInterface('Subgroup', 'insertUpdateDataSubgroupType', $params, $dbConnection);			
 			 
-			 $saveDataforSubgroupType = $this->Subgroup->insertUpdateDataSubgroupType($data);
+			// $saveDataforSubgroupType = $this->Subgroup->insertUpdateDataSubgroupType($data);
 			 if($saveDataforSubgroupType){
 				 	$returnData['success'] = true;		
-					$returnData['message'] = 'Record inserted successfully!!';
-					$returnData['returnvalue'] = $saveDataforSubgroupType;
-				
+					$returnData['message'] = 'Records inserted successfully!!';
+					$returnData['returnvalue'] = $saveDataforSubgroupType;				
 			 }else{
 				 
 				 	$returnData['success'] = false;		
 			 }
-			 //pr($saveDataforSubgroupType);
-			 //die;
-			//}
+			
 
             break;
 			
+			 case 402: 
+			// service for updating  details of subgroup type 
+				$data = array();
 			
-			case 402:
-			// service for getting the subgroup   details on basis of ids
-			// can be one or multiple in form of array // passing  $ids, array $fields ,$type default is all
-		
-				$ids     = [2,3];
-				//$fields  = array(_SUBGROUPTYPE_SUBGROUP_TYPE_NID,_SUBGROUPTYPE_SUBGROUP_TYPE_NAME); // fields can be blank also 
-				//$type    = 'list'; // type can be list or all only 
-				if(isset($_REQUEST['ids']) && !empty($_REQUEST['ids'])){
-					$ids   = $_REQUEST['ids']; 
-				}
+				 $_POST['Subgroup_Type_NId']=6;
+				// $_POST['Subgroup_Type_Order']='A';
 				
-				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
-					$fields    = $_REQUEST['fields']; 
-				}
+				 if(isset($_POST['Subgroup_Type_Name']) && !empty($_POST['Subgroup_Type_Name']))			 
+				 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME]   = $_POST['Subgroup_Type_Name'] ;
+				 
+				 if(isset($_POST['Subgroup_Type_Order']) && !empty($_POST['Subgroup_Type_Order']))
+				 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER]  = $_POST['Subgroup_Type_Order'];
+				 
+				 if(isset($_POST['Subgroup_Type_Global']) && !empty($_POST['Subgroup_Type_Global']))
+				 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_GLOBAL]  = $_POST['Subgroup_Type_Global'];
+			 
+				 if(isset($_POST['Subgroup_Type_NId']) && !empty($_POST['Subgroup_Type_NId']))
+				 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_NID]  = $_POST['Subgroup_Type_NId'];
 				
-				if(isset($_REQUEST['type']) && !empty($_REQUEST['type'])){
-					$type    = $_REQUEST['type']; 
-				}
-				
-				$SubgrouptypeDetails  = $this->Subgroup->getDataByIdsSubgroupType($ids,$fields,$type);
-				if(isset($SubgrouptypeDetails) && count($SubgrouptypeDetails)>0){
-					$returnData['data']   = $SubgrouptypeDetails;
-					$returnData['success'] = true;	
-						
-				}else{
-					$returnData['success'] = false;						
-				}
+				 if(isset($_POST['Subgroup_Type_GID']) && !empty($_POST['Subgroup_Type_GID']))
+				 $data[_SUBGROUPTYPE_SUBGROUP_TYPE_GID]    = $_POST['Subgroup_Type_GID'];		    
 			
-		    break;
+				
+				$fields = [
+                          'Subgroup_Type_Name'=>'2029',                          
+                         ];
+                $conditions = $data;
+
+                 //updateDataByParams(array $fields, array $conditions)
+			    $params['fields'] = $fields;
+			    $params['conditions'] = $conditions;					
+				$saveDataforSubgroupType = $this->CommonInterface->serviceInterface('Subgroup', 'updateDataByParamsSubgroupType', $params, $dbConnection);			
+				
+			   // $saveTimeperiodDetails  = $this->Timeperiod->insertUpdateDataTimeperiod($data);
+			  	if($saveTimeperiodDetails){				
+					$returnData['success']     = true;		
+					$returnData['message']     = 'Record inserted successfully!!';
+					$returnData['returnvalue'] = $saveTimeperiodDetails;					
+				}else{					
+					$returnData['success'] = false;							
+				}
+				pr($returnData);die;
+			break;
+			
+			
 			
 			
 			case 403:
-			//  service for getting the subgroup  details on basis of subgroup name  
-			//  passing  $subgrouptypename
-			if(isset($_REQUEST['subgrouptypename']) && !empty($_REQUEST['subgrouptypename'])){
-				
-				$subgrouptypevalue         = trim($this->request->query['subgrouptypename']);			
-                $SubgroupTypeDetails       = $this->Subgroup->getDataBySubgroupTypeName($subgrouptypevalue);
-			    if(isset($SubgroupTypeDetails) && count($SubgroupTypeDetails)>0){
-					$returnData['data']        = $SubgroupTypeDetails;
-					$returnData['success'] = true;							
-				}else{
-					$returnData['success'] = false;				
-				}				
-			}else{
-    			$returnData['success'] = false;
-				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-			}  
-			break;
-			
-			case 404:
 				// service for getting the Subgroup type   details on basis of any parameter  
 				// passing array $fields, array $conditions			
 					
-				$conditions = array(); 			 
+				$conditions = array(); 
 			 
-				if(isset($_REQUEST['Subgroup_Type_NId']) && !empty($_REQUEST['Subgroup_Type_NId']))
-				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NID] = $this->request->query['Subgroup_Type_NId'];	
+			 
+				if(isset($_POST['Subgroup_Type_NId']) && !empty($_POST['Subgroup_Type_NId']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NID] = $_POST['Subgroup_Type_NId'];	
 					
-				if(isset($_REQUEST['Subgroup_Type_Name']) && !empty($_REQUEST['Subgroup_Type_Name']))
-				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME] = $this->request->query['Subgroup_Type_Name'];	
+				if(isset($_POST['Subgroup_Type_Name']) && !empty($_POST['Subgroup_Type_Name']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME] = $_POST['Subgroup_Type_Name'];	
 			
-				if(isset($_REQUEST['Subgroup_Type_GID']) && !empty($_REQUEST['Subgroup_Type_GID']))
-				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GID] = $this->request->query['Subgroup_Type_GID'];	
+				if(isset($_POST['Subgroup_Type_GID']) && !empty($_POST['Subgroup_Type_GID']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GID] = $_POST['Subgroup_Type_GID'];	
 			
-				if(isset($_REQUEST['Subgroup_Type_Order']) && !empty($_REQUEST['Subgroup_Type_Order']))
-				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER] = $this->request->query['Subgroup_Type_Order'];	
+				if(isset($_POST['Subgroup_Type_Order']) && !empty($_POST['Subgroup_Type_Order']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER] = $_POST['Subgroup_Type_Order'];	
 			
-				if(isset($_REQUEST['Subgroup_Type_Global']) && !empty($_REQUEST['Subgroup_Type_Global']))
-				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GLOBAL] = $this->request->query['Subgroup_Type_Global'];	
+				if(isset($_POST['Subgroup_Type_Global']) && !empty($_POST['Subgroup_Type_Global']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GLOBAL] = $_POST['Subgroup_Type_Global'];	
 
 				$fields = array();
 				
-				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
-					$fields    = $_REQUEST['fields']; 
+				if(isset($_POST['fields']) && !empty($_POST['fields'])){
+					$fields    = $_POST['fields']; 
 				}
+				$params[]=$fields;
+				$params[]=$conditions;
 				
-				$SubgroupTypeDetails   = $this->Subgroup->getDataByParamsSubgroupType( $fields ,$conditions);
+				$SubgroupTypeDetails = $this->CommonInterface->serviceInterface('Subgroup', 'getDataByParamsSubgroupType', $params, $dbConnection);			
+				
+				//$SubgroupTypeDetails   = $this->Subgroup->getDataByParamsSubgroupType( $fields ,$conditions);
 				
 				if(isset($SubgroupTypeDetails)&& count($SubgroupTypeDetails)>0){
 					$returnData['data']  = $SubgroupTypeDetails;
 					$returnData['success'] = true;
 				}
 				else
-				$returnData['success'] = false;
+					$returnData['success'] = false;
 					
 				
 	        
 			break;
 			
+			/*
 			
-			// Delete cases of Subgroup type 
-			case 405:
-				// service for deleting the Subgroup Type using   Subgroup Type Name  value 
-			if(isset($_REQUEST['Subgroup_Type_Name']) && !empty($_REQUEST['Subgroup_Type_Name'])){
 			
-				$SubgroupTypeNamevalue = trim($this->request->query['Subgroup_Type_Name']);			
-                $deleteBySubgrouptypeName  = $this->Subgroup->deleteBySubgroupTypeName($SubgroupTypeNamevalue);			   
-			    if($deleteBySubgrouptypeName){
-					$returnData['message'] = 'Record deleted successfully';
-					$returnData['success'] = true;	
-					$returnData['returnvalue'] = $deleteBySubgrouptypeName;						
-				}else{
-					$returnData['success'] = false;					
-				}
-			}else{				
-				$returnData['success'] = false;
-				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-			}
-			
-            break;
-			
+			*/
 			
 				
-			case 406:
-			
-			   // service for deleting the Subgroup types using subgroup type nids it can be one  or mutiple  
-			if(isset($_REQUEST['Subgroupids']) && !empty($_REQUEST['Subgroupids'])){
-				$ids  = [223,215];		
-				if(isset($_REQUEST['Subgroupids']) && !empty($_REQUEST['Subgroupids'])){
-					//$ids  = $_REQUEST['Subgroupids'];		
-				}				
-                $deletebySubgroupIDS   = $this->Subgroup->deleteByIdsSubgroupType($ids);
-			    if($deletebySubgroupIDS){
-					 $returnData['message'] = 'Record deleted successfully!!';
-					 $returnData['success'] = true;		
-					 $returnData['returnvalue'] = $deletebySubgroupIDS;	
-				}else{
-					$returnData['success'] = false;		
-				}
-			}else{			
-				$returnData['success'] = false;
-				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-			}
-			
-            break;			
-			
-			
-				
-			case 407:
+			case 404:
 				
 				// service for deleting the subgroup types using  any parameters 
 				
 				$conditions = array();
 				
-				if(isset($_REQUEST['Subgroup_Type_NId']) && !empty($_REQUEST['Subgroup_Type_NId']))			    
-				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NID] = $this->request->query['Subgroup_Type_NId'];	
+				if(isset($_POST['Subgroup_Type_NId']) && !empty($_POST['Subgroup_Type_NId']))			    
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NID] = $_POST['Subgroup_Type_NId'];	
 					
-				if(isset($_REQUEST['Subgroup_Type_Name']) && !empty($_REQUEST['Subgroup_Type_Name']))
-				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME] = $this->request->query['Subgroup_Type_Name'];	
+				if(isset($_POST['Subgroup_Type_Name']) && !empty($_POST['Subgroup_Type_Name']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME] = $_POST['Subgroup_Type_Name'];	
 			
-				if(isset($_REQUEST['Subgroup_Type_GID']) && !empty($_REQUEST['Subgroup_Type_GID']))
-				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GID] = $this->request->query['Subgroup_Type_GID'];	
+				if(isset($_POST['Subgroup_Type_GID']) && !empty($_POST['Subgroup_Type_GID']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GID] = $_POST['Subgroup_Type_GID'];	
 			
-				if(isset($_REQUEST['Subgroup_Type_Order']) && !empty($_REQUEST['Subgroup_Type_Order']))
-				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER] = $this->request->query['Subgroup_Type_Order'];	
+				if(isset($_POST['Subgroup_Type_Order']) && !empty($_POST['Subgroup_Type_Order']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER] = $_POST['Subgroup_Type_Order'];	
 			
-				if(isset($_REQUEST['Subgroup_Type_Global']) && !empty($_REQUEST['Subgroup_Type_Global']))
-				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GLOBAL] = $this->request->query['Subgroup_Type_Global'];	
-
-    			$deleteallSubgroupType  = $this->Subgroup->deleteByParamsSubgroupType($conditions);
+				if(isset($_POST['Subgroup_Type_Global']) && !empty($_POST['Subgroup_Type_Global']))
+				$conditions[_SUBGROUPTYPE_SUBGROUP_TYPE_GLOBAL] = $_POST['Subgroup_Type_Global'];	
+				$params[]=$conditions;
+				
+				$deleteallSubgroupType = $this->CommonInterface->serviceInterface('Subgroup', 'deleteByParamsSubgroupType', $params, $dbConnection);			
+								
+    			//$deleteallSubgroupType  = $this->Subgroup->deleteByParamsSubgroupType($conditions);
 				if($deleteallSubgroupType>0){
 					$returnData['message'] = 'Records deleted successfully';
 					$returnData['success'] = true;		
-					$returnData['returnvalue'] = $deleteallSubgroupType;
-				
+					$returnData['returnvalue'] = $deleteallSubgroupType;				
 				}else{
-					$returnData['success'] = false;
+					$returnData['success'] = false;		
 				}
-				
 			break;	
 	
+			
+			
+			
 			
 			// service no. starting from  501 are for subgroup
 			
 			case 501:
 			// service for saving  subgroup  name 
-			if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name'])){
+			if(isset($_POST['Subgroup_Name']) && !empty($_POST['Subgroup_Name'])){
 			 // Subgroup_NId is auto increment 
 			 $data = array();
 			 
-			 if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name']))			 
-			 $data[_SUBGROUP_SUBGROUP_NAME]   = trim($_REQUEST['Subgroup_Name']) ;
+			 if(isset($_POST['Subgroup_Name']) && !empty($_POST['Subgroup_Name']))			 
+			 $data[_SUBGROUP_SUBGROUP_NAME]   = trim($_POST['Subgroup_Name']) ;
 			 
-			 if(isset($_REQUEST['Subgroup_Type']) && !empty($_REQUEST['Subgroup_Type']))
-			 $data[_SUBGROUP_SUBGROUP_TYPE]  = trim($_REQUEST['Subgroup_Type']);
+			 if(isset($_POST['Subgroup_Type']) && !empty($_POST['Subgroup_Type']))
+			 $data[_SUBGROUP_SUBGROUP_TYPE]  = trim($_POST['Subgroup_Type']);
 			 
-			 if(isset($_REQUEST['Subgroup_NId']) && !empty($_REQUEST['Subgroup_NId']))
-			 $data[_SUBGROUP_SUBGROUP_NID]  = trim($_REQUEST['Subgroup_NId']);
-
+			 if(isset($_POST['Subgroup_NId']) && !empty($_POST['Subgroup_NId']))
+			 $data[_SUBGROUP_SUBGROUP_NID]  = trim($_POST['Subgroup_NId']);
+			 
+			 if(isset($_POST['Subgroup_GId']) && !empty($_POST['Subgroup_GId']))
+			 $data[_SUBGROUP_SUBGROUP_GID]  = trim($_POST['Subgroup_GId']);
+			 else
 			 $data[_SUBGROUP_SUBGROUP_GID]    =  $this->Common->guid();
+		 
+		    $params[]=$data;
+				
+			$saveDataforSubgroupType = $this->CommonInterface->serviceInterface('Subgroup', 'insertUpdateDataSubgroup', $params, $dbConnection);			
+				
 		     
-			 $saveDataforSubgroupType = $this->Subgroup->insertUpdateDataSubgroup($data);
+			 //$saveDataforSubgroupType = $this->Subgroup->insertUpdateDataSubgroup($data);
+			 if($saveDataforSubgroupType){
+				 $returnData['success'] = true;		
+				 $returnData['returnvalue'] = $saveDataforSubgroupType;
+				
+			 }else{
+				  $returnData['success'] = false;					 
+			 }
+			 //die;
+			}
+
+            break;		
+			
+			
+			
+			case 502:
+			// service for updating the   subgroup  name 
+			if(isset($_POST['Subgroup_Name']) && !empty($_POST['Subgroup_Name'])){
+			 // Subgroup_NId is auto increment 
+			 $data = array();
+			 $fields =[_SUBGROUP_SUBGROUP_NAME,_SUBGROUP_SUBGROUP_TYPE];
+			 if(isset($_POST['Subgroup_Name']) && !empty($_POST['Subgroup_Name']))			 
+			 $data[_SUBGROUP_SUBGROUP_NAME]   = trim($_POST['Subgroup_Name']) ;
 			 
+			 if(isset($_POST['Subgroup_Type']) && !empty($_POST['Subgroup_Type']))
+			 $data[_SUBGROUP_SUBGROUP_TYPE]  = trim($_POST['Subgroup_Type']);
+			 
+			 if(isset($_POST['Subgroup_NId']) && !empty($_POST['Subgroup_NId']))
+			 $data[_SUBGROUP_SUBGROUP_NID]  = trim($_POST['Subgroup_NId']);			 
+			 
+			 if(isset($_POST['Subgroup_GId']) && !empty($_POST['Subgroup_GId']))
+			 $data[_SUBGROUP_SUBGROUP_GID]  = trim($_POST['Subgroup_GId']);		 
+		     
+			 $params['fields']     = $fields;
+             $params['conditions'] = $data;				
+			 $saveDataforSubgroupType = $this->CommonInterface->serviceInterface('Subgroup', 'deleteByParamsSubgroupType', $params, $dbConnection);			
+				
+			 // $saveDataforSubgroupType = $this->Subgroup->insertUpdateDataSubgroup($data);
 			 if($saveDataforSubgroupType){
 				 $returnData['success'] = true;		
 				 $returnData['returnvalue'] = $saveDataforSubgroupType;				
 			 }else{
 				  $returnData['success'] = false;					 
-			 }			
-			}else{				 
-				 $returnData['success'] = false;	
-				 $returnData['message'] = 'Invalid request';	
+			 }
+			 //die;
 			}
 
             break;
-			
-			
-			case 502:
-			// service for getting the subgroup   details on basis of ids
-			// can be one or multiple in form of array // passing  $ids, array $fields ,$type default is all
-			if($this->request->is('post')){
-		
-				$ids     = [2,3];
-				if(isset($_REQUEST['ids']) && !empty($_REQUEST['ids'])){
-					$ids   = $_REQUEST['ids']; 
-				}
-				
-				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
-					$fields    = $_REQUEST['fields']; 
-				}
-				//$fields  = array('Subgroup_NId','Subgroup_Name'); // fields can be blank also 
-				//$type    = ''; // type can be list or all only 
-				if(isset($_REQUEST['type']) && !empty($_REQUEST['type'])){
-					$type    = $_REQUEST['type']; 
-				}
-				
-				$SubgroupDetails  = $this->Subgroup->getDataByIdsSubgroup($ids,$fields,$type);
-				if(isset($SubgroupDetails)&& count($SubgroupDetails)>0){
-					$returnData['data'] = $SubgroupDetails;
-					$returnData['success'] = true;	
-						
-				}else{
-					$returnData['success'] = false;	
-				}
-			}else{
-				$returnData['success'] = false;
-				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-			}  
-			break;	
-			
-			
-				
-			case 503:
-			//  service for getting the subgroup  details on basis of subgroup name  
-			//  passing  $subgroupvalue
-			if(isset($_REQUEST['subgroup']) && !empty($_REQUEST['subgroup'])){
-				
-				$subgroupvalue         = trim($this->request->query['subgroup']);			
-                $SubgroupDetails       = $this->Subgroup->getDataBySubgroupName($subgroupvalue);
-			    if(isset($SubgroupDetails)&& count($SubgroupDetails)>0){					
-					$returnData['data'] = $SubgroupDetails;
-					$returnData['success'] = true;				
-				}else{
-					$returnData['success'] = false;	
-				}
-			}else{				
-				$returnData['success'] = false;
-				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-			}  
-			break;
-			
-			
-			case 504:
-				// service for getting the Subgroup  details on basis of any parameter  
-				// passing array $fields, array $conditions			
-				$conditions = array();
 			    
-				if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name']))			 
-				$conditions[_SUBGROUP_SUBGROUP_NAME]   = trim($_REQUEST['Subgroup_Name']) ;
-				 
-				if(isset($_REQUEST['Subgroup_Type']) && !empty($_REQUEST['Subgroup_Type']))
-				$conditions[_SUBGROUP_SUBGROUP_TYPE]  = trim($_REQUEST['Subgroup_Type']);
-				 
-				if(isset($_REQUEST['Subgroup_NId']) && !empty($_REQUEST['Subgroup_NId']))
-				$conditions[_SUBGROUP_SUBGROUP_NID]  = trim($_REQUEST['Subgroup_NId']);
-				 
-				if(isset($_REQUEST['Subgroup_GId']) && !empty($_REQUEST['Subgroup_GId']))
-				$conditions[_SUBGROUP_SUBGROUP_GID] = trim($_REQUEST['Subgroup_GId']);	
-				
-				if(isset($_REQUEST['Subgroup_Global']) && !empty($_REQUEST['Subgroup_Global']))
-				$conditions[_SUBGROUP_SUBGROUP_GLOBAL] = trim($_REQUEST['Subgroup_Global']);	
 			
-				if(isset($_REQUEST['Subgroup_Order']) && !empty($_REQUEST['Subgroup_Order']))
-				$conditions[_SUBGROUP_SUBGROUP_ORDER] = trim($_REQUEST['Subgroup_Order']);	
+			
+			case 503:
+				// service for getting the Subgroup  details on basis of any parameter  
+				// passing array $fields, array $conditions	
+				
+				 $conditions = array();
+			    
+				 if(isset($_POST['Subgroup_Name']) && !empty($_POST['Subgroup_Name']))			 
+				 $conditions[_SUBGROUP_SUBGROUP_NAME]   = trim($_POST['Subgroup_Name']) ;
+				 
+				 if(isset($_POST['Subgroup_Type']) && !empty($_POST['Subgroup_Type']))
+				 $conditions[_SUBGROUP_SUBGROUP_TYPE]  = trim($_POST['Subgroup_Type']);
+				 
+				 if(isset($_POST['Subgroup_NId']) && !empty($_POST['Subgroup_NId']))
+				 $conditions[_SUBGROUP_SUBGROUP_NID]  = trim($_POST['Subgroup_NId']);				 
+				 
+				if(isset($_POST['Subgroup_GId']) && !empty($_POST['Subgroup_GId']))
+				$conditions[_SUBGROUP_SUBGROUP_GID] = trim($_POST['Subgroup_GId']);							
+				
+				if(isset($_POST['Subgroup_Global']) && !empty($_POST['Subgroup_Global']))
+				$conditions[_SUBGROUP_SUBGROUP_GLOBAL] = trim($_POST['Subgroup_Global']);	
+			
+				if(isset($_POST['Subgroup_Order']) && !empty($_POST['Subgroup_Order']))
+				$conditions[_SUBGROUP_SUBGROUP_ORDER] = trim($_POST['Subgroup_Order']);	
 
 			    $fields = array();
 				
-				if(isset($_REQUEST['fields']) && !empty($_REQUEST['fields'])){
-					$fields    = $_REQUEST['fields']; 
+				if(isset($_POST['fields']) && !empty($_POST['fields'])){
+					$fields    = $_POST['fields']; 
 				}
-                $SubgroupDetails   = $this->Subgroup->getDataByParamsSubgroup( $fields ,$conditions);
+				$params[]=$fields;
+				$params[]=$conditions;
+                //  $SubgroupDetails   = $this->Subgroup->getDataByParamsSubgroup( $fields ,$conditions);
 				
-				
+				$SubgroupDetails = $this->CommonInterface->serviceInterface('Subgroup', 'getDataByParamsSubgroup', $params, $dbConnection);			
+			
 				if(isset($SubgroupDetails)&& count($SubgroupDetails)>0){
 					
 					$returnData['success'] = true;
@@ -877,79 +698,36 @@ class ServicesController extends AppController
 			break;
 			
 			
-			// Delete cases of Subgroup
-			case 505:
-				// service for deleting the Subgroup using  Subgroup name  value 
-			if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name'])){
-			
-				$Subgroup_Namevalue = trim($_REQUEST['Subgroup_Name']);			
-                $deleteBySubgroupName  = $this->Subgroup->deleteBySubgroupName($Subgroup_Namevalue);			   
-			    if($deleteBySubgroupName>0){
-					$returnData['message'] = 'Record deleted successfully';
-					$returnData['success'] = true;	
-					$returnData['returnvalue'] = $deleteBySubgroupName;
-						
-				}else{
-					$returnData['success'] = false;
-				}
-			}else{
 				
-				$returnData['success'] = false;
-				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-			}
-			
-            break;
-			
-			
-				
-			case 506:
-				// service for deleting the Subgroup  id it can be one  or mutiple  
-			//if(isset($_REQUEST['Subgroupids']) && !empty($_REQUEST['Subgroupids'])){
-				$ids  = [423,424];			
-                $deletebySubgroupIDS   = $this->Subgroup->deleteByIdsSubgroup($ids);
-			    if($deletebySubgroupIDS >0){
-					$returnData['message'] = 'Record deleted successfully';
-					$returnData['success'] = true;		
-					$returnData['returnvalue'] = $deletebySubgroupIDS;
-						
-				}else{
-					$returnData['success'] = false;		
-					
-				}
-			//}else{				
-				
-				//$returnData['success'] = false;
-				//$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
-			//}
-			
-            break;			
-			
-			
-				
-			case 507:
+			case 504:
 				// service for deleting the Subgroup Name using  any parameters   
 							
 				$conditions = array();
 			    
-				if(isset($_REQUEST['Subgroup_Type']) && !empty($_REQUEST['Subgroup_Type']))
-                $conditions[_SUBGROUP_SUBGROUP_TYPE] = trim($_REQUEST['Subgroup_Type']);				
+				if(isset($_POST['Subgroup_Type']) && !empty($_POST['Subgroup_Type']))
+                $conditions[_SUBGROUP_SUBGROUP_TYPE] = trim($_POST['Subgroup_Type']);				
 				
-				if(isset($_REQUEST['Subgroup_GId']) && !empty($_REQUEST['Subgroup_GId']))
-				$conditions[_SUBGROUP_SUBGROUP_GID] = trim($_REQUEST['Subgroup_GId']);				
+				if(isset($_POST['Subgroup_GId']) && !empty($_POST['Subgroup_GId']))
+				$conditions[_SUBGROUP_SUBGROUP_GID] = trim($_POST['Subgroup_GId']);				
 				
-				if(isset($_REQUEST['Subgroup_Order']) && !empty($_REQUEST['Subgroup_Order']))
-				$conditions[_SUBGROUP_SUBGROUP_ORDER] = trim($_REQUEST['Subgroup_Order']);	
+				if(isset($_POST['Subgroup_Order']) && !empty($_POST['Subgroup_Order']))
+				$conditions[_SUBGROUP_SUBGROUP_ORDER] = trim($_POST['Subgroup_Order']);	
 			
-				if(isset($_REQUEST['Subgroup_Global']) && !empty($_REQUEST['Subgroup_Global']))
-                $conditions[_SUBGROUP_SUBGROUP_GLOBAL] = trim($_REQUEST['Subgroup_Global']);	
+				if(isset($_POST['Subgroup_Global']) && !empty($_POST['Subgroup_Global']))
+                $conditions[_SUBGROUP_SUBGROUP_GLOBAL] = trim($_POST['Subgroup_Global']);	
 			
-			    if(isset($_REQUEST['Subgroup_Name']) && !empty($_REQUEST['Subgroup_Name']))
-                $conditions[_SUBGROUP_SUBGROUP_NAME] = trim($_REQUEST['Subgroup_Name']);
+			    if(isset($_POST['Subgroup_Name']) && !empty($_POST['Subgroup_Name']))
+                $conditions[_SUBGROUP_SUBGROUP_NAME] = trim($_POST['Subgroup_Name']);
 			
-			    if(isset($_REQUEST['Subgroup_NId']) && !empty($_REQUEST['Subgroup_NId']))
-                $conditions[_SUBGROUP_SUBGROUP_NID] = trim($_REQUEST['Subgroup_NId']);
+			    if(isset($_POST['Subgroup_NId']) && !empty($_POST['Subgroup_NId']))
+                $conditions[_SUBGROUP_SUBGROUP_NID] = trim($_POST['Subgroup_NId']);
 			
-                $deleteallSubgroup  = $this->Subgroup->deleteByParamsSubgroup($conditions);
+                //$deleteallSubgroup  = $this->Subgroup->deleteByParamsSubgroup($conditions);				
+				
+				$params[]=$conditions;
+				
+				$deleteallSubgroup = $this->CommonInterface->serviceInterface('Subgroup', 'deleteByParamsSubgroup', $params, $dbConnection);			
+			
 				if($deleteallSubgroup>0){
 					$returnData['message'] = 'Records deleted successfully';
 					$returnData['success'] = true;		
@@ -957,10 +735,9 @@ class ServicesController extends AppController
 				}else{
 					$returnData['success'] = false;
 				}
-				
 			break;	
 	
-				// service starting with 60 is for bulk upload of subroups 			
+			// service starting with 60 is for bulk upload of subroups 
 			case 602:
 			
             // service for saving bulk upload data  for subgroup details 
@@ -970,9 +747,10 @@ class ServicesController extends AppController
 			try { 
 		
 			    $excelDataArray = $this->ExcelReader->loadExcelFile($filename);
-			    // $excelDataArray = array_values($data);				
-				$SubgroupTypeordervalue = 1;				 
+			    // $excelDataArray = array_values($data);
 				
+				$SubgroupTypeordervalue = 1;
+				 
 				if(isset($excelDataArray['columndetails']) && count($excelDataArray['columndetails'])>0){
 				 foreach($excelDataArray['columndetails'] as $subgrptypeExcelIndex => $subgrptypeExcelValue){	
                     // code for subgrouptype save starts here 
@@ -1033,245 +811,397 @@ class ServicesController extends AppController
 			
 				
 			break;
-			
-			
-			
-			  case 700: //Bulk Insert/Update Data -- Indicator table
+
+            case 701:
                 
                 //if($this->request->is('post')):
-                    //The following line should do the same like App::import() in the older version of cakePHP
-                    require_once(ROOT . DS . 'vendor' . DS  . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
+                if(true):
+                    $params[]['filename'] = $filename = 'C:\-- Projects --\xls\Temp_Selected_ExcelFile.xls';
+                    $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForIUS', $params, $dbConnection);
+                endif;
 
-                    $filename = 'C:\-- Projects --\Indicator2.xls';
-                    $insertFieldsArr = [];
-                    $insertDataArr = [];
-                    $insertDataNames = [];
-                    $insertDataGids = [];
-                    $insertDataKeys = [_INDICATOR_INDICATOR_NAME, _INDICATOR_INDICATOR_GID, _INDICATOR_HIGHISGOOD];
-
-                    $objPHPExcel = \PHPExcel_IOFactory::load($filename);
-                
-                    foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
-                        $worksheetTitle     = $worksheet->getTitle();
-                        $highestRow         = $worksheet->getHighestRow(); // e.g. 10
-                        $highestColumn      = $worksheet->getHighestColumn(); // e.g 'F'
-                        $highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumn);
-                    
-                        for ($row = 1; $row <= $highestRow; ++ $row) {
-
-                            for ($col = 0; $col < $highestColumnIndex; ++ $col) {
-                                $cell = $worksheet->getCellByColumnAndRow($col, $row);
-                                $val = $cell->getValue();
-                                $dataType = \PHPExcel_Cell_DataType::dataTypeForValue($val);
-                            
-                                if($row >= 6){                                
-                                    $insertDataArr[$row][] = $val;
-                                }else{
-                                    continue;
-                                }
-
-                                /*
-                                if($row == 1){
-                                    $insertFieldsArr[] = $val;
-                                }else{
-                                    $insertDataArr[$row][$insertFieldsArr[$col]] = $val;
-                                }*/
-                            }
-
-                            if(isset($insertDataArr[$row])):
-                            
-                                $insertDataArr[$row] = array_combine($insertDataKeys, $insertDataArr[$row]);
-                                $insertDataArr[$row] = array_filter($insertDataArr[$row]);
-
-                                //We don't need this row if the name field is empty
-                                if(!isset($insertDataArr[$row][_INDICATOR_INDICATOR_NAME])){
-                                    unset($insertDataArr[$row]);
-                                }else if(!isset($insertDataArr[$row][_INDICATOR_INDICATOR_GID])){
-                                    $insertDataNames[] = $insertDataArr[$row][_INDICATOR_INDICATOR_NAME];
-                                }else{
-                                    $insertDataGids[] = $insertDataArr[$row][_INDICATOR_INDICATOR_GID];
-                                }
-
-                            endif;
-
-                        }
-                    }
-                
-                    $dataArray = array_values(array_filter($insertDataArr));
-
-                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
-                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
-
-                    //Get Indicator Ids based on Indicator Name
-                    if(!empty($insertDataNames)){
-                        //getDataByName(array $dataArray = $this->request->data)
-                        //$returnData = $this->Indicator->getDataByName($dataArray);
-                    }
-
-                    //Get Indicator Ids based on Indicator GID
-                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
-                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
-
-                    //Update Indicator based on Indicator Name
-                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
-                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
-
-                    //Update Indicator based on Indicator GID
-                    //insertOrUpdateBulkData(array $dataArray = $this->request->data)
-                    //$returnData = $this->Indicator->insertOrUpdateBulkData($dataArray);
-
-                //endif;
-
-                break;
+            break;
+		    
+			// services for Area
+			case 800:
+			
+			try{
+			
+			$returnData['success']      = true;
+			$returnData['data']['id']   = $this->Auth->user('id');
+			// echo json_encode($returnData);
+			// die('success');
 				
-				case 701:
-				//$filename = WWW_ROOT.DS.'Import IC IUS.xls'; 		
-
-                $filename = WWW_ROOT.DS.'Indicator2.xls';
-                $excelDataArray = $this->ExcelReader->exportExcelToCSVFile($filename);
+			} catch (Exception $e) {  
+			   echo 'Exception occured while loading the project list file';  
+			   exit;  
+			}
+			
+            break;
+			
+			
+			case 801: 
+			/*$_POST['Area_ID']='IND028021040';
+			$_POST['Area_Name']='dhalubaba';
+			$_POST['Area_Parent_NId']='24650';
+			$_POST['AreaShortName']='dhalubaba'	;
+			*/
+			//  service for getting the Area details on basis of passed parameters
+			if(!empty($_POST['Area_ID']) || !empty($_POST['Area_Name']) || !empty($_POST['Area_GId'])|| !empty($_POST['Area_NId']) || !empty($_POST['Area_Level']) || !empty($_POST['Data_Exist']) || !empty($_POST['AreaShortName'])|| !empty($_POST['Area_Parent_NId'])|| !empty($_POST['Area_Block'])){
 				
-				break;
+				$conditions = array();
 				
-				case 702:
-				ini_set('memory_limit','2G');
-				set_time_limit(0);
-                $filename = WWW_ROOT.DS.'Indicator2.xls';				 
-				$excelDataArray = $this->ExcelReader->loadExcelFile($filename);
-	           
-				$index = 0;
-				
-				$exportcsvarray = array();
-				
-				foreach($excelDataArray as $indexArray=>$valueArray){					
-					foreach($valueArray as $index=>$value){
-						pr($value);
-						
-					if(isset($value['Indicator']) && $value['Indicator']!=''){
-						// comapre gid in db if gid found update row else comapre on name 
-						$Indicatorgid  = $value['Indicator Gid'];
-						$IndicatorName = $value['Indicator'];
-						$HighIsGood = $value['HighIsGood'];
-						$fieldsArray = array('Indicator_Name','Indicator_GId','HighIsGood');
-						
-						$conditions  = array();
-						if(isset($Indicatorgid) && !empty($Indicatorgid))
-						$conditions['Indicator_GId']  = $Indicatorgid;
-                         else
-						$conditions['Indicator_Name']  = $IndicatorName;
+				if(isset($_POST['Area_ID']) && !empty($_POST['Area_ID']))
+                $conditions[_AREA_AREA_ID] = trim($_POST['Area_ID']);	
 					
-					
-							 
-						$Indicator_NId_details = $this->Indicator->getDataByParams(array('Indicator_NId'),$conditions);
-						
-						if(isset($Indicatorgid) && !empty($Indicatorgid) && isset($Indicator_NId_details[0]->Indicator_NId) && $Indicator_NId_details[0]->Indicator_NId>0){
-							
-							$saveconditions['Indicator_GId']   = $Indicatorgid;
-						    $saveconditions['Indicator_Name']  = $IndicatorName;
-							$saveconditions['HighIsGood']      = $HighIsGood;
-							$Indicator_NId = $Indicator_NId_details[0]->Indicator_NId;
-							$saveconditions['Indicator_NId']  = $Indicator_NId;	
-							$this->Indicator->insertData($saveconditions);
-							unset($saveconditions);
-							
-						}       		
-					    else{
-							 //check on name basis 			
-							
-						}
-						pr($Indicator_NId);
-						die('hua');
-						$this->Indicator->updateDataByParams($fieldsArray,$conditions);
-						//$exportcsvarray[]=	
-				  	}
-				  }die('excelDataArray12345');	
-				}
-									
-					
-					die('excelDataArray');
-					    
-   				
-				
-				//pr( $excelDataArray);
-				die('dfdfd');
-				 // $excelDataArray = array_values($data);				
-				 $SubgroupTypeordervalue = 1;				 
-				
-				 if(isset($excelDataArray['columndetails']) && count($excelDataArray['columndetails'])>0){
-					 foreach($excelDataArray['columndetails'] as $subgrptypeExcelIndex => $subgrptypeExcelValue){	
-	 
-					 
-					 
-					 
-					 }
-				 }
-				
-				  $excelDataArray = $this->ExcelReader->exportExcelToCSVFile($filename);
+    			if(isset($_POST['Area_Name']) && !empty($_POST['Area_Name']))
+				$conditions[_AREA_AREA_NAME] = trim($_POST['Area_Name']);	
+			
+				if(isset($_POST['Area_GId']) && !empty($_POST['Area_GId']))
+                $conditions[_AREA_AREA_GID] = trim($_POST['Area_GId']);	
+			
+			    if(isset($_POST['Area_NId']) && !empty($_POST['Area_NId']))
+                $conditions[_AREA_AREA_NID] = trim($_POST['Area_NId']);	
+			
+			    if(isset($_POST['Area_Level']) && !empty($_POST['Area_Level']))
+                $conditions[_AREA_AREA_LEVEL] = trim($_POST['Area_Level']);
 
-				 $loadedSheetNames = $objPHPExcelReader->getSheetNames();
+			    if(isset($_POST['Data_Exist']) && !empty($_POST['Data_Exist']))
+                $conditions[_AREA_DATA_EXIST] = trim($_POST['Data_Exist']);
 
-		         $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcelReader, 'CSV');
-				 
-				 foreach($loadedSheetNames as $sheetIndex => $loadedSheetName) {
-					$objWriter->setSheetIndex($sheetIndex);
-					$result = $objWriter->save($loadedSheetName.'-rishi.csv');
-				 }
+			    if(isset($_POST['AreaShortName']) && !empty($_POST['AreaShortName']))
+                $conditions[_AREA_AREA_SHORT_NAME] = trim($_POST['AreaShortName']);
+			   
+			    if(isset($_POST['Area_Parent_NId']) && !empty($_POST['Area_Parent_NId']))
+                $conditions[_AREA_PARENT_NId] = trim($_POST['Area_Parent_NId']);
+			
+			    if(isset($_POST['Area_Block']) && !empty($_POST['Area_Block']))
+                $conditions[_AREA_AREA_BLOCK] = trim($_POST['Area_Block']);
+			
+				$params[] = $fields = [_AREA_AREA_BLOCK, _AREA_AREA_SHORT_NAME,_AREA_AREA_ID];
+				$params[]=$conditions;		
+
+			    $getAreaDetailsData = $this->CommonInterface->serviceInterface('Area', 'getDataByParams', $params, $dbConnection);
+				if($getAreaDetailsData){					
+					
+					$returnData['success'] = true;	
+					$returnData['returnvalue'] = $getAreaDetailsData;			
+				}else{	
+					$returnData['success'] = false;	
+				}							
+			}else{
+				
+				$returnData[] = false;
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}
+			
+            break;
+			
 			
 				
-				break;
-
+			case 802:
+			
+			
+				// service for deleting the Area using  any parameters below 
+			if(!empty($_POST['Area_ID']) || !empty($_POST['Area_Name']) || !empty($_POST['Area_GId'])|| !empty($_POST['Area_NId']) || !empty($_POST['Area_Level']) || !empty($_POST['Data_Exist']) || !empty($_POST['AreaShortName'])|| !empty($_POST['Area_Parent_NId'])|| !empty($_POST['Area_Block'])){
 				
+				$conditions = array();
 				
-				
-
+				if(isset($_POST['Area_ID']) && !empty($_POST['Area_ID']))
+                $conditions[_AREA_AREA_ID] = trim($_POST['Area_ID']);	
 					
+    			if(isset($_POST['Area_Name']) && !empty($_POST['Area_Name']))
+				$conditions[_AREA_AREA_NAME] = trim($_POST['Area_Name']);	
+			
+				if(isset($_POST['Area_GId']) && !empty($_POST['Area_GId']))
+                $conditions[_AREA_AREA_GID] = trim($_POST['Area_GId']);	
+			
+			    if(isset($_POST['Area_NId']) && !empty($_POST['Area_NId']))
+                $conditions[_AREA_AREA_NID] = trim($_POST['Area_NId']);	
+			
+			    if(isset($_POST['Area_Level']) && !empty($_POST['Area_Level']))
+                $conditions[_AREA_AREA_LEVEL] = trim($_POST['Area_Level']);
 
-            //default:
+			    if(isset($_POST['Data_Exist']) && !empty($_POST['Data_Exist']))
+                $conditions[_AREA_DATA_EXIST] = trim($_POST['Data_Exist']);
+
+			    if(isset($_POST['AreaShortName']) && !empty($_POST['AreaShortName']))
+                $conditions[_AREA_AREA_SHORT_NAME] = trim($_POST['AreaShortName']);
+			   
+			    if(isset($_POST['Area_Parent_NId']) && !empty($_POST['Area_Parent_NId']))
+                $conditions[_AREA_PARENT_NId] = trim($_POST['Area_Parent_NId']);
+			    
+			
+			    if(isset($_POST['Area_Block']) && !empty($_POST['Area_Block']))
+                $conditions[_AREA_AREA_BLOCK] = trim($_POST['Area_Block']);			    					
+				$params[]=$conditions;
+                $deleteallArea = $this->CommonInterface->serviceInterface('Area', 'deleteByParams', $params, $dbConnection);
+				if($deleteallArea){
+					$returnData['message'] = 'Record deleted successfully';
+					$returnData['success'] = true;		
+					$returnData['returnvalue'] = $deleteallArea;						
+				}else{
+				    $returnData['success'] = false;					
+				}				
+			}else{				
+					$returnData['success'] = false;
+					$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}	
+			pr($returnData);
+			die;
+			break;	
+			
+			case 803:
+			/*
+			$_POST['Area_ID']='IND028021040';
+			$_POST['Area_NId']='26503';
+			$_POST['Area_Name']='dhalubaba';
+			$_POST['Area_GId']='';
+			$_POST['Area_Parent_NId']='24650';
+			$_POST['AreaShortName']='dhalubabanew';
+			*/
+				// service for saving the  Area details using  any parameters below 
+			if(!empty($_POST['Area_ID']) || !empty($_POST['Area_Name']) || !empty($_POST['Area_GId'])|| !empty($_POST['Area_NId']) || !empty($_POST['Area_Level']) || !empty($_POST['Data_Exist']) || !empty($_POST['AreaShortName'])|| !empty($_POST['Area_Parent_NId'])|| !empty($_POST['Area_Block'])){
+				
+				$conditions = array();
+				
+				if(isset($_POST['Area_ID']) && !empty($_POST['Area_ID']))
+                $conditions[_AREA_AREA_ID] = trim($_POST['Area_ID']);	
+					
+    			if(isset($_POST['Area_Name']) && !empty($_POST['Area_Name']))
+				$conditions[_AREA_AREA_NAME] = trim($_POST['Area_Name']);	
+			
+				if(isset($_POST['Area_GId']) && !empty($_POST['Area_GId']))
+                $conditions[_AREA_AREA_GID] = trim($_POST['Area_GId']);
+                else
+                $conditions[_AREA_AREA_GID] = $this->Common->guid();					
+			
+			    if(isset($_POST['Area_NId']) && !empty($_POST['Area_NId']))
+                $conditions[_AREA_AREA_NID] = trim($_POST['Area_NId']);	
+			
+			    if(isset($_POST['Area_Level']) && !empty($_POST['Area_Level']))
+                $conditions[_AREA_AREA_LEVEL] = trim($_POST['Area_Level']);
+
+			    if(isset($_POST['Data_Exist']) && !empty($_POST['Data_Exist']))
+                $conditions[_AREA_DATA_EXIST] = trim($_POST['Data_Exist']);
+
+			    if(isset($_POST['AreaShortName']) && !empty($_POST['AreaShortName']))
+                $conditions[_AREA_AREA_SHORT_NAME] = trim($_POST['AreaShortName']);
+			   
+			    if(isset($_POST['Area_Parent_NId']) && !empty($_POST['Area_Parent_NId']))
+                $conditions[_AREA_PARENT_NId] = trim($_POST['Area_Parent_NId']);
+			    else
+				$conditions[_AREA_PARENT_NId] = '-1';			    	
+			
+			    if(isset($_POST['Area_Block']) && !empty($_POST['Area_Block']))
+                $conditions[_AREA_AREA_BLOCK] = trim($_POST['Area_Block']);			    					
+				
+				$params[]=$conditions;
+                $insertAreadata = $this->CommonInterface->serviceInterface('Area', 'insertUpdateAreaData', $params, $dbConnection);
+				if($insertAreadata){
+					$returnData['message'] = 'Record saved successfully';
+					$returnData['success'] = true;		
+					$returnData['returnvalue'] = $insertAreadata;						
+				}else{
+				    $returnData['success'] = false;					
+				}				
+			}else{				
+					$returnData['success'] = false;
+					$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}	
+			pr($returnData);
+			die;
+			break;
+			
+			
+			case 901: 		
+			
+			/*
+			$_POST['Area_Level']='9';
+			$_POST['Area_Level_Name']='Area_Level_Name';
+			*/
+			//  service for getting the AREA LEVEL details on basis of passed parameters
+			if(!empty($_POST['Level_NId']) || !empty($_POST['Area_Level']) || !empty($_POST['Area_Level_Name'])){
+							
+					
+				$conditions = array();
+				
+				if(isset($_POST['Level_NId']) && !empty($_POST['Level_NId']))
+                $conditions[_AREALEVEL_LEVEL_NID] = trim($_POST['Level_NId']);	
+					
+    			if(isset($_POST['Area_Level']) && !empty($_POST['Area_Level']))
+				$conditions[_AREALEVEL_AREA_LEVEL] = trim($_POST['Area_Level']);	
+			
+				if(isset($_POST['Area_Level_Name']) && !empty($_POST['Area_Level_Name']))
+                $conditions[_AREALEVEL_LEVEL_NAME] = trim($_POST['Area_Level_Name']);			   
+			
+				$params[] = $fields = [_AREALEVEL_LEVEL_NAME, _AREALEVEL_AREA_LEVEL,_AREALEVEL_LEVEL_NID];
+				$params[] = $conditions;	
+
+			    $getAreaLevelDetailsData = $this->CommonInterface->serviceInterface('Area', 'getDataByParamsAreaLevel', $params, $dbConnection);
+				
+				if($getAreaLevelDetailsData){					
+					
+					$returnData['success'] = true;	
+					$returnData['returnvalue'] = $getAreaLevelDetailsData;			
+				}else{	
+					$returnData['success'] = false;	
+				}							
+			}else{
+				
+				$returnData['success'] = false;
+				$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}
+			pr($returnData);
+			die;
+            break;
+			
+			
+				
+			case 902:
+			/*
+			$_POST['Area_Level']='93';
+			$_POST['Area_Level_Name']='Area_Level_Name3';
+			*/
+		
+			// service for deleting the Area using  any parameters below 
+			if(!empty($_POST['Level_NId']) || !empty($_POST['Area_Level']) || !empty($_POST['Area_Level_Name'])){
+						
+			$conditions = array();
+			
+			if(isset($_POST['Level_NId']) && !empty($_POST['Level_NId']))
+			$conditions[_AREALEVEL_LEVEL_NID] = trim($_POST['Level_NId']);	
+				
+			if(isset($_POST['Area_Level']) && !empty($_POST['Area_Level']))
+			$conditions[_AREALEVEL_AREA_LEVEL] = trim($_POST['Area_Level']);	
+		
+			if(isset($_POST['Area_Level_Name']) && !empty($_POST['Area_Level_Name']))
+			$conditions[_AREALEVEL_LEVEL_NAME] = trim($_POST['Area_Level_Name']);		
+										
+			$params[]=$conditions;
+			$deleteallAreaLevel = $this->CommonInterface->serviceInterface('Area', 'deleteByParamsAreaLevel', $params, $dbConnection);
+				if($deleteallAreaLevel){
+					$returnData['message'] = 'Record deleted successfully';
+					$returnData['success'] = true;		
+					$returnData['returnvalue'] = $deleteallAreaLevel;						
+				}else{
+					$returnData['success'] = false;					
+				}				
+			}else{				
+					$returnData['success'] = false;
+					$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}	
+			pr($returnData);
+			die;
+			break;	
+			
+			case 903:			
+			/*
+			$_POST['Area_Level']='93';
+			//$_POST['Level_NId']='11';
+			$_POST['Area_Level_Name']='Area_Level_Name3';
+				*/
+			
+			// service for saving the  Area level details 
+			if(!empty($_POST['Level_NId']) || !empty($_POST['Area_Level']) || !empty($_POST['Area_Level_Name'])){
+								
+				$conditions = array();
+				
+				if(isset($_POST['Level_NId']) && !empty($_POST['Level_NId']))
+                $conditions[_AREALEVEL_LEVEL_NID] = trim($_POST['Level_NId']);	
+					
+    			if(isset($_POST['Area_Level']) && !empty($_POST['Area_Level']))
+				$conditions[_AREALEVEL_AREA_LEVEL] = trim($_POST['Area_Level']);	
+			
+				if(isset($_POST['Area_Level_Name']) && !empty($_POST['Area_Level_Name']))
+                $conditions[_AREALEVEL_LEVEL_NAME] = trim($_POST['Area_Level_Name']);
+			
+				$params[]=$conditions;
+					
+                $insertAreaLeveldata = $this->CommonInterface->serviceInterface('Area', 'insertUpdateAreaLevel', $params, $dbConnection);
+			
+				if($insertAreaLeveldata){
+					$returnData['message'] = 'Record saved successfully';
+					$returnData['success'] = true;		
+					$returnData['returnvalue'] = $insertAreaLeveldata;						
+				}else{
+				    $returnData['success'] = false;					
+				}				
+			}else{				
+					$returnData['success'] = false;
+					$returnData['message'] = 'Invalid request';	     //COM005; //'Invalid request'		
+			}	
+			pr($returnData);
+			die;
+			break;
+			
+			case 904:		
+			// service for bulk upload of area excel sheet
+			  //if($this->request->is('post')):
+                if(true):
+                    $params[]['filename'] = $filename = 'C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\Area.xls';
+                    //$returnData = $this->CommonInterface->bulkUploadXlsOrCsvForIndicator($params);                    
+                    $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForArea', $params, $dbConnection);   
+die;					
+                endif;
                 
+                break;
+			
+                
+              
+			
+			
+			
         
 			endswitch;
 			
-			return $this->returnData($returnData, $convertJson);
-	
-        	//return $this->returnData($returnData, $convertJson);
+
+        	return $this->service_response($returnData, $convertJson);
 
 		
-		 }// service query ends here 
+	}// service query ends here 
+	
+	
+	/*
+	 function to get data base details on basis of dbId 
+	 @params $dbId is the database id of database 
+	 
+	*/
+	
+	public function getDbDetails($dbId=null){
+	
+		/*$this->MSystemConfirgurations = TableRegistry::get('MSystemConfirgurations');
+        $configIsDefDB = $this->MSystemConfirgurations->findByKey('DEVINFO_DBID');
+	    if($configIsDefDB) {
+		   $this->MDatabaseConnections = TableRegistry::get('MDatabaseConnections');
+		   $databasedetails = $this->MDatabaseConnections->getDbNameByID($configIsDefDB);
+	    }
+		return $databasedetails;
+		*/
+			
+	}
 		 
 
-		// - METHOD TO GET RETURN DATA
-	public function returnData($data, $convertJson='_YES') {
+	// - METHOD TO GET RETURN DATA
+	// - METHOD TO GET RETURN DATA
+	public function service_response($data, $convertJson='_YES') {	
+				
+		$data['IsAuthenticated'] = false;
+		if ($this->Auth->user('id')) {
+			$data['IsAuthenticated'] = true;
+		}
 		if($convertJson == '_YES') {
 			$data = json_encode($data);
+		}		
+		if (!$this->request->is('requested')) {
+            $this->response->body($data);
+            return $this->response;
+        }else{
+            return $data;
 		}
-		pr($data);
-		die;
-
-		//return $data;
 		
-	}// get total number of fields present in the database
-		function getcsv($no_of_field_names)
-		{
-				$separate = '';
-
-
-				// do the action for all field names as field name
-				foreach ($no_of_field_names as $field_name)
-				{
-				if (preg_match('/\\r|\\n|,|"/', $field_name))
-				{
-				$field_name = '' . str_replace('', $field_name) . '';
-				}
-				echo $separate . $field_name;
-
-				//sepearte with the comma
-				$separate = ',';
-				}
-
-				//make new row and line
-				echo "\r\n";
-		}
-
-		
+	}
 	
 
    } 

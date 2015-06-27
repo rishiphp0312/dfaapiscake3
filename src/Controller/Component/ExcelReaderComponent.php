@@ -33,16 +33,18 @@ class ExcelReaderComponent extends Component
         $this->PHPExcelReader->setReadDataOnly(true);   
         // echo   $this->PHPExcelReader->getSheetCount();  
         $excel = $this->PHPExcelReader->load($filename);
-	
-      foreach ($excel->getWorksheetIterator() as $worksheet) {
-              echo       $worksheetTitle     = $worksheet->getTitle();			  
+	    $CurrentWorkSheetIndex = 0; 
+        
+		foreach ($excel->getWorksheetIterator() as $worksheet) {
+			  
+			  echo  $worksheetTitle          = $worksheet->getTitle();			  
 			  echo '<br/>';             
-			  echo  $highestRow         = $worksheet->getHighestRow(); // e.g. 10
+			  echo  $highestRow              = $worksheet->getHighestRow(); // e.g. 10
 			  echo '<br/>';
-              echo  $highestColumn      = $worksheet->getHighestColumn(); // e.g 'F'
-			   echo '<br/>';
+			  echo  $highestColumn           = $worksheet->getHighestColumn(); // e.g 'F'
+			  echo '<br/>';
 		      echo '<br/>';
-              echo   $highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumn);
+              echo   $highestColumnIndex     = \PHPExcel_Cell::columnIndexFromString($highestColumn);
 			  echo '<br/>';
 			  for ($row = 1; $row <= $highestRow; ++ $row) {
 
@@ -51,18 +53,19 @@ class ExcelReaderComponent extends Component
                             $cell = $worksheet->getCellByColumnAndRow($col, $row);
                             $val = $cell->getValue();
                             $dataType = \PHPExcel_Cell_DataType::dataTypeForValue($val);
-                            
-                            if($row == 1){
-                                $insertFieldsArr[] = $val;
-								$datacolumnnames['columndetails'][$col]= $val;
-
-                            }else{
-                                $insertDataArr['exceldata'][$row][$insertFieldsArr[$col]] = $val;
+                            if($row!= 1 && $row!= 2 && $row!= 3){
+									
+								if($row == 4){
+									$insertFieldsArr[] = $val;
+									$datacolumnnames['columndetails'][$col]= $val;
+								}else{									
+								    $insertDataArr['exceldata'][$row][$insertFieldsArr[$col]] = $val;								    	
+							    }
                             }
-                        }
 
                     }
-	  }	
+	            }
+		}	  
 		//pr($datacolumnnames);	 
         //return $this->dataArray = $excel->getSheet(0)->toArray();  
 		$insertDataArr = array_merge($insertDataArr,$datacolumnnames);
@@ -71,6 +74,33 @@ class ExcelReaderComponent extends Component
 		return $insertDataArr;
 		
     }     
+	
+	
+	public function exportExcelToCSVFile($filename) {  
+       
+        require_once(ROOT . DS . 'vendor' . DS  . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
+	  
+	    if (!class_exists('PHPExcel'))  
+        throw new CakeException('Vendor class PHPExcel not found!');  
+	
+	    $this->PHPExcelReader = \PHPExcel_IOFactory::createReaderForFile($filename);  
+        $this->PHPExcelLoaded = true;  
+        $this->PHPExcelReader->setReadDataOnly(true);   
+    
+		$objPHPExcelReader = $this->PHPExcelReader->load($filename);
+
+		$loadedSheetNames = $objPHPExcelReader->getSheetNames();
+
+		$objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcelReader, 'CSV');
+
+		foreach($loadedSheetNames as $sheetIndex => $loadedSheetName) {
+			$objWriter->setSheetIndex($sheetIndex);
+			$result = $objWriter->save($loadedSheetName.'-rishi.csv');
+		}
+pr($result);die;
+		
+		
+    } 
 
 
 }

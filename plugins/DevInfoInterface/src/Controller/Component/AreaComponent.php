@@ -1,0 +1,219 @@
+<?php
+namespace DevInfoInterface\Controller\Component;
+
+use Cake\Controller\Component;
+use Cake\ORM\TableRegistry;
+
+
+/**
+ * Area Component
+ */
+class AreaComponent extends Component
+{
+    
+    // The other component your component uses
+    public $components = [];
+    public $AreaObj = NULL;
+    public $AreaLevelObj = NULL;
+ 
+	public function initialize(array $config)
+    {
+        //parent::initialize($config);
+        $this->AreaObj = TableRegistry::get('DevInfoInterface.Areas');
+        $this->AreaLevelObj = TableRegistry::get('DevInfoInterface.AreaLevel');
+    }
+    
+
+    /**
+    * getDataByIds method
+    *
+    * @param array $conditions Conditions on which to search. {DEFAULT : empty}
+    * @param array $fields Fields to fetch. {DEFAULT : empty}
+    * @return void
+    */
+    public function getDataByIds($ids = null, $fields = [], $type = 'all' )
+    {
+		
+        return $this->AreaObj->getDataByIds($ids, $fields, $type);
+    }
+
+
+    /**
+     * getDataByParams method for Areas
+     *
+     * @param array $conditions Conditions on which to search. {DEFAULT : empty}
+     * @param array $fields Fields to fetch. {DEFAULT : empty}
+     * @return void
+     */
+    public function getDataByParams(array $fields, array $conditions, $type = 'all')
+    {				        
+
+        return $this->AreaObj->getDataByParams($fields, $conditions, $type);
+    }
+	
+	/**
+     * getDataByParams for Area Level method
+     *
+     * @param array $conditions Conditions on which to search. {DEFAULT : empty}
+     * @param array $fields Fields to fetch. {DEFAULT : empty}
+     * @return void
+    */
+    public function getDataByParamsAreaLevel(array $fields, array $conditions, $type = 'all')
+    {				        
+
+        return $this->AreaLevelObj->getDataByParams($fields, $conditions, $type);
+    }
+
+    /**
+     * deleteByIds method
+     *
+     * @param array $ids Fields to fetch. {DEFAULT : null}
+     * @return void
+     */
+    public function deleteByIds($ids = null)
+    {
+        return $this->AreaObj->deleteByIds($ids);
+    }
+
+    /**
+     * deleteByParams method for Areas 
+     *
+     * @param array $conditions Fields to fetch. {DEFAULT : empty}
+     * @return void
+     */
+    public function deleteByParams($conditions = [])
+    {	
+        return $this->AreaObj->deleteByParams($conditions);
+    }
+	
+	
+	/**
+     * deleteByParams method for Area Level 
+     *
+     * @param array $conditions Fields to fetch. {DEFAULT : empty}
+     * @return void
+     */
+	
+	
+	public function deleteByParamsAreaLevel($conditions = [])
+    {				        
+
+        return $this->AreaLevelObj->deleteByParams($conditions);
+    }
+
+    /**
+     * insertData method for Area
+     *
+     * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
+     * @return void
+    */
+    public function insertUpdateAreaData($fieldsArray = [])
+    {
+        return $this->AreaObj->insertData($fieldsArray);
+    }
+	
+	
+	/**
+     * insertData method for Area level
+     *
+     * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
+     * @return void
+    */
+    public function insertUpdateAreaLevel($fieldsArray = [])
+    {
+        return $this->AreaLevelObj->insertData($fieldsArray);
+    }
+
+
+    
+    
+    /**
+     * insertBulkData method
+     *
+     * @param array $insertDataArray Data to insert. {DEFAULT : empty}
+     * @param array $insertDataKeys Columns to insert. {DEFAULT : empty}
+     * @return void
+     */
+    public function insertBulkData($insertDataArray = [], $insertDataKeys = [])
+    {
+        return $this->AreaObj->insertBulkData($insertDataArray, $insertDataKeys);
+    }
+	
+	
+	 /**
+     * insertBulkData method for Area level
+     *
+     * @param array $insertDataArray Data to insert. {DEFAULT : empty}
+     * @param array $insertDataKeys Columns to insert. {DEFAULT : empty}
+     * @return void
+     */
+    public function insertBulkDataAreaLevel($insertDataArray = [], $insertDataKeys = [])
+    {
+        return $this->AreaLevelObj->insertBulkData($insertDataArray, $insertDataKeys);
+    }
+	
+	
+	
+
+    
+    /**
+     * insertOrUpdateBulkData method
+     *
+     * @param array $dataArray Fields to insert with their Data. {DEFAULT : empty}
+     * @return void
+     */
+    public function insertOrUpdateBulkData($dataArray = [])
+    {
+        return $this->AreaObj->insertOrUpdateBulkData($dataArray);
+    }
+	
+	
+	/**
+     * insertOrUpdateBulkData method for Area level
+     *
+     * @param array $dataArray Fields to insert with their Data. {DEFAULT : empty}
+     * @return void
+     */
+    public function insertOrUpdateBulkDataAreaLevel($dataArray = [])
+    {
+        return $this->AreaLevelObj->insertOrUpdateBulkData($dataArray);
+    }
+
+
+    /**
+     * updateDataByParams method
+     *
+     * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
+     * @return void
+     */
+    public function updateDataByParams($fieldsArray = [], $conditions = [])
+    {
+        return $this->AreaObj->updateDataByParams($fieldsArray, $conditions);
+    }
+	
+	 /**
+     * updateDataByParams method for Area level
+     *
+     * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
+     * @return void
+     */
+    public function updateDataByParamsAreaLevel($fieldsArray = [], $conditions = [])
+    {
+        return $this->AreaLevelObj->updateDataByParams($fieldsArray, $conditions);
+    }
+	
+	
+	
+	/**
+    * updateDataByParams method for  Area
+    *
+    * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
+    * @return void
+    */
+    public function updateDataByParamsArea($fieldsArray = [], $conditions = [])
+    {
+        return $this->AreaObj->updateDataByParams($fieldsArray, $conditions);
+    }
+
+
+}

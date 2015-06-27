@@ -1,0 +1,28 @@
+<div class="scroll">
+    <section class="container">
+        <section class="db-list">
+            <h2>My Databases</h2>
+
+            <div class="btn-box" ng-if="isSuperAdmin()">
+                <a ui-sref="DataAdmin.newDatabaseConnection" class="btn btn-green btn-lg"><i class="fa fa-plus-circle"></i> Add New Database </a>
+            </div>
+
+            <div class="list">
+                <ul>
+                    <li ng-repeat="database in databaseList">
+                        <div class="db-name">
+                            <a ui-sref="DataAdmin.databaseManagement({id: database.id})"><i class="fa fa-database"></i>{{database.dbName}}</a>
+                        </div>
+                        <div class="db-option">
+                            <ul>
+                                <li><a href="javascript:void(0);">Delete </a></li>
+                            </ul>
+                        </div>
+                        <div class="clear"></div>
+                    </li>
+                </ul>
+            </div>
+            <div class="clear"></div>
+        </section>
+    </section>
+</div>

@@ -34,6 +34,20 @@ class CommonComponent extends Component
         }
 	}
 	
+	
+	/*
+	 Cleandata is function which returns the passed parameter after
+ 	 removing whitespace or unnecesary characters with clean data  	 
+	 mysql_real_escape_string($user)
+	*/
+	
+	public function cleandata($data){		
+		  $data = trim($data);
+		  $data = stripslashes($data);
+		  $data = htmlspecialchars($data);
+		  return $data;		
+	}
+	
 
 
 }
