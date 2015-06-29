@@ -3,12 +3,13 @@ namespace DevInfoInterface\Model\Table;
 
 use App\Model\Entity\TimePeriod;
 use Cake\ORM\Table;
+use Cake\I18n\Time;
 
 
 /**
- * TimePeriodTable Model
+ * TimePeriodsTable Model
  */
-class TimePeriodTable extends Table
+class TimePeriodsTable extends Table
 {
 
 	public $delim1  = '-';
@@ -179,7 +180,6 @@ class TimePeriodTable extends Table
     */
     
 	public function deleteByParams(array $conditions){
-        
 		$result = $this->deleteAll($conditions);
 
         return $result;
@@ -229,8 +229,50 @@ class TimePeriodTable extends Table
      * @param array $fieldsArray Fields to insert with their Data.
      * @return void
     */
+	
+ 	public function insertData($fieldsArray = [])
+    {
+
+		$timeperiodvalue = $fieldsArray[_TIMEPERIOD_TIMEPERIOD];
+		
+        $conditions = array();
+	    
+		if(isset($fieldsArray[_TIMEPERIOD_TIMEPERIOD]) && !empty($fieldsArray[_TIMEPERIOD_TIMEPERIOD]))            
+		$conditions[_TIMEPERIOD_TIMEPERIOD] = $fieldsArray[_TIMEPERIOD_TIMEPERIOD];		
+		
+		if(isset($fieldsArray[_TIMEPERIOD_TIMEPERIOD_NID]) && !empty($fieldsArray[_TIMEPERIOD_TIMEPERIOD_NID]))            
+		$conditions[_TIMEPERIOD_TIMEPERIOD_NID.' !='] = $fieldsArray[_TIMEPERIOD_TIMEPERIOD_NID];
+		
+		if(isset($timeperiodvalue) && !empty($timeperiodvalue)){            
+			
+		//numrows if numrows >0 then record already exists else insert new row
+		$numrows = $this->find()->where($conditions)->count();
+		
+		if(isset($numrows) &&  $numrows ==0){  // new record
+
+		//Create New Entity
+        $TimeperiodData = $this->newEntity();
+        //pr($fieldsArray);die;
+        //Update New Entity Object with data
+        $TimeperiodData = $this->patchEntity($TimeperiodData, $fieldsArray);
+        
+        //Create new row and Save the Data
+        if ($this->save($TimeperiodData)) {
+            return 1;
+        } else {
+            return 0;
+        } 
+		
+		}else{
+		    return 0;  
+        }
+		
+		}		
+
+    }
+
 	 
-    public function insertData($fieldsArray){
+    public function insertData_old($fieldsArray){
 		
 		$timeperiodvalue = $fieldsArray[_TIMEPERIOD_TIMEPERIOD];		
 		
@@ -257,10 +299,19 @@ class TimePeriodTable extends Table
 		$data->TimePeriod     = $timeperiodvalue;
 		$numberofdays_dec     = cal_days_in_month(CAL_GREGORIAN, 12, date('Y')); // 31
 		$timeformatData       = $this->checkTimePeriodFormat($timeperiodvalue);
+		pr($timeformatData);
+		echo '<br>';
+		echo _TIMEPERIOD_STARTDATE;
+				echo '<br>';
+				echo '<br>';
+		echo _TIMEPERIOD_ENDDATE;
+				echo '<br>';
+
 		$data->StartDate      = $timeformatData[_TIMEPERIOD_STARTDATE];
 		$data->EndDate        = $timeformatData[_TIMEPERIOD_ENDDATE];
 		$data->Periodicity    = $fieldsArray[_TIMEPERIOD_PERIODICITY];
-	
+//	pr($data);
+	//	die('nahii');
         //Create new row and Save the Data
         if($this->save($data)){
 			return 1;
@@ -284,7 +335,8 @@ class TimePeriodTable extends Table
 	*/
 	
 	public function checkTimePeriodFormat($timeperiodvalue=''){
-		
+					//
+
 		$pos_delim1 = strpos($timeperiodvalue, $this->delim1);
 	    $pos_delim2 = strpos($timeperiodvalue, $this->delim2);
 
@@ -323,12 +375,15 @@ class TimePeriodTable extends Table
 		if($type == '.'){
 			// case 2012.02
 			$explodedelim2 = explode($this->delim2,$timeperiodvalue);
-			$year  = $explodedelim2[0]; //start and end year  
+			pr($explodedelim2);
+		    $year  = $explodedelim2[0]; //start and end year  
 			$month = $explodedelim2[1]; // start month 			
 			$numberofdays_end_month  = cal_days_in_month(CAL_GREGORIAN, 12, $year); // 31			
 
-			$startyear = $year.'-'.$month.'-01'; 
-			$endyear   = $year.'-'.$month.'-'.$numberofdays_end_month; 
+			echo $startyear = $year.'-'.$month.'-01'; 
+		//	echo '<br>';
+			echo $endyear   = $year.'-'.$month.'-'.$numberofdays_end_month; 
+	
 			return array('StartDate'=>$startyear,'EndDate'=>$endyear,'success'=>true);
 			
 		}elseif($type == 'Both'){
@@ -387,15 +442,13 @@ class TimePeriodTable extends Table
      */
     public function updateDataByParams($fieldsArray = [], $conditions = [])
     {
-		
-        //Get Entities based on Coditions
-        $Timperiod = $this->get($conditions);
+        $Timeperiod = $this->get($conditions);
         
         //Update Entity Object with data
-        $Timperiod = $this->patchEntity($Timperiod, $fieldsArray);
+        $Timeperiod = $this->patchEntity($Timeperiod, $fieldsArray);
         
         //Update the Data
-        if ($this->save($Timperiod)) {
+        if ($this->save($Timeperiod)) {
             return 1;
         } else {
             return 0;

@@ -29,7 +29,7 @@ class ServicesController extends AppController
 {
     //Loading Components
  
-	public $components = ['Auth','DevInfoInterface.CommonInterface','Common','ExcelReader'];
+	public $components = ['DevInfoInterface.CommonInterface','Common','ExcelReader'];
 
     public function initialize()
     {
@@ -44,7 +44,7 @@ class ServicesController extends AppController
 		// You should not add the "login" action to allow list. Doing so would
 		// cause problems with normal functioning of AuthComponent.
 	
-		$this->Auth->allow(['*']);
+		//$this->Auth->allow(['serviceQuery']);
 	}
 
     /**
@@ -55,7 +55,8 @@ class ServicesController extends AppController
 	*/
     public function serviceQuery($case = null)
     {
-        $this->autoRender = false;
+      
+	  $this->autoRender = false;
         $this->autoLayout = false;//$this->layout = '';
 		$convertJson = '_YES';
 		$returnData = [];
@@ -240,7 +241,8 @@ class ServicesController extends AppController
 			case 301:
 				// service for getting the Timeperiod details on basis of any parameter  
 				// passing array $fields, array $conditions
-			
+			$_POST['TimePeriod']='2060';
+			$_POST['periodicity']='C';
 			if(!empty($_POST['TimePeriod']) || !empty($_POST['periodicity']) || !empty($_POST['EndDate']) || !empty($_POST['StartDate']) || !empty($_POST['TimePeriod_NId'])){
 				
 				$conditions = array();
@@ -261,13 +263,14 @@ class ServicesController extends AppController
 			    if(isset($_POST['TimePeriod_NId']) && !empty($_POST['TimePeriod_NId']))
                 $conditions[_TIMEPERIOD_TIMEPERIOD_NID] = trim($_POST['TimePeriod_NId']);
 			
+			    $params[] = $fields = [_TIMEPERIOD_TIMEPERIOD_NID, _TIMEPERIOD_PERIODICITY];
+                
 				$params[]   = $conditions;			
 
-				$params[]	= $fields;
+				 //$params[]	= $fields;
 				
 				$getDataByTimeperiod = $this->CommonInterface->serviceInterface('Timeperiod', 'getDataByParams', $params, $dbConnection);
-				
-               // $getDataByTimeperiod  = $this->Timeperiod->getDataByParams( $fields ,$conditions);
+				// $getDataByTimeperiod  = $this->Timeperiod->getDataByParams( $fields ,$conditions);
 				if(isset($getDataByTimeperiod) && count($getDataByTimeperiod)>0)
 				{
 					$returnData['data']   = $getDataByTimeperiod;
@@ -288,6 +291,9 @@ class ServicesController extends AppController
 				
 			case 302:
 				// service for deleting the time period using  any parameters   
+				$_POST['TimePeriod']='2060';
+			$_POST['periodicity']='C';
+		
 			if(!empty($_POST['TimePeriod']) || !empty($_POST['periodicity']) || !empty($_POST['EndDate']) || !empty($_POST['StartDate']) || !empty($_POST['TimePeriod_NId'])){
 				
 				$conditions = array();
@@ -310,7 +316,6 @@ class ServicesController extends AppController
 	            $params[]   = $conditions;			
 
 				$deleteallTimeperiod = $this->CommonInterface->serviceInterface('Timeperiod', 'deleteByParams', $params, $dbConnection);
-								
                 //$deleteallTimeperiod  = $this->Timeperiod->deleteByParams($conditions);
 				if($deleteallTimeperiod){
 					$returnData['message'] = 'Record deleted successfully';
@@ -330,12 +335,14 @@ class ServicesController extends AppController
             case 303: 
 			// service for saving  details of timeperiod 
 				$data = array();			
-				
-				if(isset($_POST['TimePeriodData']) && !empty($_POST['TimePeriodData']))
-				$data[_TIMEPERIOD_TIMEPERIOD]   = trim($_POST['TimePeriodData']);
+				$_POST['TimePeriod']='2076.09';
+			    $_POST['periodicity']='C';
+
+				if(isset($_POST['TimePeriod']) && !empty($_POST['TimePeriod']))
+				$data[_TIMEPERIOD_TIMEPERIOD]   = trim($_POST['TimePeriod']);
 			
-				if(isset($_POST['Periodicity']) && !empty($_POST['Periodicity']))
-				$data[_TIMEPERIOD_PERIODICITY]  = trim($_POST['Periodicity']);
+				if(isset($_POST['periodicity']) && !empty($_POST['periodicity']))
+				$data[_TIMEPERIOD_PERIODICITY]  = trim($_POST['periodicity']);
 				
 				if(isset($_POST['TimePeriod_NId']) && !empty($_POST['TimePeriod_NId']))			
 				$data[_TIMEPERIOD_TIMEPERIOD_NID]  = trim($_POST['TimePeriod_NId']);
@@ -343,8 +350,8 @@ class ServicesController extends AppController
 			    $params[]=$data;
 					
                 $saveTimeperiodDetails = $this->CommonInterface->serviceInterface('Timeperiod', 'insertUpdateDataTimeperiod', $params, $dbConnection);
-					
 			   // $saveTimeperiodDetails  = $this->Timeperiod->insertUpdateDataTimeperiod($data);
+			   die;
 			  	if($saveTimeperiodDetails){				
 					$returnData['success']     = true;		
 					$returnData['message']     = 'Record inserted successfully!!';
@@ -358,29 +365,31 @@ class ServicesController extends AppController
 			/// cases for updating  Time period 
             case 304: 
 			// service for updating  details of timeperiod 
+				
 				$data = array();
 			
 				$_POST['TimePeriod_NId']=12;
-				$_POST['Periodicity']='A';
+				//$_POST['periodicity']='A';
+				//$_POST['TimePeriod']='2509';
 				
-				if(isset($_POST['TimePeriodData']) && !empty($_POST['TimePeriodData']))
-				$data[_TIMEPERIOD_TIMEPERIOD]   = trim($_POST['TimePeriodData']);
+				if(isset($_POST['TimePeriod']) && !empty($_POST['TimePeriod']))
+				$data[_TIMEPERIOD_TIMEPERIOD]   = trim($_POST['TimePeriod']);
 			
-				if(isset($_POST['Periodicity']) && !empty($_POST['Periodicity']))
-				$data[_TIMEPERIOD_PERIODICITY]  = trim($_POST['Periodicity']);
+				if(isset($_POST['periodicity']) && !empty($_POST['periodicity']))
+				$data[_TIMEPERIOD_PERIODICITY]  = trim($_POST['periodicity']);
 				
 				if(isset($_POST['TimePeriod_NId']) && !empty($_POST['TimePeriod_NId']))			
 				$data[_TIMEPERIOD_TIMEPERIOD_NID]  = trim($_POST['TimePeriod_NId']);
 			
 				
 				$fields = [
-                          'TimePeriod'=>'2029',                          
+                          'TimePeriod'=>'2709',                          
                          ];
                 $conditions = $data;
 
                  //updateDataByParams(array $fields, array $conditions)
 			    $params['fields'] = $fields;
-			    $params['conditions'] = $conditions;
+			    $params[] = $conditions;
 					
                 $saveTimeperiodDetails = $this->CommonInterface->serviceInterface('Timeperiod', 'updateDataByParams', $params, $dbConnection);
 					
@@ -1140,7 +1149,7 @@ class ServicesController extends AppController
 			// service for bulk upload of area excel sheet
 			  //if($this->request->is('post')):
                 if(true):
-                    $params[]['filename'] = $filename = 'C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\Area.xls';
+                    $params[]['filename'] = $filename = 'C:\wamp\www\dfa_devinfo_data_admin\webroot\data-import-formats\Area.xls';
                     //$returnData = $this->CommonInterface->bulkUploadXlsOrCsvForIndicator($params);                    
                     $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForArea', $params, $dbConnection);   
 die;					

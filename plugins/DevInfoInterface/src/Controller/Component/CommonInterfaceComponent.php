@@ -30,7 +30,8 @@ class CommonInterfaceComponent extends Component
             'DevInfoInterface.Unit', 
             'DevInfoInterface.Timeperiod', 
             'DevInfoInterface.Subgroup', 
-            'DevInfoInterface.IndicatorClassifications'
+            'DevInfoInterface.IndicatorClassifications',
+            'DevInfoInterface.Area',
         ];
     
 
@@ -54,10 +55,10 @@ class CommonInterfaceComponent extends Component
             'className' => 'Cake\Database\Connection',
             'driver' => 'Cake\Database\Driver\Mysql',
             'persistent' => false,
-            'host' => 'dgps-os',
+            'host' => 'localhost',
             //'port' => 'nonstandard_port_number',
             'username' => 'root',
-            'password' => 'root',
+            'password' => '',
             'database' => 'Developer_Evaluation_Database',
             'encoding' => 'utf8',
             'timezone' => 'UTC',
@@ -66,7 +67,7 @@ class CommonInterfaceComponent extends Component
         ];
           
         ConnectionManager::config('devInfoConnection', $config);
-        //$conn = ConnectionManager::get('devInfoConnection');
+        $conn = ConnectionManager::get('devInfoConnection');
     }
 
 
@@ -81,15 +82,14 @@ class CommonInterfaceComponent extends Component
         if(!empty($dbConnection)){
             $this->setDbConnection($dbConnection);
         }
-        
         /**
         * http://php.net/manual/en/function.call-user-func-array.php
         * call_user_func_array(array($classObj, $method), $params);
         **/
         if($component.'Component' == (new \ReflectionClass($this))->getShortName()){
-            return call_user_func_array([$this, $method], $params);
-        }else{
-            return call_user_func_array([$this->{$component}, $method], $params);
+		 return call_user_func_array([$this, $method], $params);
+        }else{               
+         return call_user_func_array([$this->{$component}, $method], $params);
         }
         
 	}
@@ -213,10 +213,11 @@ class CommonInterfaceComponent extends Component
      */
     public function divideNameAndGidsArea($insertDataKeys = null, $insertDataArr = null, $extra = null)
     {
-		$insertDataNames = [];
-        $insertDataGids = [];
         $insertDataAreaids = [];
-        
+        $insertDataAreaParentids = [];
+        $blnkParentidsAreaids = [];
+        $areaidswithparentid = [];
+        $newinsertDataArr =$insertDataArr;
         foreach($insertDataArr as $row => &$value){      
       
             $value = array_combine($insertDataKeys, $value);
@@ -226,12 +227,71 @@ class CommonInterfaceComponent extends Component
                 unset($value);
             }else if(array_key_exists('areaid', $insertDataKeys) && !isset($value[$insertDataKeys['areaid']])){
                 unset($value);
-            }else if(isset($value[$insertDataKeys['areaid']])){
-                $insertDataAreaids[$row] = $value[$insertDataKeys['areaid']];
+            }else if(isset($value[$insertDataKeys['areaid']])){                
+			//	$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']];
+				//$insertDataAreaids[$row]['parentnid'] = $value[$insertDataKeys['parentnid']];
+				if(!empty($value[$insertDataKeys['parentnid']]))
+				$insertDataAreaParentids[$row] = $value[$insertDataKeys['parentnid']];
             }
         }        
-        $insertDataArr = array_filter($insertDataArr);        
-        return ['dataArray' => $insertDataArr, 'insertDataAreaids' => $insertDataAreaids];
+		$insertDataAreaParentids = array_unique($insertDataAreaParentids);
+		//pr($insertDataAreaParentids);
+		$fields =[_AREA_AREA_NID,_AREA_AREA_ID];
+		$conditions= array();
+		$conditions=[_AREA_AREA_ID.' IN '=>$insertDataAreaParentids];
+		//$conditions=[_AREA_AREA_ID.' IN (IND,IND008)'];
+		$areaidswithparentid = $this->Area->getDataByParams($fields,$conditions,'list');
+		echo 'insert all area ids with parent ids';
+		//pr($areaidswithparentid);
+		echo 'insert all area ids';
+		//pr($insertDataAreaids);
+		
+		foreach($newinsertDataArr as $row => &$value){      
+            $value = array_combine($insertDataKeys, $value);
+            $value = array_filter($value);
+			//We don't need this row if the name field is empty
+            if(!isset($value[$insertDataKeys['name']])){
+                unset($value);
+				 unset($newinsertDataArr[$row]);
+            }else if(array_key_exists('areaid', $insertDataKeys) && !isset($value[$insertDataKeys['areaid']])){
+                unset($value);
+                unset($newinsertDataArr[$row]);
+            }else if(isset($value[$insertDataKeys['areaid']])){                
+				//$insertDataAreaids[$row]['parentnid'] = $value[$insertDataKeys['parentnid']];
+				if(!empty($value[$insertDataKeys['parentnid']]) && in_array($value[$insertDataKeys['parentnid']],$areaidswithparentid)==true){
+					$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']];
+					$finalareaids[$value[$insertDataKeys['areaid']]]['areaid'] =	$value[$insertDataKeys['areaid']];
+					$finalareaids[$value[$insertDataKeys['areaid']]]['parentareaNid'] =	array_search($value[$insertDataKeys['parentnid']], $areaidswithparentid);
+					$value[$insertDataKeys['parentnid']]=array_search($value[$insertDataKeys['parentnid']], $areaidswithparentid);
+				}elseif(empty($value[$insertDataKeys['parentnid']]) ){
+					$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']];
+					$finalareaids[$value[$insertDataKeys['areaid']]]['areaid'] =	$value[$insertDataKeys['areaid']];
+					$finalareaids[$value[$insertDataKeys['areaid']]]['parentareanid'] =	'-1';
+					$value[$insertDataKeys['parentnid']]='-1';
+					//array_push($value[$insertDataKeys['parentnid']],array($insertDataKeys['parentnid']=>'-1'));
+					//pr($value);die;
+					//$pushparentidarray = array($value[$insertDataKeys['parentnid']]=>'-1');
+					//array_merge($newinsertDataArr[$row],$pushparentidarray);
+					//echo 'bola';
+					//pr($newinsertDataArr[$row]);
+					//die;
+					
+					
+				}else{
+					unset($value);
+		     		 unset($newinsertDataArr[$row]);
+
+			    }
+				
+            }
+        }
+		echo 'sur';
+		//pr($finalareaids);
+		//pr($insertDataAreaids);
+		$newinsertDataArr = array_filter($newinsertDataArr);        
+        pr($finalareaids);
+        
+		return ['dataArray' => $newinsertDataArr, 'insertDataAreaids' => $insertDataAreaids,'finalareaids'=>$finalareaids];
 		
 	}
 
@@ -1248,21 +1308,21 @@ class CommonInterfaceComponent extends Component
      * @param array $names Names Array. {DEFAULT : empty}
      * @return void
      */
-    public function updateColumnsFromAreaIds($names = [], $dataArray, $insertDataKeys, $extra = null)
+    public function updateColumnsFromAreaIds($areaids = [], $dataArray, $insertDataKeys, $extra = null)
     {
 			pr($insertDataKeys);
 			pr($dataArray);
 			pr($names );
 			die;
 
-        $fields = [$extra['nid'], $insertDataKeys['name']];
-        $conditions = [$insertDataKeys['areaid'] . ' IN'=>$names];
+        $fields = [$extra['nid'], $insertDataKeys['areaid']];
+        $conditions = [$insertDataKeys['areaid'] . ' IN'=>$areaids];
 		
         $updateGid = $extra['updateGid']; // true/false
 
         //Get NIds based on Name - //Check if Names found in database
         //getDataByParams(array $fields, array $conditions, $type = 'all')
-        $getDataByName = $this->{$component}->getDataByParams($fields, $conditions, 'list');
+        $getDataByAreaid = $this->{$component}->getDataByParams($fields, $conditions, 'list');
 
         
         /* 
@@ -1272,27 +1332,25 @@ class CommonInterfaceComponent extends Component
          * BECAUSE THAT WILL OVERWRITE THE GUID
          */
         if($updateGid == true){
-            if(!empty($getDataByName)){
-                foreach($getDataByName as $Nid => $name){
-                    $key = array_search($name, $names);
-                    $name = $dataArray[$key];
+            if(!empty($getDataByAreaid)){
+                foreach($getDataByAreaid as $Nid => $areaid){
+                   
+				    $key = array_search($areaid, $areaids);
+                    $areaid = $dataArray[$key];
 
                     $autoGenGuid = $this->guid();
-                    $name[$insertDataKeys['gid']] = $autoGenGuid;
 
-                    if(array_key_exists('highIsGood', $insertDataKeys)){
-                        if(!array_key_exists($insertDataKeys['highIsGood'], $name)){
-                            $name[$insertDataKeys['highIsGood']] = 0;
+                        if(!array_key_exists($insertDataKeys['gid'], $areaid)){
+                            $areaid[$insertDataKeys['gid']]  = $autoGenGuid;
                         }
-                    }
                 
-                    $this->{$component}->updateDataByParams($name, [$extra['nid'] => $Nid]);
+                    $this->{$component}->updateDataByParams($areaid, [$extra['nid'] => $Nid]);
                 }
             }
         }
 
-        //Get Guids that are not found in the database
-        return $freshRecordsNames = array_diff($names, $getDataByName);
+        //Get Areaids that are not found in the database
+        return $freshRecordsNames = array_diff($areaids, $getDataByAreaid);
 
     }
 

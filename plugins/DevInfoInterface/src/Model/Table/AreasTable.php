@@ -92,7 +92,7 @@ class AreasTable extends Table
             $options['fields'] = $fields;
         if(!empty($conditions))
             $options['conditions'] = $conditions;
-        
+        // pr($options);die;
         if($type == 'list') $this->setListTypeKeyValuePairs($fields);
 
         // Find all the rows.
