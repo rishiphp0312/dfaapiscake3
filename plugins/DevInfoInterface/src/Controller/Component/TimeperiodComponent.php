@@ -131,9 +131,9 @@ class TimeperiodComponent extends Component
 		//pr($fieldsArray);
 		$timeperiodvalue = $fieldsArray[_TIMEPERIOD_TIMEPERIOD];			
 		$timeformatData       = $this->checkTimePeriodFormat($timeperiodvalue);		
-		$fieldsArray[_TIMEPERIOD_STARTDATE]      = new Time($timeformatData[_TIMEPERIOD_STARTDATE]);
-		$fieldsArray[_TIMEPERIOD_ENDDATE]        = new Time($timeformatData[_TIMEPERIOD_ENDDATE]);
-	//die;
+		//$fieldsArray[_TIMEPERIOD_STARTDATE]      = new Time($timeformatData[_TIMEPERIOD_STARTDATE]);
+		//$fieldsArray[_TIMEPERIOD_ENDDATE]        = new Time($timeformatData[_TIMEPERIOD_ENDDATE]);
+		//die;
         return $this->TimeperiodObj->updateDataByParams($fieldsArray, $conditions);
     }
 

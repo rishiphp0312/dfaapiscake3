@@ -24,6 +24,15 @@ class UnitTable extends Table
         $this->addBehavior('Timestamp');
     }
 
+    /*
+     * @Cakephp3: defaultConnectionName method
+     * @Defines which DB connection to use from multiple database connections
+     * @Connection Created in: CommonInterfaceComponent
+     */
+    public static function defaultConnectionName() {
+        return 'devInfoConnection';
+    }
+
 
     /**
      * setListTypeKeyValuePairs method

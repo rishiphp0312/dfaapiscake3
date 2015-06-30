@@ -32,6 +32,12 @@ class TimePeriodsTable extends Table
         return 'devInfoConnection';
     }
 	
+	public function beforesave(Event $event, Entity $entity)
+	{
+    
+		//$this->slug($entity);
+	}
+    
 	 /**
      * getDataByIds method
      * @param array $id The WHERE conditions with ids only for the Query. {DEFAULT : null}
@@ -335,14 +341,12 @@ class TimePeriodsTable extends Table
 	*/
 	
 	public function checkTimePeriodFormat($timeperiodvalue=''){
-					//
-
+		//
 		$pos_delim1 = strpos($timeperiodvalue, $this->delim1);
 	    $pos_delim2 = strpos($timeperiodvalue, $this->delim2);
 
 		if ($pos_delim1 >0  && $pos_delim2 == false) {
-			//case only hypen
-		
+			//case only hypen		
 			return $this->dataTimeFormatReturned($timeperiodvalue,$this->delim1);
 		}
 		
@@ -358,8 +362,7 @@ class TimePeriodsTable extends Table
 		}
 		
 		if ($pos_delim1 == false  && $pos_delim2 == false) {
-		      //case nothing occurs either hypen or period	
-			  
+		      //case nothing occurs either hypen or period				  
 			  return $this->dataTimeFormatReturned($timeperiodvalue,'NA');
 		}
 	}// end of function checkTimePeriodFormat
@@ -441,9 +444,10 @@ class TimePeriodsTable extends Table
      * @return void
      */
     public function updateDataByParams($fieldsArray = [], $conditions = [])
-    {
+    {        		
+
         $Timeperiod = $this->get($conditions);
-        
+pr($conditions);pr($fieldsArray);die;
         //Update Entity Object with data
         $Timeperiod = $this->patchEntity($Timeperiod, $fieldsArray);
         

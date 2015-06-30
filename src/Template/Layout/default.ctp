@@ -15,7 +15,8 @@
             'app/components/login/login.module', 'app/components/login/login.controller', 
             'app/components/database/database.module', 'app/components/database/database.controller', 'app/components/database/database.service',
             'app/components/databaseManagement/databaseManagement.module','app/components/databaseManagement/databaseManagement.controller','app/components/databaseManagement/databaseManagement.service',
-             'app/components/userManagement/userManagement.module','app/components/userManagement/userManagement.controller','app/components/userManagement/userManagement.service',
+            'app/components/userManagement/userManagement.module','app/components/userManagement/userManagement.controller','app/components/userManagement/userManagement.service',
+            'app/components/iusManagement/iusManagement.module','app/components/iusManagement/iusManagement.controller','app/components/iusManagement/iusManagement.service',
             'app/appConfig','app/app','app/app.controller','app/app.config','app/app.constant', 'app/app.service'])
         ?>
     </head>

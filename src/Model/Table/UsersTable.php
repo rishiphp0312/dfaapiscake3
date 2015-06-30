@@ -21,6 +21,17 @@ class UsersTable extends Table
         $this->table('m_users');
         $this->primaryKey('id');
         $this->addBehavior('Timestamp');
+    
+        $this->belongsToMany('MDatabaseConnections', 
+        [
+            'targetForeignKey' => 'db_id',
+            'foreignKey' => 'user_id',
+             'joinTable' => 'r_user_databases',
+            //  'through' => 'RUserDatabases',
+        ]);
+        
+         
+         
     }
 
 

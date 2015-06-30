@@ -1,41 +1,37 @@
 <?php  
 namespace DevInfoInterface\Model\Table;
 
-use App\Model\Entity\IndicatorClassifications;
+use App\Model\Entity\Area;
 use Cake\ORM\Table;
 
 
 /**
- * IndicatorClassifications Model
+ * Area Model
  */
-class IndicatorClassificationsTable extends Table
+ 
+class AreasTable extends Table
 {
 
     /**
-     * Initialize method
-     *
-     * @param array $config The configuration for the Table.
-     * @return void
-     */
+    * Initialize method
+    *
+    * @param array $config The configuration for the Table.
+    * @return void
+    */
     public function initialize(array $config)
     {
-        $this->table('UT_Indicator_Classifications_en');
-        $this->primaryKey('IC_NId');
-        $this->displayField('IC_Name'); //used for find('list')
+        $this->table('UT_Area_en');
+        $this->primaryKey('Area_NId');
         $this->addBehavior('Timestamp');
     }
-
-    /*
-     * @Cakephp3: defaultConnectionName method
-     * @Defines which DB connection to use from multiple database connections
-     * @Connection Created in: CommonInterfaceComponent
-     */
-    public static function defaultConnectionName() {
+	
+	 
+	public static function defaultConnectionName() 
+	{
         return 'devInfoConnection';
     }
-
-
-    /**
+	
+	/**
      * setListTypeKeyValuePairs method
      *
      * @param array $fields The fields(keys/values) for the list.
@@ -62,7 +58,7 @@ class IndicatorClassificationsTable extends Table
         if(!empty($fields))
             $options['fields'] = $fields;
 
-        $options['conditions'] = [_IC_IC_NID.' IN'=>$ids];
+        $options['conditions'] = [_AREA_AREA_NID.' IN'=>$ids];
 
         if($type == 'list') $this->setListTypeKeyValuePairs($fields);
 
@@ -96,53 +92,19 @@ class IndicatorClassificationsTable extends Table
             $options['fields'] = $fields;
         if(!empty($conditions))
             $options['conditions'] = $conditions;
-        
+        // pr($options);die;
         if($type == 'list') $this->setListTypeKeyValuePairs($fields);
-
-        $results = $this->find('list')->where($conditions);
-        //print_r($results);exit;
 
         // Find all the rows.
         // At this point the query has not run.
         $query = $this->find($type, $options);
-        
+
         // Calling execute will execute the query
         // and return the result set.
         $results = $query->all();
 
         // Once we have a result set we can get all the rows
         $data = $results->toArray();
-
-        return $data;
-
-    }
-
-
-    /**
-     * getGroupedList method
-     *
-     * @param array $conditions The WHERE conditions for the Query. {DEFAULT : empty}
-     * @param array $fields The Fields to SELECT from the Query. {DEFAULT : empty}
-     * @return void
-     */
-    public function getGroupedList(array $fields, array $conditions)
-    {
-        $options = [];
-        
-        if(!empty($fields))
-            $options['fields'] = $fields;
-        if(!empty($conditions))
-            $options['conditions'] = $conditions;
-
-        $query = $this->find('list', [
-            'keyField' => $fields[0],
-            'valueField' => $fields[1],
-            'groupField' => $fields[2],
-            'conditions' => $conditions
-        ]);
-        
-        // Once we have a result set we can get all the rows
-        $data = $query->toArray();
 
         return $data;
 
@@ -157,12 +119,8 @@ class IndicatorClassificationsTable extends Table
      */
     public function deleteByIds($ids = null)
     {
-        /*
-        //---- This can also be used but we don't want 2 steps ----//
-        $entity = $this->find('all')->where(['Indicator_NId IN' => $ids]);
-        $result = $this->delete($entity);
-        */
-        $result = $this->deleteAll([_IC_IC_NID.' IN' => $ids]);
+        
+        $result = $this->deleteAll([_AREA_AREA_NID.' IN' => $ids]);
 
         return $result;
     }
@@ -190,18 +148,45 @@ class IndicatorClassificationsTable extends Table
      */
     public function insertData($fieldsArray = [])
     {
+		
+		
+		//Create New Entity		
+		$conditions = array();
+	    
+		//if(isset($fieldsArray[_AREALEVEL_AREA_LEVEL]) && !empty($fieldsArray[_AREALEVEL_AREA_LEVEL]))            
+		//$conditions[_AREALEVEL_AREA_LEVEL] = $fieldsArray[_AREALEVEL_AREA_LEVEL];	
+
+		if(isset($fieldsArray[_AREA_AREA_ID]) && !empty($fieldsArray[_AREA_AREA_ID]))            
+		$conditions[_AREA_AREA_ID] = $fieldsArray[_AREA_AREA_ID];	
+		
+		if(isset($fieldsArray[_AREA_AREA_NID]) && !empty($fieldsArray[_AREA_AREA_NID]))            
+		$conditions[_AREA_AREA_NID.' !='] = $fieldsArray[_AREA_AREA_NID];	
+	  
+		$Area_Id = $fieldsArray[_AREA_AREA_ID];
+		if(isset($Area_Id) && !empty($Area_Id)){            
+			
+		//numrows if numrows >0 then record already exists else insert new row
+		$numrows = $this->find()->where($conditions)->count();
+	
+		if(isset($numrows) &&  $numrows ==0){  // new record
         //Create New Entity
-        $IndicatorClassifications = $this->newEntity();
+        $Area = $this->newEntity();
         
         //Update New Entity Object with data
-        $IndicatorClassifications = $this->patchEntity($IndicatorClassifications, $fieldsArray);
+        $Area = $this->patchEntity($Area, $fieldsArray);
         
         //Create new row and Save the Data
-        if ($this->save($IndicatorClassifications)) {
+        if ($this->save($Area)) {
             return 1;
         } else {
             return 0;
-        }        
+        }  
+	  }else{
+		return 0;
+	  }	
+	}else{
+		return 0;
+	}	
 
     }
 
@@ -264,46 +249,18 @@ class IndicatorClassificationsTable extends Table
     public function updateDataByParams($fieldsArray = [], $conditions = [])
     {
         //Get Entities based on Coditions
-        $IndicatorClassifications = $this->get($conditions);
+        $Area = $this->get($conditions);
         
         //Update Entity Object with data
-        $IndicatorClassifications = $this->patchEntity($IndicatorClassifications, $fieldsArray);
+        $Area = $this->patchEntity($Area, $fieldsArray);
         
         //Update the Data
-        if ($this->save($IndicatorClassifications)) {
+        if ($this->save($Area)) {
             return 1;
         } else {
             return 0;
         }  
     }
     
-
-    /**
-     * autoGenerateNIdFromTable method
-     *
-     * @param array $connection Database to use. {DEFAULT : empty}
-     * @param array $tableName table to query. {DEFAULT : empty}
-     * @param array $NIdColumnName Column used to generate NId. {DEFAULT : empty}
-     * @return void
-     */
-	public function autoGenerateNIdFromTable($connection = null){
-
-		$maxNId = $this->find()->select(_IC_IC_NID)->max(_IC_IC_NID);
-        return $maxNId->{_IC_IC_NID};
-
-	}
-
-
-    /**
-     * testCasesFromTable method
-     *
-     * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
-     * @return void
-     */
-    public function testCasesFromTable($params = [])
-    {
-        return $this->autoGenerateNIdFromTable();
-    }
-
 
 }

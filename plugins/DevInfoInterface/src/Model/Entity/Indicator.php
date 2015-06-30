@@ -15,15 +15,15 @@ class Indicator extends Entity
      * @var array
      */
     protected $_accessible = [
-        'Indicator_NId' => true,
-        'Indicator_Name' => true,
-        'Indicator_GId' => true,
-        'Indicator_Info' => true,
-        'Indicator_Global' => true,
-        'Short_Name' => true,
-        'Keywords' => true,
-        'Indicator_Order' => true,
-        'Data_Exist' => true,
-        'HighIsGood' => true
+        _INDICATOR_INDICATOR_NID => true,
+        _INDICATOR_INDICATOR_NAME => true,
+        _INDICATOR_INDICATOR_GID => true,
+        _INDICATOR_INDICATOR_INFO => true,
+        _INDICATOR_INDICATOR_GLOBAL => true,
+        _INDICATOR_SHORT_NAME => true,
+        _INDICATOR_KEYWORDS => true,
+        _INDICATOR_INDICATOR_ORDER => true,
+        _INDICATOR_DATA_EXIST => true,
+        _INDICATOR_HIGHISGOOD => true
     ];
 }

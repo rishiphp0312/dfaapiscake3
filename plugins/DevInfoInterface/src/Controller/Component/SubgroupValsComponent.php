@@ -5,20 +5,19 @@ use Cake\Controller\Component;
 use Cake\ORM\TableRegistry;
 
 /**
- * IndicatorClassifications Component
+ * SubgroupVals Component
  */
-class IndicatorClassificationsComponent extends Component
+class SubgroupValsComponent extends Component
 {
     
     // The other component your component uses
     public $components = [];
-    public $IndicatorClassificationsObj = NULL;
-
+    public $SubgroupValsObj = NULL;
 
     public function initialize(array $config)
     {
         parent::initialize($config);
-        $this->IndicatorClassificationsObj = TableRegistry::get('DevInfoInterface.IndicatorClassifications');
+        $this->SubgroupValsObj = TableRegistry::get('DevInfoInterface.SubgroupVals');
     }
 
     /**
@@ -30,7 +29,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function getDataByIds($ids = null, $fields = [], $type = 'all' )
     {
-        return $this->IndicatorClassificationsObj->getDataByIds($ids, $fields, $type);
+        return $this->SubgroupValsObj->getDataByIds($ids, $fields, $type);
     }
 
 
@@ -43,20 +42,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function getDataByParams(array $fields, array $conditions, $type = 'all')
     {
-        return $this->IndicatorClassificationsObj->getDataByParams($fields, $conditions, $type);
-    }
-
-
-    /**
-     * getGroupedList method
-     *
-     * @param array $conditions Conditions on which to search. {DEFAULT : empty}
-     * @param array $fields Fields to fetch. {DEFAULT : empty}
-     * @return void
-     */
-    public function getGroupedList(array $fields, array $conditions)
-    {
-        return $this->IndicatorClassificationsObj->getGroupedList($fields, $conditions);
+        return $this->SubgroupValsObj->getDataByParams($fields, $conditions, $type);
     }
 
 
@@ -68,7 +54,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function deleteByIds($ids = null)
     {
-        return $this->IndicatorClassificationsObj->deleteByIds($ids);
+        return $this->SubgroupValsObj->deleteByIds($ids);
     }
 
 
@@ -80,7 +66,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function deleteByParams($conditions = [])
     {
-        return $this->IndicatorClassificationsObj->deleteByParams($conditions);
+        return $this->SubgroupValsObj->deleteByParams($conditions);
     }
 
 
@@ -92,7 +78,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function insertData($fieldsArray = [])
     {
-        return $this->IndicatorClassificationsObj->insertData($fieldsArray);
+        return $this->SubgroupValsObj->insertData($fieldsArray);
     }
     
     
@@ -105,7 +91,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function insertBulkData($insertDataArray = [], $insertDataKeys = [])
     {
-        return $this->IndicatorClassificationsObj->insertBulkData($insertDataArray, $insertDataKeys);
+        return $this->SubgroupValsObj->insertBulkData($insertDataArray, $insertDataKeys);
     }
     
 
@@ -117,19 +103,19 @@ class IndicatorClassificationsComponent extends Component
      */
     public function insertOrUpdateBulkData($dataArray = [])
     {
-        return $this->IndicatorClassificationsObj->insertOrUpdateBulkData($dataArray);
+        return $this->SubgroupValsObj->insertOrUpdateBulkData($dataArray);
     }
 
 
     /**
-     * updateDataByParams method
+     * insertBulkData method
      *
      * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
      * @return void
      */
     public function updateDataByParams($fieldsArray = [], $conditions = [])
     {
-        return $this->IndicatorClassificationsObj->updateDataByParams($fieldsArray, $conditions);
+        return $this->SubgroupValsObj->updateDataByParams($fieldsArray, $conditions);
     }
 
 
@@ -141,7 +127,19 @@ class IndicatorClassificationsComponent extends Component
      */
     public function testCasesFromTable($params = [])
     {
-        return $this->IndicatorClassificationsObj->testCasesFromTable($params);
+        return $this->SubgroupValsObj->testCasesFromTable($params);
     }
-
+    
+    /**
+     * getMax method
+     *
+     * @param array $column max column. {DEFAULT : empty}
+     * @param array $conditions Query conditinos. {DEFAULT : empty}
+     * @return void
+     */
+    public function getMax($column = '', $conditions = [])
+    {
+        //print_r(get_class_methods($this->SubgroupValsObj));exit;
+        return $this->SubgroupValsObj->getMax($column, $conditions);
+    }
 }

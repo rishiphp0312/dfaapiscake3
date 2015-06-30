@@ -5,20 +5,19 @@ use Cake\Controller\Component;
 use Cake\ORM\TableRegistry;
 
 /**
- * IndicatorClassifications Component
+ * SubgroupType Component
  */
-class IndicatorClassificationsComponent extends Component
+class SubgroupTypeComponent extends Component
 {
     
     // The other component your component uses
     public $components = [];
-    public $IndicatorClassificationsObj = NULL;
-
+    public $SubgroupTypeObj = NULL;
 
     public function initialize(array $config)
     {
         parent::initialize($config);
-        $this->IndicatorClassificationsObj = TableRegistry::get('DevInfoInterface.IndicatorClassifications');
+        $this->SubgroupTypeObj = TableRegistry::get('DevInfoInterface.SubgroupType');
     }
 
     /**
@@ -30,7 +29,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function getDataByIds($ids = null, $fields = [], $type = 'all' )
     {
-        return $this->IndicatorClassificationsObj->getDataByIds($ids, $fields, $type);
+        return $this->SubgroupTypeObj->getDataByIds($ids, $fields, $type);
     }
 
 
@@ -43,20 +42,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function getDataByParams(array $fields, array $conditions, $type = 'all')
     {
-        return $this->IndicatorClassificationsObj->getDataByParams($fields, $conditions, $type);
-    }
-
-
-    /**
-     * getGroupedList method
-     *
-     * @param array $conditions Conditions on which to search. {DEFAULT : empty}
-     * @param array $fields Fields to fetch. {DEFAULT : empty}
-     * @return void
-     */
-    public function getGroupedList(array $fields, array $conditions)
-    {
-        return $this->IndicatorClassificationsObj->getGroupedList($fields, $conditions);
+        return $this->SubgroupTypeObj->getDataByParams($fields, $conditions, $type);
     }
 
 
@@ -68,7 +54,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function deleteByIds($ids = null)
     {
-        return $this->IndicatorClassificationsObj->deleteByIds($ids);
+        return $this->SubgroupTypeObj->deleteByIds($ids);
     }
 
 
@@ -80,7 +66,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function deleteByParams($conditions = [])
     {
-        return $this->IndicatorClassificationsObj->deleteByParams($conditions);
+        return $this->SubgroupTypeObj->deleteByParams($conditions);
     }
 
 
@@ -92,7 +78,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function insertData($fieldsArray = [])
     {
-        return $this->IndicatorClassificationsObj->insertData($fieldsArray);
+        return $this->SubgroupTypeObj->insertData($fieldsArray);
     }
     
     
@@ -105,7 +91,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function insertBulkData($insertDataArray = [], $insertDataKeys = [])
     {
-        return $this->IndicatorClassificationsObj->insertBulkData($insertDataArray, $insertDataKeys);
+        return $this->SubgroupTypeObj->insertBulkData($insertDataArray, $insertDataKeys);
     }
     
 
@@ -117,7 +103,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function insertOrUpdateBulkData($dataArray = [])
     {
-        return $this->IndicatorClassificationsObj->insertOrUpdateBulkData($dataArray);
+        return $this->SubgroupTypeObj->insertOrUpdateBulkData($dataArray);
     }
 
 
@@ -129,7 +115,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function updateDataByParams($fieldsArray = [], $conditions = [])
     {
-        return $this->IndicatorClassificationsObj->updateDataByParams($fieldsArray, $conditions);
+        return $this->SubgroupTypeObj->updateDataByParams($fieldsArray, $conditions);
     }
 
 
@@ -141,7 +127,7 @@ class IndicatorClassificationsComponent extends Component
      */
     public function testCasesFromTable($params = [])
     {
-        return $this->IndicatorClassificationsObj->testCasesFromTable($params);
+        return $this->SubgroupTypeObj->testCasesFromTable($params);
     }
 
 }

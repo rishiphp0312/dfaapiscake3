@@ -3,6 +3,7 @@ namespace DevInfoInterface\Model\Table;
 
 use App\Model\Entity\Indicator;
 use Cake\ORM\Table;
+use Cake\Datasource\ConnectionManager;
 
 
 /**
@@ -23,6 +24,15 @@ class IndicatorTable extends Table
         $this->primaryKey('Indicator_NId');
         $this->displayField('Indicator_Name'); //used for find('list')
         $this->addBehavior('Timestamp');
+    }
+
+    /*
+     * @Cakephp3: defaultConnectionName method
+     * @Defines which DB connection to use from multiple database connections
+     * @Connection Created in: CommonInterfaceComponent
+     */
+    public static function defaultConnectionName() {
+        return 'devInfoConnection';
     }
 
 
@@ -49,7 +59,7 @@ class IndicatorTable extends Table
     public function getDataByIds($ids = null, array $fields, $type = 'all' )
     {
         $options = [];
-
+        
         if(!empty($fields))
             $options['fields'] = $fields;
 
@@ -67,7 +77,7 @@ class IndicatorTable extends Table
 
         // Once we have a result set we can get all the rows
         $data = $results->toArray();
-
+        
         return $data;
     }
 
