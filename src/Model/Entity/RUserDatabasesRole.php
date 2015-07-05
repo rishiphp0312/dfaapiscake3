@@ -20,5 +20,3 @@ class RUserDatabasesRole extends Entity{
 
 
 
-
-}

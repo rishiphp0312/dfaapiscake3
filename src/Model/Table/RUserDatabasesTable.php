@@ -60,18 +60,64 @@ class  RUserDatabasesTable extends Table {
             return 0;
         }
     }
+    
+    
+    /*
+     * Function to add new user association with the database 
+     */
+    public function addUserDatabases($fieldsArray = []) {
+        //Create New Entity
+        $databaseDetails = $this->newEntity();
+        //Update New Entity Object with data
+        $databaseDetails = $this->patchEntity($databaseDetails, $fieldsArray);
+        //Create new row and Save the Data
+        if ($this->save($databaseDetails)) {
+            return $databaseDetails->id;
+        } else {
+            return 0;
+        }
+    }
 
 
     
     /**
      * deleteDatabase method
-     * @param  $user_id the database id   {DEFAULT : empty}
-     * @param  $db_id the database id   {DEFAULT : empty}
+   
      * @return void
      */
-    public function deleteDatabase($db_id = null, $user_id = null) {
+    public function deleteUserDatabase($ids = []) {
 
-        
+        $result = $this->deleteAll([_RUSERDB_ID . ' IN' => $ids]); //_RUSERDBROLE_ID
+
+        return $result;
+    }
+    
+    
+    
+    /**
+     * find ids  for specific users  method
+     * @param  $user_id the  user_id with respect to the rows of users in  r_user_databases 
+    
+     * @return void
+     */
+    
+    public function findUserDatabases($user_id = [],$db_id=null) {
+        $returnIds=[];
+        if (!empty($fields))
+        $options['fields'] = array(_RUSERDB_ID);
+        $options['conditions'] = [_RUSERDB_USER_ID . ' IN' => $user_id,_RUSERDB_DB_ID=>$db_id];
+        $query = $this->find('all',$options); //
+        $results = $query->hydrate(false)->all();
+        // Once we have a result set we can get all the rows
+        $data = $results->toArray();
+        if(isset($data)){
+            foreach( $data as $index=>$valueId){
+               
+             $returnIds[]=$valueId[_RUSERDBROLE_ID];
+            }
+        }    
+
+        return $returnIds;
     }
 
 }

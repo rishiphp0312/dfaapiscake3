@@ -16,6 +16,9 @@ namespace App\Controller;
 
 use Cake\Controller\Controller;
 use Cake\Event\Event;
+use Cake\I18n\Time;
+Time::$defaultLocale = 'es-ES';
+Time::setToStringFormat('YYYY-MM-dd HH:mm:ss');
 
 /**
  * Application Controller
