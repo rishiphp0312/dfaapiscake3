@@ -245,7 +245,7 @@ class CommonComponent extends Component {
         $message ="<div><a href='".$website_base_url."'>Click here  to reset your password  </a></div> ";
         $fromEmail = 'vpdwivedi@dataforall.com';
 		
-        //$this->sendEmail($email, $fromEmail, $subject, $message, 'smtp');									
+        $this->sendEmail($email, $fromEmail, $subject, $message, 'smtp');									
 	}
 
 

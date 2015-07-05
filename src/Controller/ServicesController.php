@@ -1203,7 +1203,7 @@ class ServicesController extends AppController {
                     if (isset($_POST['email']) && !empty($_POST['email']))
                        $conditions[_USER_EMAIL]= $this->request->data[_USER_EMAIL] = trim($_POST['email']);
 
-                    $this->request->data['password'] = '12345678';
+                   // $this->request->data['password'] = '12345678';
 					
 					if (isset($_POST['userId']) && !empty($_POST['userId']))
                     $userId = $this->request->data[_USER_ID] ;  //36
