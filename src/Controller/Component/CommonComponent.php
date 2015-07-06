@@ -22,15 +22,13 @@ class CommonComponent extends Component {
     public $components = ['Auth'];
 
     public function initialize(array $config) {
-        //parent::initialize($config);
+        parent::initialize($config);
         $this->MDatabaseConnections = TableRegistry::get('MDatabaseConnections');
         $this->MSystemConfirgurations = TableRegistry::get('MSystemConfirgurations');
         $this->Users = TableRegistry::get('Users');
-        $this->Roles = TableRegistry::get('MRoles');
-        
+        $this->Roles = TableRegistry::get('MRoles');        
         
         //$this->AreaLevelObj = TableRegistry::get('DevInfoInterface.AreaLevel');
-        // $this->MDatabaseConnections=
     }
 
     /*
@@ -68,21 +66,24 @@ class CommonComponent extends Component {
         return $data;
     }
 
-
     
     /*
      * 
-     * Create database connection details 
+     * Create database connection details
+	 * @$data passed as array
      */
 
     public function createDatabasesConnection($data = array()) {
         return $this->MDatabaseConnections->insertData($data);
     }
-
+	
+	
+	/*
+     * 
+     * check the database connection  
+     */
     public function testConnection($connectionstring = null) {
-        //Configure::write('debug', 0);
-		//pr($connectionstring);die;
-		//pr($connectionstring);
+        
         $db_source='';
         $db_connection_name='';
         $db_host='';
@@ -91,19 +92,18 @@ class CommonComponent extends Component {
         $db_database='';
         $db_port='';
 		$connectionstringdata =[];
-//pr($connectionstring);die;
         $connectionstring = json_decode($connectionstring,true);              
-        //pr($connectionstring);
-		//die;
+        
 	   if(isset($connectionstring[_DATABASE_CONNECTION_DEVINFO_DB_CONN])){
-		    $connectionstringdata = json_decode($connectionstring[_DATABASE_CONNECTION_DEVINFO_DB_CONN],true);
-			$db_source = trim($connectionstringdata['db_source']);
-			$db_connection_name = trim($connectionstringdata['db_connection_name']);
-			$db_host = trim($connectionstringdata['db_host']);
-			$db_login = trim($connectionstringdata['db_login']);
-			$db_password = trim($connectionstringdata['db_password']);
-			$db_port = trim($connectionstringdata['db_port']);
-			$db_database = trim($connectionstringdata['db_database']);
+		    
+			$connectionstringData = json_decode($connectionstring[_DATABASE_CONNECTION_DEVINFO_DB_CONN],true);
+			$db_source = trim($connectionstringData['db_source']);
+			$db_connection_name = trim($connectionstringData['db_connection_name']);
+			$db_host = trim($connectionstringData['db_host']);
+			$db_login = trim($connectionstringData['db_login']);
+			$db_password = trim($connectionstringData['db_password']);
+			$db_port = trim($connectionstringData['db_port']);
+			$db_database = trim($connectionstringData['db_database']);
 
 			$db_source = strtolower($db_source);
 	   }
@@ -138,9 +138,9 @@ class CommonComponent extends Component {
     }
 
     /*
-       getDbDetails is used to get  the database details  with respect to passed database id
-      @$dbId is used to pass the database id
-     */
+     getDbDetails is used to get  the database details  with respect to passed database id
+     @$dbId is used to pass the database id
+    */
 
     public function getDbDetails($dbId = null) {
 
@@ -194,21 +194,19 @@ class CommonComponent extends Component {
 	
     /*
 	 function to get  the databases  associated to specific users 
-	 $user_id the userId of user 
+	 $userId the user Id of user 
 	*/
 	
-    public function getAlldatabaseAssignedUsers($userId){
+    public function getAlldatabaseAssignedUsers($userId) {
            $data =array();
            $All_databases = $this->Users->find()->where(['id'=>$userId])->contain(['MDatabaseConnections'],true)->hydrate(false)->all()->toArray();
            $alldatabases = current($All_databases)['m_database_connections'];
-           //pr($alldatabases);die;
            if (isset($alldatabases) && !empty($alldatabases)) {
             foreach ($alldatabases as $index => $valuedb) {
                 
                 $connectionObject = json_decode($valuedb[_DATABASE_CONNECTION_DEVINFO_DB_CONN], true);
-                //pr($connectionObject);die;
                
-                  if (isset($connectionObject['db_connection_name']) && !empty($connectionObject['db_connection_name']) && $valuedb[_DATABASE_CONNECTION_DEVINFO_DB_ARCHIVED]=='0') {
+                if (isset($connectionObject['db_connection_name']) && !empty($connectionObject['db_connection_name']) && $valuedb[_DATABASE_CONNECTION_DEVINFO_DB_ARCHIVED]=='0') {
                     $data[$index]['id'] = $valuedb[_DATABASE_CONNECTION_DEVINFO_DB_ID];
                     $data[$index]['dbName'] = $connectionObject['db_connection_name'];
                 }
@@ -232,20 +230,32 @@ class CommonComponent extends Component {
     }
 	
 	/*
+		function to check activation link is used or not 
+		@params $userId , $email  
+	*/
+	public function checkActivationLink($userId =null) {
+		$status = $this->Users->checkActivationLink($userId); 
+        return $status;
+	}
+	
+	/*
 		function for sending activation link 
 		@params $userId , $email  
 	*/
 	
 	public function sendActivationLink($userId, $email){
-		//$user_id=1;
-		$encodedstring = base64_encode(_SALTPREFIX1.$userId._SALTPREFIX2);		
-        $website_base_url= _WEBSITE_URL."#/UserActivation/$encodedstring" ;
-        
-        $subject = 'DFA Reset password Link';
-        $message ="<div><a href='".$website_base_url."'>Click here  to reset your password  </a></div> ";
-        $fromEmail = 'vpdwivedi@dataforall.com';
 		
-        $this->sendEmail($email, $fromEmail, $subject, $message, 'smtp');									
+		
+			$encodedstring = base64_encode(_SALTPREFIX1.'-'.$userId.'-'._SALTPREFIX2);		
+			$website_base_url= _WEBSITE_URL."#/UserActivation/$encodedstring" ;
+			
+			$subject = 'DFA Reset password Link';
+			$message ="<div><a href='".$website_base_url."'>Click here  to reset your password  </a></div> ";
+			$fromEmail = 'vpdwivedi@dataforall.com';
+			
+			$this->sendEmail($email, $fromEmail, $subject, $message, 'smtp');		
+		
+									
 	}
 
 

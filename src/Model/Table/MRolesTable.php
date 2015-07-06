@@ -106,7 +106,7 @@ class MRolesTable extends Table
 	
 	/*
      * 
-     * function to return the role value 'ADMIN','TEMPLATE' on basis of passed role id
+     * Return the role value 'ADMIN','TEMPLATE' on basis of passed role id
      * 
      */
     function returnRoleValue($roleId=null){        

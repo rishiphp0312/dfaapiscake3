@@ -68,6 +68,7 @@ class ServicesController extends AppController {
         $convertJson = _YES;
         $returnData = [];
         $dbConnection = 'test';
+		$authUserId= $this->Auth->user(_USER_ID); // logged in user id
         $dbId = '';
         if (isset($this->request->data['dbId']) && !empty($this->request->data['dbId']))
             $dbId = $this->request->data['dbId'];
@@ -907,12 +908,21 @@ class ServicesController extends AppController {
             case 904:
                 // service for bulk upload of area excel sheet
                 //if($this->request->is('post')):
-                if (true):
-                    $params[]['filename'] = $filename = 'C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\Area.xls';
-                    //$returnData = $this->CommonInterface->bulkUploadXlsOrCsvForIndicator($params);                    
-                    $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForArea', $params, $dbConnection);
-                    die;
-                endif;
+                   try {
+					
+					 $params[]['filename'] = $filename = 'C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\Area.xls';
+                     //$returnData = $this->CommonInterface->bulkUploadXlsOrCsvForIndicator($params);                    
+                     $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForArea', $params, $dbConnection);
+					
+					 $dataUsrDbRoles = $this->UserCommon->findUserDatabasesRoles($authUserId, $dbId);
+					 $returnData['status'] = _SUCCESS;
+					 $returnData['data']      = $dataUsrDbRoles; 
+					 $returnData['responseKey'] ='usrDbRoles';
+
+					}catch (Exception $e) {
+						$returnData['errMsg'] =  $e->getMessage();
+					}                   
+				   die;
 
                 break;
 
@@ -922,11 +932,6 @@ class ServicesController extends AppController {
                     
                      try{
 						 
-					//if(isset($this->request->data['databaseType'])) 
-                   // $this->request->data['databaseType'] = strtolower($this->request->data['databaseType']);
-                    
-				
-				
 						$db_con = array(
 							'db_source' => $this->request->data['databaseType'],
 							'db_connection_name' => $this->request->data['connectionName'],
@@ -945,8 +950,8 @@ class ServicesController extends AppController {
 					$jsondata = json_encode($jsondata);
                     $returnTestDetails = $this->Common->testConnection($jsondata);					
 				
-                    $this->request->data[_DATABASE_CONNECTION_DEVINFO_DB_CREATEDBY] = $this->Auth->User('id');
-                    $this->request->data[_DATABASE_CONNECTION_DEVINFO_DB_MODIFIEDBY] = $this->Auth->User('id');
+                    $this->request->data[_DATABASE_CONNECTION_DEVINFO_DB_CREATEDBY] = $authUserId;
+                    $this->request->data[_DATABASE_CONNECTION_DEVINFO_DB_MODIFIEDBY] = $authUserId;
                  
 					$returnUniqueDetails ='';
 
@@ -955,7 +960,6 @@ class ServicesController extends AppController {
 					  $returnUniqueDetails = $this->Common->uniqueConnection($this->request->data['connectionName']);
  	
 					}
-					//pr($returnTestDetails);die;
 
 					if($returnUniqueDetails === true){
 						
@@ -1013,7 +1017,7 @@ class ServicesController extends AppController {
                 try {                    
                     $databases = $this->Common->getDatabases();                    
                     $returnData['status'] = _SUCCESS;
-                    $returnData['data'] = $databases;
+                    $returnData['data']   = $databases;
                     $returnData['responseKey'] ='dbList';
                 } catch (Exception $e) {
                      $returnData['errMsg'] =  $e->getMessage();
@@ -1024,13 +1028,13 @@ class ServicesController extends AppController {
             case 1104:
               if ($this->request->is('post')) {
                 try {
-                    $userId = $this->Auth->User('id');
+                   
                     if (isset($dbId) && !empty($dbId)) {
-                        $returnDatabaseDetails = $this->Common->deleteDatabase($dbId, $userId);
+                        $returnDatabaseDetails = $this->Common->deleteDatabase($dbId, $authUserId);
                         $getDBDetailsById = $this->Common->getDbNameByID($dbId);
                         if ($returnDatabaseDetails) {
                             $returnData['status'] = _SUCCESS; // records deleted
-							$returnData['data'] = $getDBDetailsById;
+							$returnData['data']   = $getDBDetailsById ;
 						    $returnData['responseKey'] ='';
                         } else {
                             $returnData['errCode'] = _ERR105; // // no  record deleted
@@ -1063,7 +1067,6 @@ class ServicesController extends AppController {
                 );
 				
                 $data = json_encode($data);
-				//pr($data);die;
                 $returnTestDetails = $this->Common->testConnection($data);
                 if ($returnTestDetails === true) {
                      $returnData['status'] = _SUCCESS;
@@ -1108,7 +1111,6 @@ class ServicesController extends AppController {
             case 1108:
                 
 				try {
-
                      $listAllRoles = $this->UserCommon->listAllRoles();
 					 $returnData['status'] = _SUCCESS;
 					 $returnData['data'] = $listAllRoles;
@@ -1124,10 +1126,7 @@ class ServicesController extends AppController {
             case 1109:
                 if ($this->request->is('post')) {
 				    
-					try {
-                    //$dbId =26;
-                    //$user_id =36;
-					
+					try {                  					
                     if (isset($dbId) && !empty($dbId)) {
 						 $listAllUsersDb = $this->UserCommon->listAllUsersDb($dbId);
 						 $returnData['status'] = _SUCCESS;								
@@ -1164,7 +1163,7 @@ class ServicesController extends AppController {
 								
 								 $returnData['responseKey'] ='';				
                             } else {
-								$returnData['errCode'] = _ERR110;      // Not deleted service  
+								$returnData['errCode'] = _ERR110;      // Not deleted   
                             }
                         } else {
 							$returnData['errCode'] = _ERR106;         // db id is blank
@@ -1186,15 +1185,8 @@ class ServicesController extends AppController {
                 if ($this->request->is('post')) {
 				    
 					try {
-                    // 
-                    $data = array();
-                    //$db_id=6;
-                   // $this->request->data['roles']=['TEMPLATE'];			//TEMPLATE,ADMIN	
-                    //$_POST['name']='ramprasdanandu';
-                   // $_POST['email']='ramprasdanandu@test.com';     
-					//$_POST['userId']=49;	
-					// $userId ='';
-					 
+
+                    $data = array();                   					 
 					if (isset($_POST['name']) && !empty($_POST['name']) && isset($_POST['email']) && !empty($_POST['email'])){								
                     
 					if (isset($_POST['name']) && !empty($_POST['name']))
@@ -1202,39 +1194,48 @@ class ServicesController extends AppController {
 
                     if (isset($_POST['email']) && !empty($_POST['email']))
                        $conditions[_USER_EMAIL]= $this->request->data[_USER_EMAIL] = trim($_POST['email']);
-
-                   // $this->request->data['password'] = '12345678';
 					
-					if (isset($_POST['userId']) && !empty($_POST['userId']))
-                    $userId = $this->request->data[_USER_ID] ;  //36
+					if (isset($this->request->data[_USER_ID]) && !empty($this->request->data[_USER_ID])){
+						$userId = $this->request->data[_USER_ID] ;  
+					}else{
+						$this->request->data[_USER_STATUS] = _INACTIVE; // 0 means Inactive
+
+					}
+                    
+					$isModified = $this->request->data['isModified']=true;// true
+				    if($isModified==false && $userId!=''){
+						$this->UserCommon->checkUserDbRelation($userId,$dbId);
+					}		
 				
-                    $this->request->data[_USER_MODIFIEDBY] = $this->Auth->User('id');
-                    $this->request->data[_USER_CREATEDBY] = $this->Auth->User('id');
-                    $this->request->data[_USER_STATUS] = '0';
+                    $this->request->data[_USER_MODIFIEDBY] = $authUserId;
+                    $this->request->data[_USER_CREATEDBY] = $authUserId;
+                     
 					if(isset($this->request->data['roles']))
                     $rolesarray = $this->request->data['roles'];
-                    //pr($rolesarray);
                     if (isset($rolesarray) && count($rolesarray) > 0) {
-                        // pr($rolesarray);
                         if (isset($dbId) && !empty($dbId)) {
-                            $userRoleIdGenerated = $this->UserCommon->addModifyUser($this->request->data, $dbId);
-                            if ($userRoleIdGenerated > 0) {
+							$chkEmail = $this->UserCommon->checkEmailExists($this->request->data[_USER_EMAIL],$this->request->data[_USER_ID]);
+							if($chkEmail==0){							
+                            $lastIdinserted = $this->UserCommon->addModifyUser($this->request->data, $dbId);
+                            if ($lastIdinserted > 0) {
 								$returnData['status'] = _SUCCESS;
 								$returnData['responseKey'] ='';	
 								
-								if(empty($userId)){	
-								
+								if(empty($userId)){								
 									 $fields=[_USER_ID];
+									 $conditions[_USER_STATUS]= _INACTIVE;
 									 $userdetails = $this->UserCommon->getDataByParams($fields,$conditions);
 									 if(!empty($userdetails)){
 										 $registeredUserId = current($userdetails)[_USER_ID];
 										 $this->Common->sendActivationLink($registeredUserId,$this->request->data[_USER_EMAIL]);
-									 }														
-								}							
-								
+									 }
+								}
                             } else {
-								$returnData['errCode'] = _ERR114;      //  user not  modified 
+								$returnData['errCode'] = _ERR114;      //  user not modified due to database error 
                             }
+						}else{
+								$returnData['errCode'] = _ERR118;	  //  user not modified due to email  already exists  
+						}
                         } else {
 							$returnData['errCode'] = _ERR106;      //  db id empty 
                         }
@@ -1257,43 +1258,19 @@ class ServicesController extends AppController {
 				*service to get AutoCompleteDetails of users with email ,id and name 
 				*/
 				 
-				 case 1202:
-				 
-                        try{						
-							$listAllUsersDb = $this->UserCommon->getAutoCompleteDetails(); 
-							$returnData['status'] = _SUCCESS;
-							$returnData['data']      = $listAllUsersDb; 
-							$returnData['responseKey'] ='usersList';											
-
-												   
-						} catch (Exception $e) {
-							$returnData['errMsg'] =  $e->getMessage();
-						}
-				 break;
-                 
-				 
-
-				 case 1203:
-				 
-				    try {
-						
-						$str= '';						
-						$userName='rkapoor@avaloninfosys.com';
-						$url = 'http://localhost:8080/dgps-os/dfa_devinfo_data_admin/#/UserActivation/';
-					
-						$email = new Email('defaultsmtp');
-						$result= $email->from(['vpdwivedi@dataforall.com' => 'VP testing mail'])
-								->to($userName)
-								->subject('Testing D3A')
-								->send("Set Password again Link$url");
-					   
+				 case 1202:				 
+					try{						
+						$listAllUsersDb = $this->UserCommon->getAutoCompleteDetails(); 
+						$returnData['status'] = _SUCCESS;
+						$returnData['data']      = $listAllUsersDb; 
+						$returnData['responseKey'] ='usersList';
 					} catch (Exception $e) {
-
-						$returnData['error'] = $e->getMessage();
-
+						$returnData['errMsg'] =  $e->getMessage();
 					}
 				 break;
-			
+				 
+			     /* service to update password on activation link  */
+				 
 				 case 1204:
 				    
 					if ($this->request->is('post')) {
@@ -1302,10 +1279,10 @@ class ServicesController extends AppController {
 			
 						if(isset($_POST['key']) && !empty($_POST['key'])){
 						
-						$requestdata = array();	
-						$encodedstring =  trim($_POST['key']);
+						$requestdata    = array();	
+						$encodedstring  = trim($_POST['key']);
 						$decodedstring  = base64_decode($encodedstring);
-						$explodestring = explode('-',$decodedstring);					
+						$explodestring  = explode('-',$decodedstring);					
 					
 						if($explodestring[0]==_SALTPREFIX1 &&  $explodestring[2]==_SALTPREFIX2){
 							
@@ -1313,28 +1290,34 @@ class ServicesController extends AppController {
 							
 							if(isset($_POST['password']) && !empty($_POST['password']))
 							$password  = $requestdata[_USER_PASSWORD]    = $_POST['password'];	
+						
+							$requestdata[_USER_STATUS]  = _ACTIVE; // Activate user 
 							
-							$requestdata[_USER_STATUS]  = '1';
-							
-							if(!empty($password) ){
-								if(isset($userId) && !empty($userId)){
-									$returndata =  $this->UserCommon->updatePassword($requestdata);
-									if($returndata>0){
-									   $returnData['status'] = _SUCCESS;
+							$activationStatus = $this->Common->checkActivationLink($userId);
+							if($activationStatus>0){
+								
+								if(!empty($password)){
+									if(isset($userId) && !empty($userId)){
+										$returndata =  $this->UserCommon->updatePassword($requestdata);
+										if($returndata>0){
+										   $returnData['status'] = _SUCCESS;
+										}else{
+										  $returnData['errCode'] =_ERR116;      // password not updated   
+										}
 									}else{
-									  $returnData['errCode'] =_ERR116;      //  password not updated   
-									}
+										$returnData['errCode'] = _ERR109;      // user id  is empty 
+									}						     
 								}else{
-									$returnData['errCode'] = _ERR109;      //  user id  is empty 
-								}						     
+									$returnData['errCode'] = _ERR113;         // Empty password   
+								}							
 							}else{
-								$returnData['errCode'] = _ERR113;      //  Empty password   
+								$returnData['errCode'] = _ERR104;             // Activation link already used 
+							}							
+							}else{								
+								$returnData['errCode'] = _ERR117;            //  invalid key    
 							}
 							}else{
-								$returnData['errCode'] = _ERR117;      //  invalid key    
-							}
-							}else{
-								$returnData['errCode'] = _ERR115;      //  key is empty   
+								$returnData['errCode'] = _ERR115;           //  key is empty   
 							}
 					
 					 }catch (Exception $e) {
@@ -1344,12 +1327,30 @@ class ServicesController extends AppController {
 					}
 				  
 				  break;
+				  
+				 //service to get  db roles of logged in user 
+				  case 1205:
+				     if ($this->request->is('post')) {
+				    
+						try {
+				
+						 $dataUsrDbRoles = $this->UserCommon->findUserDatabasesRoles($authUserId, $dbId);
+						 $returnData['status'] = _SUCCESS;
+						 $returnData['data']      = $dataUsrDbRoles; 
+						 $returnData['responseKey'] ='usrDbRoles';
+
+						}catch (Exception $e) {
+							$returnData['errMsg'] =  $e->getMessage();
+						}
+					}
+				  break;
 				 
+				  //service to get  session details of logged in user 
 				  case 1206:
 				  
 				    $returnData['status'] = _SUCCESS;
 					$returnData['data']['id'] = session_id();
-					$returnData['data']['user'][_USER_ID]    = $this->Auth->user(_USER_ID);
+					$returnData['data']['user'][_USER_ID]    = $authUserId;
 					$returnData['data']['user'][_USER_NAME]  = $this->Auth->user(_USER_NAME);
 					$returnData['responseKey'] ='';					
 					if ($this->Auth->user('role_id') == _SUPERADMINROLEID)
@@ -1357,21 +1358,13 @@ class ServicesController extends AppController {
 					else
 						$returnData['data']['user']['role'][] = '';
 					
-					if ($this->Auth->user('id')) {
+					if ($authUserId) {
 						$returnData['isAuthenticated'] = true;
 					}
 					//echo json_encode($returnData);
 				break;
                 
-				case 1207:
 				
-				 //$encodedstring = base64_encode('userid-'.$user_id.'-abcd###*99*');	
-		          //echo $website_base_url = "http://".$_SERVER['HTTP_HOST'].'D3A/dfa_devinfo_data_admin/';
-				 //die;
-				  // pr($_SERVER);
-				//  pr($_SERVER['SERVER_NAME']);
-	
-				  break;
             
             case 2101: //Select Data using _IC_IC_NID -- Indicator Classification table
                 
@@ -1600,8 +1593,6 @@ class ServicesController extends AppController {
                     $params['conditions'] = $conditions = $this->request->data;
                     $returnData = $this->CommonInterface->serviceInterface('IcIus', 'insertData', $params, $dbConnection);
                 endif;
-
-
                 break;
 
             case 2306: //Update Data using Conditions -- ICIUS table
@@ -1619,7 +1610,6 @@ class ServicesController extends AppController {
                     $params['conditions'] = $conditions;
                     $returnData = $this->CommonInterface->serviceInterface('IcIus', 'updateDataByParams', $params, $dbConnection);
                 endif;
-
                 break;
 
             case 2307: //Bulk Insert/Update Data -- ICIUS table
@@ -1634,19 +1624,19 @@ class ServicesController extends AppController {
                     $this->request->data['seriveToCall'];
                     $extra['filename'] = $filePaths[0];
                     
-                    $this->serviceQuery(701, $extra);
+                    $returnData['data'] = $this->serviceQuery(701, $extra);
                     
+                    $returnData['status'] = 'success';
+                    $returnData['responseKey'] = 'iciusImport';
+                    $returnData['errCode'] = '';
+                    $returnData['errMsg'] = '';
                 endif;
                 break;
 				
-				case 2402:
-					$dataUsrUserId=183;
-					$dbId=15;
-					$dataUsrDbRoles[] = $this->UserCommon->findUserDatabasesRoles($dataUsrUserId, $dbId);
-				break;
-				 
-				
 
+				
+				 
+	
         endswitch;
 
         return $this->service_response($returnData, $convertJson, $dbId);
@@ -1655,8 +1645,7 @@ class ServicesController extends AppController {
     
     public function service_response($response, $convertJson = _YES, $dbId) {
         
-        // Initialize Result
-		//pr($response);
+        // Initialize Result		
         $success = false;
         $isAuthenticated = false;
         $isSuperAdmin = false;
@@ -1676,7 +1665,6 @@ class ServicesController extends AppController {
             $dataUsrUserId = $this->Auth->user('id');
             $dataUsrUserName = $this->Auth->user('name');
             $role_id = $this->Auth->user('role_id');
-            //$userDetails = $this->Auth->user();
             
             if ($role_id == _SUPERADMINROLEID):
                 $isSuperAdmin = true;

@@ -36,20 +36,18 @@ class UserCommonComponent extends Component {
       
     }
 
-   
-    /*
-      Cleandata is function which returns the passed parameter after
-      removing whitespace or unnecesary characters with clean data
-      mysql_real_escape_string($user)
-     */
-
-    public function cleandata($data) {
-        $data = trim($data);
-        $data = stripslashes($data);
-        $data = htmlspecialchars($data);
-        return $data;
-    }
 	
+   /*
+      function to check whether user has relation with db or not 
+    */
+	
+	public function checkUserDbRelation($userId=null,$dbId=null){
+		
+		//return $this->Users->checkUserDbRelation($userId,$dbId);
+	}
+ 
+ 
+    
 	/*
       function to update the  password while activating request 
     */
@@ -69,7 +67,7 @@ class UserCommonComponent extends Component {
 	}
    
     /*
-      function to get listing all Roles 
+      function to get list of  all Roles 
     */
    
     public function listAllRoles(){
@@ -80,15 +78,14 @@ class UserCommonComponent extends Component {
     /*
 	Function to get the roles on basis of passed db id and user id
 	*/
-    function findUserDatabasesRoles($userId=null,$dbId=null){
+    public function findUserDatabasesRoles($userId=null,$dbId=null){
         $rolesarray=[];
         $getidsRUD = $this->RUserDatabases->findUserDatabases($userId,$dbId);
         //$roleslist = $this->Roles->find('all')->combine(_DATABASE_ROLE_ID,_DATABASE_ROLE)->toArray();
             if($getidsRUD){
                   $listAllRoleIDs = $this->RUserDatabasesRoles->findRoleIDDatabase($getidsRUD);
-                  foreach($listAllRoleIDs as $index=>$valueRoleids){                       
-                    //$rolesarray[]=  $roleslist[$valueRoleids];                    
-                    $rolesarray[]=   $this->Roles->returnRoleValue($valueRoleids);                    
+                  foreach($listAllRoleIDs as $index=>$RoleId){                       
+                    $rolesarray[]=   $this->Roles->returnRoleValue($RoleId);                    
                   }
             }
             return $rolesarray;
@@ -163,9 +160,9 @@ class UserCommonComponent extends Component {
 	
 	/*
      * deleteUserRoles
-	 function is  used for deleting roles while  modifying  user 
+	   function is  used for deleting roles while  modifying  user 
      * $type E  is for status deleting existing roles which are not found in posted data 
-	 * $type F  is for case when existing roles are  found in posted data
+	 * $type F  is for case when existing roles are found in posted data
        $getIdsRUD is the user_database_id 	 
      */  
 	
@@ -191,17 +188,11 @@ class UserCommonComponent extends Component {
 	 
     public function addModifyUser($fieldsArray = [],$dbId=null)
     {
-        if($dbId>0){
-		$details = $this->checkEmailExists($fieldsArray[_USER_EMAIL],$fieldsArray[_USER_ID]);
+        if($dbId>0){	
 		
-		if($details>0){ 												// email already exists 		
-			return 0;
-		}else{
-			$updated_userid = $this->Users->addModifyUser($fieldsArray);  // update or insert user modifyUser
+			$updated_userid = $this->Users->addModifyUser($fieldsArray);  // update or insert user 
 
-			if($updated_userid){
-																									
-			$roleslist = $this->Roles->find('all')->combine(_DATABASE_ROLE,_DATABASE_ROLE_ID)->toArray(); //get all roles list role as  index and roleid as value  	
+			if($updated_userid){																									
 			
 			if(isset($fieldsArray[_USER_ID]) && !empty($fieldsArray[_USER_ID])){
 			  
@@ -215,30 +206,24 @@ class UserCommonComponent extends Component {
 			  
 			    if(isset($resultarray_intersect)&& count($resultarray_intersect)>0){
 					foreach($resultarray_intersect as $index=>$value){
-						$rolesid_array[]= $roleslist[$value]; 				// role ids which are common don't need  to be deleted 					
+						//$rolesid_array[]= $roleslist[$value]; 				// role ids which are common don't need  to be deleted 					
+					    $rolesid_array[] = $this->Roles->returnRoleId($value);
 					}
 			    }
 				
 				// case when posted data Roles is not found in existing  roles of user 
-			   $rolesNotinPost = array();		//exist_rolesid_array_notinpost		  
+			   $rolesNotinPost = array();		
 				
 			   if(empty($resultarray_intersect) && !empty($existRoles)){
 				  foreach($existRoles as $index=>$valueroles){				
-						  $rolesNotinPost[]= $roleslist[$valueroles];				
+						  $rolesNotinPost[]= $this->Roles->returnRoleId($valueroles);				
 				  }
-			   } 
-			   //echo 'Not found in rolesNotinPost';
-			   //echo 'Not found in rolesNotinPost';
+			   }		 
 			  
 				if(isset($rolesNotinPost) && count($rolesNotinPost)>0){				
-					$this->deleteUserRoles($rolesNotinPost,$getidsRUD,'E');
-					
-				}
+					$this->deleteUserRoles($rolesNotinPost,$getidsRUD,'E');					
+				}				
 				
-				//echo 'before rolesid_array delete';
-				//pr($rolesid_array);
-					//echo 'before exist_rolesid_array_notinpostdelete';
-				//pr($rolesNotinPost);
 				//for not in delete of above role ids
 				if(isset($rolesid_array) && count($rolesid_array)>0){				
 					$this->deleteUserRoles($rolesid_array,$getidsRUD,'F');
@@ -253,13 +238,10 @@ class UserCommonComponent extends Component {
 				$resultarray_difference = $fieldsArray['roles'];
 				$noof_roles=count($resultarray_difference);
 			}
-			//echo 'differ';
-				//pr($resultarray_difference);
-			// ids which needs to be inserted for roles 
+			
 			
 
-			if(empty($fieldsArray[_USER_ID]) || empty($getidsRUD)){	
-				
+			if(empty($fieldsArray[_USER_ID]) || empty($getidsRUD)){				
 				$fieldsArrayDB = [];
 				$fieldsArrayDB[_RUSERDB_USER_ID]   = $updated_userid;
 				$fieldsArrayDB[_RUSERDB_DB_ID]     = $dbId;
@@ -269,40 +251,40 @@ class UserCommonComponent extends Component {
 							
 			}
 			$cnt=0;	
+			//$resultarray_difference this will be empty if posted and existing both are same
 			if(isset($resultarray_difference)&& count($resultarray_difference)>0){
 				foreach($resultarray_difference as $index=>$value){				   	    
 						// role ids which need  to be inserted  	
-						if(isset($fieldsArray[_USER_ID]) && !empty($fieldsArray[_USER_ID]) && !empty($getidsRUD))	{
-							$roleId =  trim($roleslist[$value]);
+						if(isset($fieldsArray[_USER_ID]) && !empty($fieldsArray[_USER_ID]) && !empty($getidsRUD)){
+							$roleId =  trim($this->Roles->returnRoleId($value));
 							$fieldsArrayRoles[_RUSERDBROLE_USER_DB_ID] = trim(current($getidsRUD));							
 						}else{
-							$roleId = $this->returnRoleId($value);   
+							$roleId = trim($this->Roles->returnRoleId($value));   
 							$fieldsArrayRoles[_RUSERDBROLE_USER_DB_ID] = trim($lastinserted_userid_db);	
 									
 						}
 						$fieldsArrayRoles[_RUSERDBROLE_ROLE_ID]    = $roleId;                       
                         $fieldsArrayRoles[_RUSERDBROLE_CREATEDBY]  = $this->Auth->User('id');
                         $fieldsArrayRoles[_RUSERDBROLE_MODIFIEDBY] = $this->Auth->User('id');
-                        $resultid = $this->RUserDatabasesRoles->addUserRoles($fieldsArrayRoles);	
+                        $rolesAdded[] = $this->RUserDatabasesRoles->addUserRoles($fieldsArrayRoles);	
 			    		$cnt++;
 						
 						$noof_roles;
-						if($cnt==$noof_roles){
-							return $resultid;
-						}					
+										
 				}
-				if($cnt!=$noof_roles){
+				if(count($rolesAdded)==$noof_roles){
+					return $updated_userid;
+				}else{		
 					return 0;
 				}	
+				
 			}
-			  return $updated_userid;		
+			return $updated_userid; //case when no change in roles 
+		  }
+		
 		}
 		return 0;
-			
-		}
-		}else{
-			return 0;
-		}	
+		
 	}
 	
 	

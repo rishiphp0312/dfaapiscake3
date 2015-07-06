@@ -162,13 +162,25 @@
         define('_RUSERDBROLE_CREATEDBY', 'createdby'),
         define('_RUSERDBROLE_MODIFIED', 'modified'),
         define('_RUSERDBROLE_MODIFIEDBY', 'modifiedby'),
+		
+		
+		// m_application_logs  table
+        define('_MAPPLICATIONLOG_ID', 'id'),
+        define('_MAPPLICATIONLOG_MODULE', 'module'),
+        define('_MAPPLICATIONLOG_ACTION', 'action'),
+        define('_MAPPLICATIONLOG_DESC', 'description'),
+        define('_MAPPLICATIONLOG_CREATED', 'created'),
+        define('_MAPPLICATIONLOG_CREATEDBY', 'createdby'),
+        define('_MAPPLICATIONLOG_IPADDRESS', 'ip_address'),
+		
         
         // Error Codes
-        define('_DFAERR', 'DFAERR'),
+        define('_DFAERR', 'DFAERR'),       //  Error code prefix 
         define('_ERR100', _DFAERR.'100'), //   database not added 
         define('_ERR101', _DFAERR.'101'), //   Invalid database connection details 
         define('_ERR102', _DFAERR.'102'), //   connection name is  not unique 
         define('_ERR103', _DFAERR.'103'), //   database connection name is empty
+		define('_ERR104', _DFAERR.'104'), //   Activation link already used 
         define('_ERR105', _DFAERR.'105'), //   records not  deleted
         define('_ERR106', _DFAERR.'106'), //   db id is blank
         define('_ERR107', _DFAERR.'107'), //   database details not found 
@@ -181,13 +193,15 @@
         define('_ERR115', _DFAERR.'115'), //   activation key  is empty    service 1204
         define('_ERR116', _DFAERR.'116'), //   password not updated   service 1204
         define('_ERR117', _DFAERR.'117'), //   invalid activation key    service 1204
+        define('_ERR118', _DFAERR.'118'), //   user not modified bcoz email already exists   service 1204
 
-        // SUper Admin Role Id Hardcodes
+
+		 // SUper Admin Role Id Hardcodes
         define('_SUPERADMINROLEID', '1'),        // super admin id 
         define('_SUPERADMINNAME', 'Super Admin'),        // super admin name 
 		
-        define('_SALTPREFIX1', 'abcd#####-'),    // used in  activation key 
-        define('_SALTPREFIX2', '-abcd###*99*'),  // used in   activation key 
+        define('_SALTPREFIX1', 'abcd#####'),    // used in  activation key 
+        define('_SALTPREFIX2', 'abcd###*99*'),  // used in   activation key 
 
 
         // Text messages 
@@ -195,6 +209,9 @@
         define('_FAILED', 'failed'),            // failed in response 
         define('_YES', 'yes'),                  // Yes for json format 
         define('_NO', 'no'),                    // 
-    
-    ]
+		
+		define('_INACTIVE', '0'),                  // User status inactive  
+        define('_ACTIVE', '1'),                    // User status inactive  
+
+]
 ?>

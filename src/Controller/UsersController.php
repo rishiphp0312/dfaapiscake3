@@ -34,7 +34,7 @@ class UsersController extends AppController {
      var $layout = 'home';
      var $Users = '';
      //public $uses = ['Users'];
-     public $components = ['UserCommon','Common'];
+     public $components = ['UserCommon'];
 
     public function initialize() {
         parent::initialize();
@@ -97,19 +97,18 @@ class UsersController extends AppController {
                 $returnData['data']['user'][_USER_NAME]  = $this->Auth->user('name');
                 $fieldsArray =  array();
                 $updatelogindata[_USER_ID]           = $this->Auth->user('id');
-                $this->UserCommon->updateLastLoggedIn($updatelogindata);      
+				//$updatelogindata[_USER_LASTLOGGEDIN] = date("Y-m-d H:i:s");      
+				//$updatelogindata['status'] = 1;      				
+                $this->UserCommon->updateLastLoggedIn($updatelogindata);          
+                
+               // $User = $this->Users->patchEntity($User,  $this->request->data);
+               // $this->Users->save($User);
 
-                if ($this->Auth->user('role_id') == _SUPERADMINROLEID){
-					// $rdt = $this->Common->getRoleDetails($role_id);
-                    // $dataUsrUserRole[] = $rdt[1];
-					$returnData['isSuperAdmin'] = true;
-					$returnData['data']['user']['role'][] = _SUPERADMINNAME;
-            
-				} else{
-					$returnData['data']['user']['role'][] = '';
+                if ($this->Auth->user('role_id') == '1')
+                    $returnData['data']['user']['role'][] = 'Super Admin';
+                else
+                    $returnData['data']['user']['role'][] = '';
 
-				}
-                    
 
                 if ($this->Auth->user('id')) {
                     $returnData['isAuthenticated'] = true;
@@ -165,95 +164,30 @@ class UsersController extends AppController {
 
     // service query ends here 
     // - METHOD TO GET RETURN DATA
-    
-    public function service_response($response, $convertJson = _YES, $dbId) {
-        
-        // Initialize Result
-		//pr($response);
-        $success = false;
-        $isAuthenticated = false;
-        $isSuperAdmin = false;
-        $errCode = '';
-        $errMsg = '';
-        $dataUsrId = '';
-        $dataUsrUserId = '';
-        $dataUsrUserName = '';
-        $dataUsrUserRole = [];
-        $dataDbDetail = '';
-        $dataUsrDbRoles = [];
-        
+    public function service_response($data, $convertJson = '_YES') {
+
+        $data['isAuthenticated'] = false;
+        $data['isSuperAdmin'] = false;
+
         if ($this->Auth->user('id')) {
-            
-            $isAuthenticated = true;
-            $dataUsrId = session_id();
-            $dataUsrUserId = $this->Auth->user('id');
-            $dataUsrUserName = $this->Auth->user('name');
+            $data['isAuthenticated'] = true;
+           // $data['userDetails'] = $this->Auth->user();
             $role_id = $this->Auth->user('role_id');
-            //$userDetails = $this->Auth->user();
+            if($role_id=='1'){
+             $data['isSuperAdmin'] = true;
+            }
             
-            if ($role_id == _SUPERADMINROLEID):
-                $isSuperAdmin = true;
-                $rdt = $this->Common->getRoleDetails($role_id);
-                $dataUsrUserRole[] = $rdt[1];
-            endif;
+        }
+        if ($convertJson == '_YES') {
+            $data = json_encode($data);
+        }
 
-            if ($dbId):
-                $returnSpecificDbDetails = $this->Common->getDbNameByID($dbId);
-                $dataDbDetail = $returnSpecificDbDetails;
-
-                if ($role_id != _SUPERADMINROLEID):				
-                    $dataUsrDbRoles = $this->UserCommon->findUserDatabasesRoles($dataUsrUserId, $dbId);
-                endif;
-            endif;
-        }
-        
-        if(isset($response['status']) && $response['status'] == _SUCCESS):
-            $success = true;
-            $responseData = isset($response['data']) ? $response['data'] : [];
-        else:
-            $errCode = isset($response['errCode']) ? $response['errCode']:'';
-            $errMsg = isset($response['errMsg']) ? $response['errMsg'] : '';
-        endif;
-        
-        // Set Result
-        $returnData['success'] = $success;
-        $returnData['isAuthenticated'] = $isAuthenticated;
-        $returnData['isSuperAdmin'] = $isSuperAdmin;
-        $returnData['err']['code'] = $errCode;
-        $returnData['err']['msg'] = $errMsg;
-        $returnData['data']['usr']['id'] = $dataUsrId;
-        $returnData['data']['usr']['user']['id'] = $dataUsrUserId;
-        $returnData['data']['usr']['user']['name'] = $dataUsrUserName;
-        $returnData['data']['usr']['user']['role'] = $dataUsrUserRole;
-        $returnData['data']['dbDetail'] = $dataDbDetail;
-        $returnData['data']['usrDbRoles'] = $dataUsrDbRoles;
-       // $returnData['data']['dataUsrUserId'] = $dataUsrUserId;
-       // $returnData['data']['db_id'] = $dbId;
-		//$dataUsrUserId, $dbId
-        
-        if($success == true){
-			$responseKey='';
-			if(isset($response['responseKey']) && !empty($response['responseKey']))
-			$responseKey = $response['responseKey'];
-			if(isset($responseKey) && !empty($responseKey))
-            $returnData['data'][$responseKey] = $responseData;
-		    //else
-			//$returnData['data'][] = $responseData;
-		   	
-        }
-        
-        if ($convertJson == _YES) {
-            $returnData = json_encode($returnData);
-        }
-        
-        // Return Result
         if (!$this->request->is('requested')) {
-            $this->response->body($returnData);
+            $this->response->body($data);
             return $this->response;
         } else {
-            return $returnData;
+            return $data;
         }
-        
     }
 
 }

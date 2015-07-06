@@ -30,16 +30,20 @@ class UsersTable extends Table
              'joinTable' => 'r_user_databases',
             //  'through' => 'RUserDatabases',
         ]);
-        
-         
          
     }
+	
+	
+	/*
+	*
+	* to update Last LoggedIn of  user 
+	*
+	*/
     
     function updateLastLoggedIn($fieldsArray = [] ){
-               // pr($fieldsArray);
+              
 				$User = $this->newEntity();
 				$fieldsArray[_USER_LASTLOGGEDIN] = date('Y-m-d H:i:s');  
-                //Update New Entity Object with data
                 $User = $this->patchEntity($User, $fieldsArray);
 				if ($this->save($User)) {
                     return $User->id;
@@ -93,20 +97,38 @@ class UsersTable extends Table
 	*checkEmailExists is the function to check uniqueness of email
 	*/
 	
-	function  checkEmailExists($email=null,$user_id=null)
-	{
-		
-		
+	function  checkEmailExists($email=null,$userId=null)
+	{		
         if(!empty($email))		
 		$conditions[_USER_EMAIL] = $email;
 		
-		if(!empty($user_id))			
-		$conditions[_USER_ID.' !='] = $user_id;
+		if(!empty($userId))			
+		$conditions[_USER_ID.' !='] = $userId;
 		
 		$options['conditions'] =$conditions;
 		//$options['fields']     = [_USER_ID];
 		$query = $this->find('all', $options);		
         $results = $query->hydrate(false)->count();		
+	    return  $results;	
+		
+	}		
+	
+	
+	/*
+	*
+	*function to check the status of activation link 
+	*/
+	
+	function  checkActivationLink($userId=null)
+	{   	
+		if(!empty($userId))	{
+			$conditions[_USER_ID]     = $userId;	
+			$conditions[_USER_STATUS] = _INACTIVE;	
+		}		
+		
+		$options['conditions'] = $conditions;
+		$options['fields']   = [_USER_STATUS];
+		$results = $this->find('all', $options)->hydrate(false)->count();		
 	    return  $results;	
 		
 	}		
@@ -166,6 +188,8 @@ class UsersTable extends Table
 
         return $result;
     }
+	
+	
     
     
   
