@@ -43,7 +43,7 @@ class UserCommonComponent extends Component {
 	
 	public function checkUserDbRelation($userId=null,$dbId=null){
 		
-		//return $this->Users->checkUserDbRelation($userId,$dbId);
+		return $this->RUserDatabases->checkUserDbRelation($userId,$dbId);
 	}
  
  

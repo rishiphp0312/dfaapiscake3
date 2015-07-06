@@ -1194,7 +1194,7 @@ class ServicesController extends AppController {
 
                     if (isset($_POST['email']) && !empty($_POST['email']))
                        $conditions[_USER_EMAIL]= $this->request->data[_USER_EMAIL] = trim($_POST['email']);
-					
+					$userId='0';
 					if (isset($this->request->data[_USER_ID]) && !empty($this->request->data[_USER_ID])){
 						$userId = $this->request->data[_USER_ID] ;  
 					}else{
@@ -1202,10 +1202,8 @@ class ServicesController extends AppController {
 
 					}
                     
-					$isModified = $this->request->data['isModified']=true;// true
-				    if($isModified==false && $userId!=''){
-						$this->UserCommon->checkUserDbRelation($userId,$dbId);
-					}		
+					$isModified = $this->request->data['isModified']=true ;// case of add is false 
+				    $userRelDbstatus=false; //user is not associated with db 		
 				
                     $this->request->data[_USER_MODIFIEDBY] = $authUserId;
                     $this->request->data[_USER_CREATEDBY] = $authUserId;
@@ -1215,24 +1213,40 @@ class ServicesController extends AppController {
                     if (isset($rolesarray) && count($rolesarray) > 0) {
                         if (isset($dbId) && !empty($dbId)) {
 							$chkEmail = $this->UserCommon->checkEmailExists($this->request->data[_USER_EMAIL],$this->request->data[_USER_ID]);
-							if($chkEmail==0){							
-                            $lastIdinserted = $this->UserCommon->addModifyUser($this->request->data, $dbId);
-                            if ($lastIdinserted > 0) {
-								$returnData['status'] = _SUCCESS;
-								$returnData['responseKey'] ='';	
+							if($chkEmail==0){  	// email is unique
+							
+							if($isModified==false && $userId!='0'){
+							 $chkuserDbRel = $this->UserCommon->checkUserDbRelation($userId,$dbId); //check whether user is already added or not 							 
+							 
+							 if($chkuserDbRel==0){  
+							  $userRelDbstatus = false;                      //user is not  associated with this db 
+							 }else{
+							  $userRelDbstatus = true;				      //user is already associated with this db 
+							 }											
+							}
+							
+ 							if($userRelDbstatus == false){
+							
+							$lastIdinserted = $this->UserCommon->addModifyUser($this->request->data, $dbId);
+							if ($lastIdinserted > 0) {
+									$returnData['status'] = _SUCCESS;
+									$returnData['responseKey'] ='';	
 								
-								if(empty($userId)){								
+								if($userId!='0'){								
 									 $fields=[_USER_ID];
 									 $conditions[_USER_STATUS]= _INACTIVE;
 									 $userdetails = $this->UserCommon->getDataByParams($fields,$conditions);
 									 if(!empty($userdetails)){
 										 $registeredUserId = current($userdetails)[_USER_ID];
-										 $this->Common->sendActivationLink($registeredUserId,$this->request->data[_USER_EMAIL]);
+										 //$this->Common->sendActivationLink($registeredUserId,$this->request->data[_USER_EMAIL]);
 									 }
 								}
                             } else {
 								$returnData['errCode'] = _ERR114;      //  user not modified due to database error 
                             }
+							}else{
+								$returnData['errCode'] = _ERR119;	  //  user is already added to this database   
+							}
 						}else{
 								$returnData['errCode'] = _ERR118;	  //  user not modified due to email  already exists  
 						}
@@ -1632,8 +1646,12 @@ class ServicesController extends AppController {
                     $returnData['errMsg'] = '';
                 endif;
                 break;
-				
-
+			
+			case 2402:
+				$result = $this->UserCommon->checkUserDbRelation($userId,$dbId);
+					pr($result);
+					die;
+               break;
 				
 				 
 	

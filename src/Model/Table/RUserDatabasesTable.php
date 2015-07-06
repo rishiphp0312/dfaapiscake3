@@ -101,23 +101,34 @@ class  RUserDatabasesTable extends Table {
      * @return void
      */
     
-    public function findUserDatabases($user_id = [],$db_id=null) {
+    public function findUserDatabases($userId = [],$dbId=null) {
         $returnIds=[];
         if (!empty($fields))
         $options['fields'] = array(_RUSERDB_ID);
-        $options['conditions'] = [_RUSERDB_USER_ID . ' IN' => $user_id,_RUSERDB_DB_ID=>$db_id];
-        $query = $this->find('all',$options); //
-        $results = $query->hydrate(false)->all();
-        // Once we have a result set we can get all the rows
-        $data = $results->toArray();
+        $options['conditions'] = [_RUSERDB_USER_ID . ' IN' => $userId,_RUSERDB_DB_ID=>$dbId];
+        $data = $this->find('all',$options)->hydrate(false)->all()->toArray();         
         if(isset($data)){
-            foreach( $data as $index=>$valueId){
-               
+            foreach($data as $index => $valueId){               
              $returnIds[]=$valueId[_RUSERDBROLE_ID];
             }
         }    
 
         return $returnIds;
     }
+	
+	/*
+	
+	check user is already added to db or not 
+	
+	*/
+	
+	public function checkUserDbRelation($userId,$dbId){
+        
+		$count = $this->find()->where(['user_id'=>$userId,'db_id'=>$dbId])->hydrate(false)->count();
+         //pr($count);
+        return $count;
+    }
+	
+	
 
 }
