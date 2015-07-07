@@ -1,29 +1,24 @@
 angular.module('DataAdmin.databaseManagement')
-.factory('databaseManagementService', ['$http', '$q', 'session', function ($http, $q, session) {
+.factory('databaseManagementService', ['$http', '$q', 'session', 'commonService', 'SERVICE_CALL', function ($http, $q, session, commonService, SERVICE_CALL) {
     var databaseManagementService = {};
 
     databaseManagementService.getDatabaseDetails = function (databaseId) {
 
         var deferred = $q.defer();
 
-        var data = {
-            isAuthenticated: true,
-            isAuthorized: true,
-            databaseDetails: {
-                id: 1,
-                name: 'Assam Tea Garden'
-            },
-            dbRole: ['DataUser'],
-            role: ['Super Admin', 'Admin']
-        }
-
-        session.updateDbRole(data.dbRole);
-
-        deferred.resolve(data.databaseDetails);
+        $http(commonService.createHttpRequestObject(SERVICE_CALL.database.getDatabaseDetails, { dbId: databaseId }))
+        .success(function (res) {
+            if (res.success) {
+                deferred.resolve(res.data.dbDetail);
+            } else {
+                defferred.reject(res.err);
+            }
+        });
 
         return deferred.promise;
 
     }
 
     return databaseManagementService;
+
 } ])

@@ -1,4 +1,3 @@
-
 <div class="manage-user">
     <div class="title mb20">
         <h2>User Management</h2>
@@ -20,11 +19,11 @@
             </div>
             <div class="search-box">
                 <input type="text" placeholder="Search User" ng-model="search[searchOption]">
+                <div class="serch-icn"><i class="fa fa-search"></i></div>
             </div>
         </div>
         <div class="clear"></div>
     </div>
-
     <div class="user-list">
         <ul class="head">
             <li><input type="checkbox" ng-click="selectAllUsers()" ng-model="allUsersSelected"></li>
@@ -44,13 +43,20 @@
                     <li>
                         <ul>
                             <li ng-repeat="role in user.roles">
-                            {{role}}
+                              {{$root.userRoles[role]}}
                             </li>
                         </ul>
                     </li>
-                    <li>Area: All; Indicator:All</li>
-                    <li>{{user.lastLoggedIn}}</li>
-                    <li><a>Modify</a> | <a>Delete</a></li>
+                    <li>
+                        <span class="lst-span">
+                          Area: <span ng-if="user.access.area == 0">All</span>
+                        </span>
+                        <span class="lst-span">
+                          Indicator: <span ng-if="user.access.indicator == 0">All</span>
+                        </span>
+                    </li>
+                    <li><span ng-if="user.lastLoggedIn">{{(user.lastLoggedIn * 1000) | date:'dd-MMM-yyyy'}}</span></li>
+                    <li><a ui-sref="DataAdmin.databaseManagement.modifyUser({userId: user.id})">Modify</a> | <a ng-click="deleteUser(user.id)">Delete</a></li>
                 </ul>
             </li>
         </ul>

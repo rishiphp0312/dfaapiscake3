@@ -36,7 +36,7 @@ class ServicesController extends AppController {
 
     //Loading Components
     public $RUserDatabasesObj;
-    public $components = [ 'Auth','DevInfoInterface.CommonInterface', 'Common', 'ExcelReader', 'UserCommon'];
+    public $components = [ 'Auth', 'DevInfoInterface.CommonInterface', 'Common', 'ExcelReader', 'UserCommon', 'TransactionLogs'];
 
     public function initialize() {
         parent::initialize();
@@ -52,9 +52,6 @@ class ServicesController extends AppController {
 
         $this->Auth->allow();
     }
-	
-	
-	
 
     /**
      * 
@@ -68,20 +65,33 @@ class ServicesController extends AppController {
         $convertJson = _YES;
         $returnData = [];
         $dbConnection = 'test';
-		$authUserId= $this->Auth->user(_USER_ID); // logged in user id
+        $authUserId = $this->Auth->user(_USER_ID); // logged in user id
         $dbId = '';
         if (isset($this->request->data['dbId']) && !empty($this->request->data['dbId']))
             $dbId = $this->request->data['dbId'];
         // $dbConnectionDetails = $this->Common->getDbDetails($dbId);//dbId
-        
+
         switch ($case):
 
             case 'test':
 
-                $params[] = $fields = [_INDICATOR_INDICATOR_NAME, _INDICATOR_INDICATOR_INFO];
-                $params[] = $conditions = [_INDICATOR_INDICATOR_GID . ' IN' => ['POPDEN', 'AREA']];
-
-                $returnData = $this->CommonInterface->serviceInterface('Indicator', 'getDataByParams', $params, $dbConnection);
+                /* $fieldsArray = [
+                  _MTRANSACTIONLOGS_DB_ID => 11,
+                  _MTRANSACTIONLOGS_ACTION => 'IMPORT',
+                  _MTRANSACTIONLOGS_MODULE => 'TEMPLATE',
+                  _MTRANSACTIONLOGS_SUBMODULE => 'ICIUS',
+                  _MTRANSACTIONLOGS_IDENTIFIER => 'filepath',
+                  _MTRANSACTIONLOGS_PREVIOUSVALUE => '',
+                  _MTRANSACTIONLOGS_NEWVALUE => '',
+                  _MTRANSACTIONLOGS_STATUS => 'DONE',
+                  _MTRANSACTIONLOGS_DESCRIPTION => 'No error'
+                  ];
+                  $returnData = $this->TransactionLogs->createRecord($fieldsArray); */
+                $fields = [_MTRANSACTIONLOGS_DB_ID, _MTRANSACTIONLOGS_ACTION];
+                $conditions = [_MTRANSACTIONLOGS_ID => 3];
+                $returnData = $this->TransactionLogs->getRecords($fields, $conditions, 'all');
+                debug($returnData);
+                exit;
                 break;
 
             case 101: //Select Data using Indicator_NId -- Indicator table
@@ -906,218 +916,210 @@ class ServicesController extends AppController {
                 break;
 
             case 904:
-                // service for bulk upload of area excel sheet
+                // service for bulk upload of area excel sheet                
                 //if($this->request->is('post')):
-                   try {
-					
-					 $params[]['filename'] = $filename = 'C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\Area.xls';
-                     //$returnData = $this->CommonInterface->bulkUploadXlsOrCsvForIndicator($params);                    
-                     $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForArea', $params, $dbConnection);
-					
-					 $dataUsrDbRoles = $this->UserCommon->findUserDatabasesRoles($authUserId, $dbId);
-					 $returnData['status'] = _SUCCESS;
-					 $returnData['data']      = $dataUsrDbRoles; 
-					 $returnData['responseKey'] ='usrDbRoles';
-
-					}catch (Exception $e) {
-						$returnData['errMsg'] =  $e->getMessage();
-					}                   
-				   die;
-
+                try {
+                    $filename = $extra['filename'];
+                    //$params[]['filename'] = $filename ;//= 'C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\Area.xls';
+                    $params[]['filename'] =  'C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\Area.xls';
+                    //$returnData = $this->CommonInterface->bulkUploadXlsOrCsvForIndicator($params);                    
+                    $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForArea', $params, $dbConnection);
+                    die;
+            
+                    $returnData['status'] = _SUCCESS;
+                    $returnData['data'] = '';
+                    $returnData['responseKey'] = '';
+                } catch (Exception $e) {
+                    $returnData['errMsg'] = $e->getMessage();
+                }
+                
                 break;
 
             // service for adding databases
             case 1101:
                 if ($this->request->is('post')) {
-                    
-                     try{
-						 
-						$db_con = array(
-							'db_source' => $this->request->data['databaseType'],
-							'db_connection_name' => $this->request->data['connectionName'],
-							'db_host' => $this->request->data['hostAddress'],
-							'db_login' => $this->request->data['userName'],
-							'db_password' => $this->request->data['password'],
-							'db_port' => $this->request->data['port'],
-							'db_database' => $this->request->data['databaseName']
-						);
 
-                    $jsondata = array(
-                        _DATABASE_CONNECTION_DEVINFO_DB_CONN => json_encode($db_con)
-                    );
-				    $this->request->data[_DATABASE_CONNECTION_DEVINFO_DB_CONN] = $jsondata[_DATABASE_CONNECTION_DEVINFO_DB_CONN];
+                    try {
 
-					$jsondata = json_encode($jsondata);
-                    $returnTestDetails = $this->Common->testConnection($jsondata);					
-				
-                    $this->request->data[_DATABASE_CONNECTION_DEVINFO_DB_CREATEDBY] = $authUserId;
-                    $this->request->data[_DATABASE_CONNECTION_DEVINFO_DB_MODIFIEDBY] = $authUserId;
-                 
-					$returnUniqueDetails ='';
+                        $db_con = array(
+                            'db_source' => $this->request->data['databaseType'],
+                            'db_connection_name' => $this->request->data['connectionName'],
+                            'db_host' => $this->request->data['hostAddress'],
+                            'db_login' => $this->request->data['userName'],
+                            'db_password' => $this->request->data['password'],
+                            'db_port' => $this->request->data['port'],
+                            'db_database' => $this->request->data['databaseName']
+                        );
 
-					if(isset($this->request->data['connectionName']) && !empty($this->request->data['connectionName'])){
-					  
-					  $returnUniqueDetails = $this->Common->uniqueConnection($this->request->data['connectionName']);
- 	
-					}
+                        $jsondata = array(
+                            _DATABASE_CONNECTION_DEVINFO_DB_CONN => json_encode($db_con)
+                        );
+                        $this->request->data[_DATABASE_CONNECTION_DEVINFO_DB_CONN] = $jsondata[_DATABASE_CONNECTION_DEVINFO_DB_CONN];
 
-					if($returnUniqueDetails === true){
-						
-					if ($returnTestDetails === true) {
-                        $db_con_id = $this->Common->createDatabasesConnection($this->request->data);
-                        if ($db_con_id) {
-                            $returnData['status'] = _SUCCESS;        // database added 
-                            //$returnData['database_id'] = $db_con_id;
-                        } else {							 
-							 $returnData['errCode'] = _ERR100;      // database not added 
+                        $jsondata = json_encode($jsondata);
+                        $returnTestDetails = $this->Common->testConnection($jsondata);
+
+                        $this->request->data[_DATABASE_CONNECTION_DEVINFO_DB_CREATEDBY] = $authUserId;
+                        $this->request->data[_DATABASE_CONNECTION_DEVINFO_DB_MODIFIEDBY] = $authUserId;
+
+                        $returnUniqueDetails = '';
+
+                        if (isset($this->request->data['connectionName']) && !empty($this->request->data['connectionName'])) {
+
+                            $returnUniqueDetails = $this->Common->uniqueConnection($this->request->data['connectionName']);
                         }
-                    } else {
-							$returnData['errCode'] = _ERR101; // Invalid database connection details 
+
+                        if ($returnUniqueDetails === true) {
+
+                            if ($returnTestDetails === true) {
+                                $db_con_id = $this->Common->createDatabasesConnection($this->request->data);
+                                if ($db_con_id) {
+                                    $returnData['status'] = _SUCCESS;        // database added 
+                                    //$returnData['database_id'] = $db_con_id;
+                                } else {
+                                    $returnData['errCode'] = _ERR100;      // database not added 
+                                }
+                            } else {
+                                $returnData['errCode'] = _ERR101; // Invalid database connection details 
+                            }
+                        } else {
+                            $returnData['errCode'] = _ERR102; // connection name is  not unique 
+                        }
+                    } catch (Exception $e) {
+                        $returnData['errMsg'] = $e->getMessage();
                     }
-					}else{
-						    $returnData['errCode'] = _ERR102; // connection name is  not unique 
-					}
-					
-					}catch(Exception $e){
-						 $returnData['errMsg'] =  $e->getMessage();
-					}
                 }
 
                 break;
 
             // service for checking unique connection name for db connection
             case 1102:
-                if ($this->request->is('post')) {					
-					try{
-						
-					    if(isset($this->request->data['connectionName'])){						
-					
+                if ($this->request->is('post')) {
+                    try {
+
+                        if (isset($this->request->data['connectionName'])) {
+
                             $connectionName = trim($this->request->data['connectionName']);
                             $returnUniqueDetails = $this->Common->uniqueConnection($connectionName);
 
                             if ($returnUniqueDetails === true) {
-								 $returnData['status'] = _SUCCESS; // new connection name 
-						
-						         $returnData['responseKey'] = ''; 
-						 
+                                $returnData['status'] = _SUCCESS; // new connection name 
+
+                                $returnData['responseKey'] = '';
                             } else {
                                 $returnData['errCode'] = _ERR102; // database connection name already exists
                             }
-					    }else{
-						    $returnData['errCode'] = _ERR103; // database connection name is empty 
-					    }
-					}catch(Exception $e){
-						 $returnData['errMsg'] =  $e->getMessage();
-					}
+                        } else {
+                            $returnData['errCode'] = _ERR103; // database connection name is empty 
+                        }
+                    } catch (Exception $e) {
+                        $returnData['errMsg'] = $e->getMessage();
+                    }
                 }
-				 break;
+                break;
 
             // service for getting list of databases
             case 1103:
-                try {                    
-                    $databases = $this->Common->getDatabases();                    
+                try {
+                    $databases = $this->Common->getDatabases();
                     $returnData['status'] = _SUCCESS;
-                    $returnData['data']   = $databases;
-                    $returnData['responseKey'] ='dbList';
+                    $returnData['data'] = $databases;
+                    $returnData['responseKey'] = 'dbList';
                 } catch (Exception $e) {
-                     $returnData['errMsg'] =  $e->getMessage();
+                    $returnData['errMsg'] = $e->getMessage();
                 }
-            break;
+                break;
 
             // service for deletion of specific database 
             case 1104:
-              if ($this->request->is('post')) {
-                try {
-                   
-                    if (isset($dbId) && !empty($dbId)) {
-                        $returnDatabaseDetails = $this->Common->deleteDatabase($dbId, $authUserId);
-                        $getDBDetailsById = $this->Common->getDbNameByID($dbId);
-                        if ($returnDatabaseDetails) {
-                            $returnData['status'] = _SUCCESS; // records deleted
-							$returnData['data']   = $getDBDetailsById ;
-						    $returnData['responseKey'] ='';
+                if ($this->request->is('post')) {
+                    try {
+
+                        if (isset($dbId) && !empty($dbId)) {
+                            $returnDatabaseDetails = $this->Common->deleteDatabase($dbId, $authUserId);
+                            $getDBDetailsById = $this->Common->getDbNameByID($dbId);
+                            if ($returnDatabaseDetails) {
+                                $returnData['status'] = _SUCCESS; // records deleted
+                                $returnData['data'] = $getDBDetailsById;
+                                $returnData['responseKey'] = '';
+                            } else {
+                                $returnData['errCode'] = _ERR105; // // no  record deleted
+                            }
                         } else {
-                            $returnData['errCode'] = _ERR105; // // no  record deleted
+                            $returnData['errCode'] = _ERR106; // // db id is blank
                         }
-                    } else {
-                        $returnData['errCode'] = _ERR106; // // db id is blank
+                    } catch (Exception $e) {
+                        $returnData['errMsg'] = $e->getMessage();
                     }
-                } catch (Exception $e) {
-                   $returnData['errMsg'] =  $e->getMessage();
                 }
-               }
                 break;
-				
+
             // service for testing db connection
             case 1105:
-               if ($this->request->is('post')) {
-                
-				try {
-					
-					$db_con = array(
-                    'db_source' => $this->request->data['databaseType'],
-                    'db_connection_name' => $this->request->data['connectionName'],
-                    'db_host' => $this->request->data['hostAddress'],
-                    'db_login' => $this->request->data['userName'],
-                    'db_password' => $this->request->data['password'],
-                    'db_port' => $this->request->data['port'],
-                    'db_database' => $this->request->data['databaseName']
-                );
-                $data = array(_DATABASE_CONNECTION_DEVINFO_DB_CONN => json_encode($db_con)
-                );
-				
-                $data = json_encode($data);
-                $returnTestDetails = $this->Common->testConnection($data);
-                if ($returnTestDetails === true) {
-                     $returnData['status'] = _SUCCESS;
-					 $returnData['responseKey '] = '';
-                    
-                } else {
-					$returnData['errCode'] = _ERR101; // //  Invalid database connection details
+                if ($this->request->is('post')) {
+
+                    try {
+
+                        $db_con = array(
+                            'db_source' => $this->request->data['databaseType'],
+                            'db_connection_name' => $this->request->data['connectionName'],
+                            'db_host' => $this->request->data['hostAddress'],
+                            'db_login' => $this->request->data['userName'],
+                            'db_password' => $this->request->data['password'],
+                            'db_port' => $this->request->data['port'],
+                            'db_database' => $this->request->data['databaseName']
+                        );
+                        $data = array(_DATABASE_CONNECTION_DEVINFO_DB_CONN => json_encode($db_con)
+                        );
+
+                        $data = json_encode($data);
+                        $returnTestDetails = $this->Common->testConnection($data);
+                        if ($returnTestDetails === true) {
+                            $returnData['status'] = _SUCCESS;
+                            $returnData['responseKey '] = '';
+                        } else {
+                            $returnData['errCode'] = _ERR101; // //  Invalid database connection details
+                        }
+                    } catch (Exception $e) {
+                        $returnData['errMsg'] = $e->getMessage();
+                    }
                 }
-                } catch (Exception $e) {
-                    $returnData['errMsg'] =  $e->getMessage();
-                }
-				
-               }
-            break;
+                break;
 
             // service bascially  for testing of dbdetails on basis of dbId
             case 1106:
                 if ($this->request->is('post')) {
-				    
-					try {
 
-                    if (isset($dbId) && !empty($dbId)) {
-                        
-					   $returnSpecificDbDetails = $this->Common->getDbNameByID($dbId);
-					   $returnData['status'] = _SUCCESS;
-					   $returnData['data']   = $returnSpecificDbDetails;
-					   $returnData['responseKey'] = ''; 
-					   
-                    } else {
-						$returnData['errCode'] = _ERR106;      // db id is blank
+                    try {
+
+                        if (isset($dbId) && !empty($dbId)) {
+
+                            $returnSpecificDbDetails = $this->Common->getDbNameByID($dbId);
+                            $returnData['status'] = _SUCCESS;
+                            $returnData['data'] = $returnSpecificDbDetails;
+                            $returnData['responseKey'] = '';
+                        } else {
+                            $returnData['errCode'] = _ERR106;      // db id is blank
+                        }
+                    } catch (Exception $e) {
+                        $returnData['errMsg'] = $e->getMessage();
                     }
-					} catch (Exception $e) {
-                        $returnData['errMsg'] =  $e->getMessage();
-					}
-				}
-                
+                }
+
                 break;
 
-                
+
 
             // service  for list role types 
             case 1108:
-                
-				try {
-                     $listAllRoles = $this->UserCommon->listAllRoles();
-					 $returnData['status'] = _SUCCESS;
-					 $returnData['data'] = $listAllRoles;
-					 $returnData['responseKey'] ='roleDetails';
-                    
+
+                try {
+                    $listAllRoles = $this->UserCommon->listAllRoles();
+                    $returnData['status'] = _SUCCESS;
+                    $returnData['data'] = $listAllRoles;
+                    $returnData['responseKey'] = 'roleDetails';
                 } catch (Exception $e) {
-                     $returnData['errMsg'] =  $e->getMessage();
+                    $returnData['errMsg'] = $e->getMessage();
                 }
                 break;
 
@@ -1125,263 +1127,254 @@ class ServicesController extends AppController {
             // service for  listing of users belonging to specific  db details with their roles and access  
             case 1109:
                 if ($this->request->is('post')) {
-				    
-					try {                  					
-                    if (isset($dbId) && !empty($dbId)) {
-						 $listAllUsersDb = $this->UserCommon->listAllUsersDb($dbId);
-						 $returnData['status'] = _SUCCESS;								
-						 $returnData['responseKey'] ='userList';				
-						 $returnData['data'] = $listAllUsersDb;
-                    } else {
-  						 $returnData['errCode'] = _ERR106;      // db id is blank
-						
+
+                    try {
+                        if (isset($dbId) && !empty($dbId)) {
+                            $listAllUsersDb = $this->UserCommon->listAllUsersDb($dbId);
+                            $returnData['status'] = _SUCCESS;
+                            $returnData['responseKey'] = 'userList';
+                            $returnData['data'] = $listAllUsersDb;
+                        } else {
+                            $returnData['errCode'] = _ERR106;      // db id is blank
+                        }
+                    } catch (Exception $e) {
+                        $returnData['errMsg'] = $e->getMessage();
                     }
-                } catch (Exception $e) {
-                   $returnData['errMsg'] =  $e->getMessage();
-				   
                 }
-				}	
                 break;
 
             // service for  deleteion of  users with respect to associated db and roles respectively
             case 1200:
 
                 if ($this->request->is('post')) {
-				    
-					try {
-                    // 
-					$userIds='';
-					if(isset($this->request->data['userIds']) && !empty($this->request->data['userIds']))                   
-                    $userIds = $this->request->data['userIds'];
-				
-                    if (isset($userIds) && !empty($userIds)) {
-                        //$dbId=16;
-                        if (isset($dbId) && !empty($dbId)) {
-                            $deleteAllUsersDb = $this->UserCommon->deleteUserRolesAndDbs($userIds, $dbId);
-                            if ($deleteAllUsersDb>0) {
-								 $returnData['status'] = _SUCCESS;
-								
-								 $returnData['responseKey'] ='';				
+
+                    try {
+                        $userIds = '';
+                        if (isset($this->request->data['userIds']) && !empty($this->request->data['userIds']))
+                            $userIds = $this->request->data['userIds'];
+
+                        if (isset($userIds) && !empty($userIds)) {
+                            if (isset($dbId) && !empty($dbId)) {
+                                $deleteAllUsersDb = $this->UserCommon->deleteUserRolesAndDbs($userIds, $dbId);
+                                if ($deleteAllUsersDb > 0) {
+                                    $returnData['status'] = _SUCCESS;
+
+                                    $returnData['responseKey'] = '';
+                                } else {
+                                    $returnData['errCode'] = _ERR110;      // Not deleted   
+                                }
                             } else {
-								$returnData['errCode'] = _ERR110;      // Not deleted   
+                                $returnData['errCode'] = _ERR106;         // db id is blank
                             }
                         } else {
-							$returnData['errCode'] = _ERR106;         // db id is blank
+                            $returnData['errCode'] = _ERR109;      // user  id is blank
                         }
-                    } else {
-						$returnData['errCode'] = _ERR109;      // user  id is blank
+                    } catch (Exception $e) {
+                        $returnData['errMsg'] = $e->getMessage();
                     }
-
-                } catch (Exception $e) {
-                     $returnData['errMsg'] =  $e->getMessage();
                 }
-				}
 
                 break;
-                 
-                
+
+
             // service for  modification of  users with respect to associated db and roles respectively
             case 1201:
                 if ($this->request->is('post')) {
-				    
-					try {
 
-                    $data = array();                   					 
-					if (isset($_POST['name']) && !empty($_POST['name']) && isset($_POST['email']) && !empty($_POST['email'])){								
-                    
-					if (isset($_POST['name']) && !empty($_POST['name']))
-                        $this->request->data[_USER_NAME] = trim($_POST['name']);
+                    try {
 
-                    if (isset($_POST['email']) && !empty($_POST['email']))
-                       $conditions[_USER_EMAIL]= $this->request->data[_USER_EMAIL] = trim($_POST['email']);
-					$userId='0';
-					if (isset($this->request->data[_USER_ID]) && !empty($this->request->data[_USER_ID])){
-						$userId = $this->request->data[_USER_ID] ;  
-					}else{
-						$this->request->data[_USER_STATUS] = _INACTIVE; // 0 means Inactive
+                        $data = array();
+                        if (isset($_POST['name']) && !empty($_POST['name']) && isset($_POST['email']) && !empty($_POST['email'])) {
 
-					}
-                    
-					$isModified = $this->request->data['isModified']=true ;// case of add is false 
-				    $userRelDbstatus=false; //user is not associated with db 		
-				
-                    $this->request->data[_USER_MODIFIEDBY] = $authUserId;
-                    $this->request->data[_USER_CREATEDBY] = $authUserId;
-                     
-					if(isset($this->request->data['roles']))
-                    $rolesarray = $this->request->data['roles'];
-                    if (isset($rolesarray) && count($rolesarray) > 0) {
-                        if (isset($dbId) && !empty($dbId)) {
-							$chkEmail = $this->UserCommon->checkEmailExists($this->request->data[_USER_EMAIL],$this->request->data[_USER_ID]);
-							if($chkEmail==0){  	// email is unique
-							
-							if($isModified==false && $userId!='0'){
-							 $chkuserDbRel = $this->UserCommon->checkUserDbRelation($userId,$dbId); //check whether user is already added or not 							 
-							 
-							 if($chkuserDbRel==0){  
-							  $userRelDbstatus = false;                      //user is not  associated with this db 
-							 }else{
-							  $userRelDbstatus = true;				      //user is already associated with this db 
-							 }											
-							}
-							
- 							if($userRelDbstatus == false){
-							
-							$lastIdinserted = $this->UserCommon->addModifyUser($this->request->data, $dbId);
-							if ($lastIdinserted > 0) {
-									$returnData['status'] = _SUCCESS;
-									$returnData['responseKey'] ='';	
-								
-								if($userId!='0'){								
-									 $fields=[_USER_ID];
-									 $conditions[_USER_STATUS]= _INACTIVE;
-									 $userdetails = $this->UserCommon->getDataByParams($fields,$conditions);
-									 if(!empty($userdetails)){
-										 $registeredUserId = current($userdetails)[_USER_ID];
-										 //$this->Common->sendActivationLink($registeredUserId,$this->request->data[_USER_EMAIL]);
-									 }
-								}
+                            if (isset($_POST['name']) && !empty($_POST['name']))
+                                $this->request->data[_USER_NAME] = trim($_POST['name']);
+
+                            if (isset($_POST['email']) && !empty($_POST['email']))
+                                $conditions[_USER_EMAIL] = $this->request->data[_USER_EMAIL] = trim($_POST['email']);
+                            
+                            $userId = '0';
+                            if (isset($this->request->data[_USER_ID]) && !empty($this->request->data[_USER_ID])) {
+                                $userId = $this->request->data[_USER_ID];
+
                             } else {
-								$returnData['errCode'] = _ERR114;      //  user not modified due to database error 
+                                $this->request->data[_USER_STATUS] = _INACTIVE; // 0 means Inactive
                             }
-							}else{
-								$returnData['errCode'] = _ERR119;	  //  user is already added to this database   
-							}
-						}else{
-								$returnData['errCode'] = _ERR118;	  //  user not modified due to email  already exists  
-						}
+
+                            $isModified = $this->request->data['isModified']; // case of add is false 
+                           
+
+                            $userRelDbstatus = 0; //user is not associated with db 		
+                            $chkuserDbRel = 0;
+                            $this->request->data[_USER_MODIFIEDBY] = $authUserId;
+                            $this->request->data[_USER_CREATEDBY] = $authUserId;
+
+                            if (isset($this->request->data['roles']))
+                                $rolesarray = $this->request->data['roles'];
+                            if (isset($rolesarray) && count($rolesarray) > 0) {
+                                if (isset($dbId) && !empty($dbId)) {
+                                    $chkEmail = $this->UserCommon->checkEmailExists($this->request->data[_USER_EMAIL], $this->request->data[_USER_ID]);
+                                    if ($chkEmail == 0) {   // email is unique
+                                        if ($isModified == 'false' && $userId !='0') {
+                                            $chkuserDbRel = $this->UserCommon->checkUserDbRelation($userId, $dbId); //check whether user is already added or not 							 
+                                        }
+                                        
+                                        if ($chkuserDbRel == 0) {    //user is not  associated with this db 
+
+                                            $lastIdinserted = $this->UserCommon->addModifyUser($this->request->data, $dbId);
+                                            if ($lastIdinserted > 0) {
+                                                $returnData['status'] = _SUCCESS;
+                                                $returnData['responseKey'] = '';
+
+                                                if ($userId == '0') {
+                                                    $fields = [_USER_ID];
+                                                    $conditions[_USER_STATUS] = _INACTIVE;
+                                                    $userdetails = $this->UserCommon->getDataByParams($fields, $conditions);
+                                                    if (!empty($userdetails)) {
+                                                        $registeredUserId = current($userdetails)[_USER_ID];
+                                                        $this->Common->sendActivationLink($registeredUserId, $this->request->data[_USER_EMAIL],$this->request->data[_USER_NAME]);
+                                                    }
+                                                }else{
+                                                    if ($isModified == 'false') { 
+                                                       $this->Common->sendDbAddNotify($this->request->data[_USER_EMAIL],$this->request->data[_USER_NAME]);
+                                                    }
+                                                }
+                                            } else {
+                                                $returnData['errCode'] = _ERR114;      //  user not modified due to database error 
+                                            }
+                                        } else {
+                                            $returnData['errCode'] = _ERR119;   //  user is already added to this database   
+                                        }
+                                    } else {
+                                        $returnData['errCode'] = _ERR118;   //  user not modified due to email  already exists  
+                                    }
+                                } else {
+                                    $returnData['errCode'] = _ERR106;      //  db id empty 
+                                }
+                            } else {
+                                $returnData['errCode'] = _ERR112;      //  Roles are  empty
+                            }
                         } else {
-							$returnData['errCode'] = _ERR106;      //  db id empty 
+                            $returnData['errCode'] = _ERR111;      //  Email or  name may be empty 
                         }
-                    } else {
-						$returnData['errCode'] = _ERR112;      //  Roles are  empty
+                    } catch (Exception $e) {
+                        $returnData['errMsg'] = $e->getMessage();
                     }
-					
-					}else{
-						$returnData['errCode'] = _ERR111;      //  Email or  name may be empty 
-					}
-					}catch (Exception $e) {
-                               $returnData['errMsg'] =  $e->getMessage();
-					}
-				}		
+                }
 
-                                    
-				 break;
-				 
-				/*
-				*service to get AutoCompleteDetails of users with email ,id and name 
-				*/
-				 
-				 case 1202:				 
-					try{						
-						$listAllUsersDb = $this->UserCommon->getAutoCompleteDetails(); 
-						$returnData['status'] = _SUCCESS;
-						$returnData['data']      = $listAllUsersDb; 
-						$returnData['responseKey'] ='usersList';
-					} catch (Exception $e) {
-						$returnData['errMsg'] =  $e->getMessage();
-					}
-				 break;
-				 
-			     /* service to update password on activation link  */
-				 
-				 case 1204:
-				    
-					if ($this->request->is('post')) {
-				    
-					try {
-			
-						if(isset($_POST['key']) && !empty($_POST['key'])){
-						
-						$requestdata    = array();	
-						$encodedstring  = trim($_POST['key']);
-						$decodedstring  = base64_decode($encodedstring);
-						$explodestring  = explode('-',$decodedstring);					
-					
-						if($explodestring[0]==_SALTPREFIX1 &&  $explodestring[2]==_SALTPREFIX2){
-							
-							$requestdata[_USER_MODIFIEDBY] =$requestdata[_USER_ID] = $userId = $explodestring[1];
-							
-							if(isset($_POST['password']) && !empty($_POST['password']))
-							$password  = $requestdata[_USER_PASSWORD]    = $_POST['password'];	
-						
-							$requestdata[_USER_STATUS]  = _ACTIVE; // Activate user 
-							
-							$activationStatus = $this->Common->checkActivationLink($userId);
-							if($activationStatus>0){
-								
-								if(!empty($password)){
-									if(isset($userId) && !empty($userId)){
-										$returndata =  $this->UserCommon->updatePassword($requestdata);
-										if($returndata>0){
-										   $returnData['status'] = _SUCCESS;
-										}else{
-										  $returnData['errCode'] =_ERR116;      // password not updated   
-										}
-									}else{
-										$returnData['errCode'] = _ERR109;      // user id  is empty 
-									}						     
-								}else{
-									$returnData['errCode'] = _ERR113;         // Empty password   
-								}							
-							}else{
-								$returnData['errCode'] = _ERR104;             // Activation link already used 
-							}							
-							}else{								
-								$returnData['errCode'] = _ERR117;            //  invalid key    
-							}
-							}else{
-								$returnData['errCode'] = _ERR115;           //  key is empty   
-							}
-					
-					 }catch (Exception $e) {
+                break;
 
-						$returnData['errMsg'] =  $e->getMessage();
-					}
-					}
-				  
-				  break;
-				  
-				 //service to get  db roles of logged in user 
-				  case 1205:
-				     if ($this->request->is('post')) {
-				    
-						try {
-				
-						 $dataUsrDbRoles = $this->UserCommon->findUserDatabasesRoles($authUserId, $dbId);
-						 $returnData['status'] = _SUCCESS;
-						 $returnData['data']      = $dataUsrDbRoles; 
-						 $returnData['responseKey'] ='usrDbRoles';
+            /*
+             * service to get AutoCompleteDetails of users with email ,id and name 
+             */
 
-						}catch (Exception $e) {
-							$returnData['errMsg'] =  $e->getMessage();
-						}
-					}
-				  break;
-				 
-				  //service to get  session details of logged in user 
-				  case 1206:
-				  
-				    $returnData['status'] = _SUCCESS;
-					$returnData['data']['id'] = session_id();
-					$returnData['data']['user'][_USER_ID]    = $authUserId;
-					$returnData['data']['user'][_USER_NAME]  = $this->Auth->user(_USER_NAME);
-					$returnData['responseKey'] ='';					
-					if ($this->Auth->user('role_id') == _SUPERADMINROLEID)
-						$returnData['data']['user']['role'][] = _SUPERADMINNAME;
-					else
-						$returnData['data']['user']['role'][] = '';
-					
-					if ($authUserId) {
-						$returnData['isAuthenticated'] = true;
-					}
-					//echo json_encode($returnData);
-				break;
-                
-				
-            
+            case 1202:
+                try {
+                    $listAllUsersDb = $this->UserCommon->getAutoCompleteDetails();
+                    $returnData['status'] = _SUCCESS;
+                    $returnData['data'] = $listAllUsersDb;
+                    $returnData['responseKey'] = 'usersList';
+                } catch (Exception $e) {
+                    $returnData['errMsg'] = $e->getMessage();
+                }
+                break;
+
+            /* service to update password on activation link  */
+
+            case 1204:
+
+                if ($this->request->is('post')) {
+
+                    try {
+
+                        if (isset($_POST['key']) && !empty($_POST['key'])) {
+
+                            $requestdata = array();
+                            $encodedstring = trim($_POST['key']);
+                            $decodedstring = base64_decode($encodedstring);
+                            $explodestring = explode('-', $decodedstring);
+
+                            if ($explodestring[0] == _SALTPREFIX1 && $explodestring[2] == _SALTPREFIX2) {
+
+                                $requestdata[_USER_MODIFIEDBY] = $requestdata[_USER_ID] = $userId = $explodestring[1];
+
+                                if (isset($_POST['password']) && !empty($_POST['password']))
+                                    $password = $requestdata[_USER_PASSWORD] = $_POST['password'];
+
+                                $requestdata[_USER_STATUS] = _ACTIVE; // Activate user 
+
+                                $activationStatus = $this->Common->checkActivationLink($userId);
+                                if ($activationStatus > 0) {
+
+                                    if (!empty($password)) {
+                                        if (isset($userId) && !empty($userId)) {
+                                            $returndata = $this->UserCommon->updatePassword($requestdata);
+                                            if ($returndata > 0) {
+                                                $returnData['status'] = _SUCCESS;
+                                            } else {
+                                                $returnData['errCode'] = _ERR116;      // password not updated   
+                                            }
+                                        } else {
+                                            $returnData['errCode'] = _ERR109;      // user id  is empty 
+                                        }
+                                    } else {
+                                        $returnData['errCode'] = _ERR113;         // Empty password   
+                                    }
+                                } else {
+                                    $returnData['errCode'] = _ERR104;             // Activation link already used 
+                                }
+                            } else {
+                                $returnData['errCode'] = _ERR117;            //  invalid key    
+                            }
+                        } else {
+                            $returnData['errCode'] = _ERR115;           //  key is empty   
+                        }
+                    } catch (Exception $e) {
+
+                        $returnData['errMsg'] = $e->getMessage();
+                    }
+                }
+
+                break;
+
+            //service to get  db roles of logged in user 
+            case 1205:
+                if ($this->request->is('post')) {
+
+                    try {
+
+                        $dataUsrDbRoles = $this->UserCommon->findUserDatabasesRoles($authUserId, $dbId);
+                        $returnData['status'] = _SUCCESS;
+                        $returnData['data'] = $dataUsrDbRoles;
+                        $returnData['responseKey'] = 'usrDbRoles';
+                    } catch (Exception $e) {
+                        $returnData['errMsg'] = $e->getMessage();
+                    }
+                }
+                break;
+
+            //service to get  session details of logged in user 
+            case 1206:
+
+                $returnData['status'] = _SUCCESS;
+                $returnData['data']['id'] = session_id();
+                $returnData['data']['user'][_USER_ID] = $authUserId;
+                $returnData['data']['user'][_USER_NAME] = $this->Auth->user(_USER_NAME);
+                $returnData['responseKey'] = '';
+                if ($this->Auth->user('role_id') == _SUPERADMINROLEID)
+                    $returnData['data']['user']['role'][] = _SUPERADMINNAME;
+                else
+                    $returnData['data']['user']['role'][] = '';
+
+                if ($authUserId) {
+                    $returnData['isAuthenticated'] = true;
+                }
+                //echo json_encode($returnData);
+                break;
+
+
+
             case 2101: //Select Data using _IC_IC_NID -- Indicator Classification table
-                
+
                 $params[] = [446, 447, 448];
                 //getDataByIds($ids = null, $fields = [], $type = 'all' )
                 $returnData = $this->CommonInterface->serviceInterface('IndicatorClassifications', 'getDataByIds', $params, $dbConnection);
@@ -1406,7 +1399,6 @@ class ServicesController extends AppController {
                 break;
 
             case 2104: //Delete Data using Conditions -- Indicator Classification table
-
                 //deleteByParams(array $conditions)
                 $params['conditions'] = $conditions = [_IC_IC_GID . ' IN' => ['91E4A3EF-4D2C-9325-2C9D-D6B102522180', '26E78CB8-1E20-457D-45E7-6F631114AB6E']];
                 $returnData = $this->CommonInterface->serviceInterface('IndicatorClassifications', 'deleteByParams', $params, $dbConnection);
@@ -1441,18 +1433,18 @@ class ServicesController extends AppController {
                     //updateDataByParams(array $fields, array $conditions)
                     $params['fields'] = $fields;
                     $params['conditions'] = $conditions;
-                    
+
                     $returnData = $this->CommonInterface->serviceInterface('IndicatorClassifications', 'updateDataByParams', $params, $dbConnection);
                 endif;
 
                 break;
 
             case 2107: //Bulk Insert/Update Data -- Indicator Classification table
-                if($this->request->is('post')):
-                    
+                if ($this->request->is('post')):
+
                 endif;
                 break;
-                
+
             case 2201: //get IUS List by Id -- Indicator Unit Subgroup table
                 //if($this->request->is('post')):
                 if (true):
@@ -1461,11 +1453,11 @@ class ServicesController extends AppController {
                     $returnData = $this->CommonInterface->serviceInterface('IndicatorUnitSubgroup', 'getDataByIds', $params, $dbConnection);
                 endif;
                 break;
-                
+
             case 2202: //Select Data using Conditions -- Indicator Unit Subgroup table
 
                 $fields = [_IUS_INDICATOR_NID, _IUS_UNIT_NID];
-                $conditions = [_IUS_SUBGROUP_VAL_NID . ' IN' =>[244,25]];
+                $conditions = [_IUS_SUBGROUP_VAL_NID . ' IN' => [244, 25]];
 
                 $params['fields'] = $fields;
                 $params['conditions'] = $conditions;
@@ -1481,7 +1473,6 @@ class ServicesController extends AppController {
                 break;
 
             case 2204: //Delete Data using Conditions -- Indicator Unit Subgroup table
-
                 //deleteByParams(array $conditions)
                 $params['conditions'] = $conditions = [_IUS_SUBGROUP_VAL_NID . ' IN' => ['TEST_GID', 'TEST_GID2']];
                 $returnData = $this->CommonInterface->serviceInterface('IndicatorUnitSubgroup', 'deleteByParams', $params, $dbConnection);
@@ -1510,7 +1501,7 @@ class ServicesController extends AppController {
                     _IUS_MIN_VALUE => 'Custom_test_name3',
                     _IUS_MAX_VALUE => 'SOME_003_TEST'
                 ];
-                
+
                 $conditions = [_IUS_IUSNID => 11];
 
                 if ($this->request->is('post')):
@@ -1522,23 +1513,16 @@ class ServicesController extends AppController {
 
                 break;
 
-            case 2207: //Bulk Insert/Update Data -- Indicator Unit Subgroup table
-                //if($this->request->is('post')):
-                if (true):
-                    
-                endif;
 
-                break;
 
-                
             case 2209: //get IU List -- Indicator Unit Subgroup table
                 //if($this->request->is('post')):
                 if (true):
                     $fields = [_IUS_IUSNID, _IUS_INDICATOR_NID, _IUS_UNIT_NID];
 
                     $params['fields'] = $fields;
-                    $params['conditions'] = [];              
-                    $params['extra'] = ['type'=>'all', 'unique'=>true];              
+                    $params['conditions'] = [];
+                    $params['extra'] = ['type' => 'all', 'unique' => true];
                     $returnData['data'] = $this->CommonInterface->serviceInterface('IndicatorUnitSubgroup', 'getAllIU', $params, $dbConnection);
                     $returnData['status'] = _SUCCESS;
                     $returnData['responseKey'] = 'iuList';
@@ -1546,15 +1530,15 @@ class ServicesController extends AppController {
                     $returnData['errMsg'] = '';
                 endif;
                 break;
-                
+
             case 2210: //get Subgroup List from IU Gids -- Indicator Unit Subgroup table
                 //if($this->request->is('post')):
                 if (true):
                     $fields = [_IUS_SUBGROUP_VAL_NID];
 
                     $params['fields'] = $fields;
-                    $params['conditions'] = ['iGid' => 'A1946ACC-BFE5-2F12-29DF-0216C7703E9F', 'uGid' => 'NUMBER'];              
-                    $params['extra'] = ['type'=>'all', 'unique'=>true];              
+                    $params['conditions'] = ['iGid' => 'A1946ACC-BFE5-2F12-29DF-0216C7703E9F', 'uGid' => 'NUMBER'];
+                    $params['extra'] = ['type' => 'all', 'unique' => true];
                     $returnData['data'] = $this->CommonInterface->serviceInterface('IndicatorUnitSubgroup', 'getAllSubgroupsFromIUGids', $params, $dbConnection);
                     $returnData['status'] = _SUCCESS;
                     $returnData['responseKey'] = 'subgroupList';
@@ -1562,18 +1546,18 @@ class ServicesController extends AppController {
                     $returnData['errMsg'] = '';
                 endif;
                 break;
-                
+
             case 2301: //Get Records -- ICIUS table
-                
+
                 $params[] = [446, 447, 448];
                 //getDataByIds($ids = null, $fields = [], $type = 'all' )
                 $returnData = $this->CommonInterface->serviceInterface('IcIus', 'getDataByIds', $params, $dbConnection);
                 break;
-            
+
             case 2302: //Select Data using Conditions -- ICIUS table
 
                 $fields = [_ICIUS_IC_NID, _ICIUS_IUSNID];
-                $conditions = [_ICIUS_IC_NID . ' IN' =>[244,25]];
+                $conditions = [_ICIUS_IC_NID . ' IN' => [244, 25]];
 
                 $params['fields'] = $fields;
                 $params['conditions'] = $conditions;
@@ -1589,7 +1573,6 @@ class ServicesController extends AppController {
                 break;
 
             case 2304: //Delete Data using Conditions -- ICIUS table
-
                 //deleteByParams(array $conditions)
                 $params['conditions'] = $conditions = [_ICIUS_IC_NID . ' IN' => ['TEST_GID', 'TEST_GID2']];
                 $returnData = $this->CommonInterface->serviceInterface('IcIus', 'deleteByParams', $params, $dbConnection);
@@ -1615,7 +1598,7 @@ class ServicesController extends AppController {
                     _ICIUS_IUSNID => 'Custom_test_name3',
                     _ICIUS_IC_NID => 'SOME_003_TEST'
                 ];
-                
+
                 $conditions = [_IUS_IUSNID => 11];
 
                 if ($this->request->is('post')):
@@ -1626,43 +1609,91 @@ class ServicesController extends AppController {
                 endif;
                 break;
 
+
             case 2307: //Bulk Insert/Update Data -- ICIUS table
-                $this->Common->sendPassword(1,'rkapoor@avaloninfosys.com');
+                //if($this->request->is('post')):
+                if (true):
+                    
+                    //$params['filename'] = $filename = 'C:\-- Projects --\xls\Temp_Selected_ExcelFile.xls';
+                    $params['filename'] = $extra['filename'];
+                    $params['component'] = 'Icius';
+                    $params['extraParam'] = [];
+                    return $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsv', $params, $dbConnection);
+                endif;
 
                 break;
-            
+
             case 2401: //Upload Files
-                if($this->request->is('post')):
-                    $filePaths = $this->Common->processFileUpload($_FILES);
+                //if ($this->request->is('post')):
+                if (true):
                     
-                    $this->request->data['seriveToCall'];
-                    $extra['filename'] = $filePaths[0];
-                    
-                    $returnData['data'] = $this->serviceQuery(701, $extra);
-                    
+                    try {
+                        $extraParam = [];
+                        $seriveToCall = $this->request->data['type'];
+                        if($seriveToCall == 'ICIUS'){
+                            $allowedExtensions = ['xls', 'xlsx'];
+                            $extraParam['createLog'] = true;
+                            $case = 2307;
+                        }else if($seriveToCall == 'AREA'){
+                            $allowedExtensions = ['xls', 'xlsx'];
+                            $extraParam['createLog'] = true;
+                            $case = 904;
+                        }
+                        
+                        $filePaths = $this->Common->processFileUpload($_FILES, $allowedExtensions, $extraParam);
+                        
+                        if(isset($filePaths['error'])){
+                            $returnData['errMsg'] = $filePaths['error'];
+                        }else{
+                            // maintain Transaction Log
+                            $fieldsArray = [
+                                    _MTRANSACTIONLOGS_DB_ID => $dbId,
+                                    _MTRANSACTIONLOGS_ACTION => 'IMPORT',
+                                    _MTRANSACTIONLOGS_MODULE => 'TEMPLATE',
+                                    _MTRANSACTIONLOGS_SUBMODULE => $seriveToCall,
+                                    _MTRANSACTIONLOGS_IDENTIFIER => '',
+                                    _MTRANSACTIONLOGS_STATUS => 'STARTED'
+                                    ];
+                            $this->TransactionLogs->createRecord($fieldsArray);
+                            
+                            $extra['filename'] = $filePaths[0];
+                            $return = $this->serviceQuery($case, $extra);
+                            
+                            if(isset($return['error'])){
+                                $returnData['errMsg'] = $return['error'];
+                            }else{
+                                $returnData['data'] = $return;
+                                $returnData['status'] = 'success';
+                                $returnData['errCode'] = '';
+                                $returnData['errMsg'] = '';
+                            }
+                        }
+                    }catch(Exception $e){
+                        $returnData['errMsg'] = $e->getMessage();
+                    }
+                endif;
+                break;
+
+            case 2402: //Export ICIUS
+                //if($this->request->is('post')):
+                if (true):
+                    $returnData['data'] = $this->CommonInterface->serviceInterface('CommonInterface', 'exportIcius', [], $dbConnection);
+
                     $returnData['status'] = 'success';
-                    $returnData['responseKey'] = 'iciusImport';
+                    $returnData['responseKey'] = 'iciusExport';
                     $returnData['errCode'] = '';
                     $returnData['errMsg'] = '';
                 endif;
                 break;
-			
-			case 2402:
-				$result = $this->UserCommon->checkUserDbRelation($userId,$dbId);
-					pr($result);
-					die;
-               break;
-				
-				 
-	
+
+
         endswitch;
 
         return $this->service_response($returnData, $convertJson, $dbId);
     }
 
-    
     public function service_response($response, $convertJson = _YES, $dbId) {
-        
+
         // Initialize Result		
         $success = false;
         $isAuthenticated = false;
@@ -1675,15 +1706,15 @@ class ServicesController extends AppController {
         $dataUsrUserRole = [];
         $dataDbDetail = '';
         $dataUsrDbRoles = [];
-        
+
         if ($this->Auth->user('id')) {
-            
+
             $isAuthenticated = true;
             $dataUsrId = session_id();
             $dataUsrUserId = $this->Auth->user('id');
             $dataUsrUserName = $this->Auth->user('name');
             $role_id = $this->Auth->user('role_id');
-            
+
             if ($role_id == _SUPERADMINROLEID):
                 $isSuperAdmin = true;
                 $rdt = $this->Common->getRoleDetails($role_id);
@@ -1694,20 +1725,20 @@ class ServicesController extends AppController {
                 $returnSpecificDbDetails = $this->Common->getDbNameByID($dbId);
                 $dataDbDetail = $returnSpecificDbDetails;
 
-                if ($role_id != _SUPERADMINROLEID):				
+                if ($role_id != _SUPERADMINROLEID):
                     $dataUsrDbRoles = $this->UserCommon->findUserDatabasesRoles($dataUsrUserId, $dbId);
                 endif;
             endif;
         }
-        
-        if(isset($response['status']) && $response['status'] == _SUCCESS):
+
+        if (isset($response['status']) && $response['status'] == _SUCCESS):
             $success = true;
             $responseData = isset($response['data']) ? $response['data'] : [];
         else:
-            $errCode = isset($response['errCode']) ? $response['errCode']:'';
+            $errCode = isset($response['errCode']) ? $response['errCode'] : '';
             $errMsg = isset($response['errMsg']) ? $response['errMsg'] : '';
         endif;
-        
+
         // Set Result
         $returnData['success'] = $success;
         $returnData['isAuthenticated'] = $isAuthenticated;
@@ -1720,25 +1751,20 @@ class ServicesController extends AppController {
         $returnData['data']['usr']['user']['role'] = $dataUsrUserRole;
         $returnData['data']['dbDetail'] = $dataDbDetail;
         $returnData['data']['usrDbRoles'] = $dataUsrDbRoles;
-       // $returnData['data']['dataUsrUserId'] = $dataUsrUserId;
-       // $returnData['data']['db_id'] = $dbId;
-		//$dataUsrUserId, $dbId
-        
-        if($success == true){
-			$responseKey='';
-			if(isset($response['responseKey']) && !empty($response['responseKey']))
-			$responseKey = $response['responseKey'];
-			if(isset($responseKey) && !empty($responseKey))
-            $returnData['data'][$responseKey] = $responseData;
-		    //else
-			//$returnData['data'][] = $responseData;
-		   	
+
+
+        if ($success == true) {
+            $responseKey = '';
+            if (isset($response['responseKey']) && !empty($response['responseKey']))
+                $responseKey = $response['responseKey'];
+            if (isset($responseKey) && !empty($responseKey))
+                $returnData['data'][$responseKey] = $responseData;
         }
-        
+
         if ($convertJson == _YES) {
             $returnData = json_encode($returnData);
         }
-        
+
         // Return Result
         if (!$this->request->is('requested')) {
             $this->response->body($returnData);
@@ -1746,7 +1772,6 @@ class ServicesController extends AppController {
         } else {
             return $returnData;
         }
-        
-    }    
+    }
 
 }

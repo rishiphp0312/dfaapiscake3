@@ -1,5 +1,5 @@
 angular.module('DataAdmin.userManagement')
-.factory('userManagementService', ['$http', '$q', function ($http, $q) {
+.factory('userManagementService', ['$http', '$q', '$filter', 'SERVICE_CALL', 'commonService', function ($http, $q, $filter, SERVICE_CALL, commonService) {
 
     var userManagementService = {};
 
@@ -7,72 +7,82 @@ angular.module('DataAdmin.userManagement')
 
         var deferred = $q.defer();
 
-        var data = {
-            isAuthenticated: true,
-            isAuthorized: true,
-            data: [{
-                id: 1,
-                name: 'test1',
-                email: 'test1@test.com',
-                roles: ['Admin'],
-                access: { area: 0, indicator: 0 },
-                lastLoggedIn: '10-01-2012'
-            },
-            {
-                id: 2,
-                name: 'test2',
-                email: 'test2@test.com',
-                roles: ['Admin'],
-                access: { area: 0, indicator: 0 },
-                lastLoggedIn: '10-01-2012'
-            }, {
-                id: 3,
-                name: 'test3',
-                email: 'test3@test.com',
-                roles: ['DataUser'],
-                access: { area: 0, indicator: 0 },
-                lastLoggedIn: '10-01-2012'
-            }, {
-                id: 4,
-                name: 'test4',
-                email: 'test4@test.com',
-                roles: ['DataUser','TemplateUser'],
-                access: { area: 0, indicator: 0 },
-                lastLoggedIn: '10-01-2012'
-            }, {
-                id: 5,
-                name: 'test5',
-                email: 'test5@test.com',
-                roles: ['DataUser','TemplateUser'],
-                access: { area: 0, indicator: 0 },
-                lastLoggedIn: '10-01-2012'
-            }, {
-                id: 6,
-                name: 'test6',
-                email: 'test6@test.com',
-                roles: ['TemplateUser'],
-                access: { area: 0, indicator: 0 },
-                lastLoggedIn: '10-01-2012'
-            }, {
-                id: 7,
-                name: 'test7',
-                email: 'test7@test.com',
-                roles: ['Admin'],
-                access: { area: 0, indicator: 0 },
-                lastLoggedIn: '10-01-2012'
-            }, {
-                id: 8,
-                name: 'test8',
-                email: 'test8@test.com',
-                roles: ['DataUser','TemplateUser'],
-                access: { area: 0, indicator: 0 },
-                lastLoggedIn: '10-01-2012'
-            }],
-            dbRole: ['Admin'],
-            role: ['Super Admin', 'Admin']
-        }
+        $http(commonService.createHttpRequestObject(SERVICE_CALL.userManagement.getUserList, { dbId: databaseId }))
+        .success(function (res) {
+            if (res.success) {
+                deferred.resolve(res.data.userList);
+            } else {
+                deferred.reject(res.err);
+            }
+        })
 
-        deferred.resolve(data);
+        return deferred.promise;
+
+    }
+
+    userManagementService.getUserDetails = function (data) {
+
+        var deferred = $q.defer();
+
+        $http(commonService.createHttpRequestObject(SERVICE_CALL.userManagement.getUserList, { dbId: data.dbId }))
+        .success(function (res) {
+            if (res.success) {
+                deferred.resolve($filter('filter')(res.data.userList, { id: data.userId })[0]);
+            } else {
+                deferred.reject(res.err);
+            }
+        })
+
+        return deferred.promise;
+
+    }
+
+    userManagementService.addModifyUser = function (userDetails) {
+
+        var deferred = $q.defer();
+
+        $http(commonService.createHttpRequestObject(SERVICE_CALL.userManagement.addModifyUser, userDetails))
+        .success(function (res) {
+            if (res.success) {
+                deferred.resolve(res.success);
+            } else {
+                deferred.reject(res.err);
+            }
+        })
+
+        return deferred.promise;
+
+    }
+
+    userManagementService.deleteUsers = function (data) {
+
+        var deferred = $q.defer();
+
+        $http(commonService.createHttpRequestObject(SERVICE_CALL.userManagement.deleteUsers, data))
+        .success(function (res) {
+            if (res.success) {
+                deferred.resolve(res.success);
+            } else {
+                deferred.reject(res.err);
+            }
+        })
+
+        return deferred.promise;
+
+    }
+
+    userManagementService.confirmPassword = function (data) {
+
+        var deferred = $q.defer();
+
+        $http(commonService.createHttpRequestObject(SERVICE_CALL.userManagement.confirmPassword, data))
+        .success(function (res) {
+            if (res.success) {
+                deferred.resolve(res.success);
+            } else {
+                deferred.reject(res.err);
+            }
+        })
 
         return deferred.promise;
 

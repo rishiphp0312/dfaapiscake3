@@ -6,6 +6,8 @@ angular.module('DataAdmin.login')
         password: ''
     }
 
+    $scope.loginFailed = false;
+
     $scope.login = function () {
         authService.login($scope.credentials).then(function (user) {
             if (user) {
@@ -14,15 +16,15 @@ angular.module('DataAdmin.login')
                 $state.go('DataAdmin.database')
                 ngDialog.close();
             } else {
-                $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
+                $scope.loginFailed = true;
             }
         });
     }
 
     $scope.logout = function () {
+        $scope.setCurrentUser('');
         authService.logout().then(function () {
-            $state.go('DataAdmin');
-            $scope.setCurrentUser('');
-        })
+            location.href = _WEBSITE_URL;
+        });
     }
 } ])

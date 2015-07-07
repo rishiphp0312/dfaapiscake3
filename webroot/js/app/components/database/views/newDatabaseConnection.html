@@ -6,71 +6,94 @@
             <div class="title">
                 <h2>My Databases - Create new Database Connection</h2>
             </div>
-            <form name="addNewConnection" method="post" ng-submit="addNewConnection.$valid && saveConnection(connectionDetails)" novalidate>
+            <form name="addNewConnection" method="post" ng-submit="connectionNameUnique!=false && testConnectionVerified != false && addNewConnection.$valid && saveConnection(connectionDetails)" novalidate>
                 <div class="form-elem mt20">
                     <div class="form-group">
                         <label>Connection Name</label>
-                        <input name="connectionName" type="text" ng-model="connectionDetails.connectionName" required>
+                        <input name="connectionName" type="text" ng-blur="verifyConnectionName(connectionDetails.connectionName)" ng-model="connectionDetails.connectionName" required>
+                        <div class="input-icn" ng-show="addNewConnection.connectionName.$error.length > 0">
+                            <i class="fa fa-exclamation-triangle"></i>
+                        </div>
                         <div class="errorbox">
-                            <span ng-show="addNewConnection.connectionName.$error.required" class="error">*Connection Name is required.</span>
+                            <div ng-show="addNewConnection.$submitted || addNewConnection.connectionName.$touched || showValidations">
+                                <span ng-show="addNewConnection.connectionName.$error.required" class="error">*Connection Name is required.</span>
+                                <span ng-show="connectionNameUnique == false" class="error">*Connection name already exists.</span>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group mb20">
                         <label>Database Type</label>
-                        <select name="databaseType" ng-model="connectionDetails.databaseType" ng-options="dbtype.id as dbtype.name for dbtype in dbTypeDetails">
+                        <select name="databaseType" ng-model="connectionDetails.databaseType" required ng-options="dbtype.id as dbtype.name for dbtype in dbTypeDetails">
                             <option value="">-- Select --</option>
                         </select>
                         <div class="errorbox">
-                            <span ng-show="addNewConnection.databaseType.$error.required" class="error">*Connection Name is required.</span>
+                            <div ng-show="addNewConnection.$submitted || addNewConnection.databaseType.$touched || showValidations">
+                                <span ng-show="addNewConnection.databaseType.$error.required" class="error">*Database Type is required.</span>
+                            </div>
+
                         </div>
                     </div>
                     <div class="clear"></div>
                     <div class="separator mt20 mb10"></div>
                     <div class="form-group">
                         <label>Host Address</label>
-                        <input name="hostAddress" type="text" ng-model="connectioDetails.hostAddress" required>
+                        <input name="hostAddress" type="text" ng-model="connectionDetails.hostAddress" required>
                         <div class="errorbox">
-                            <span ng-show="addNewConnection.hostAddress.$error.required" class="error">*Host Address is required.</span>
+                            <div ng-show="addNewConnection.$submitted || addNewConnection.hostAddress.$touched || showValidations">
+                                <span ng-show="addNewConnection.hostAddress.$error.required" class="error">*Host Address is required.</span>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Database Name</label>
-                        <input name="databaseName" type="text" ng-model="connectioDetails.databaseName" required>
+                        <input name="databaseName" type="text" ng-model="connectionDetails.databaseName" required>
                         <div class="errorbox">
-                            <span ng-show="addNewConnection.databaseName.$error.required" class="error">*Database Name is required.</span>
+                            <div ng-show="addNewConnection.$submitted || addNewConnection.databaseName.$touched || showValidations">
+                                <span ng-show="addNewConnection.databaseName.$error.required" class="error">*Database Name is required.</span>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <label>User Name</label>
-                        <input name="userName" type="text" ng-model="connectioDetails.userName" required>
+                        <input name="userName" type="text" ng-model="connectionDetails.userName" required>
                         <div class="errorbox">
-                            <span ng-show="addNewConnection.userName.$error.required" class="error">*User Name is required.</span>
+                            <div ng-show="addNewConnection.$submitted || addNewConnection.userName.$touched || showValidations">
+                                <span ng-show="addNewConnection.userName.$error.required" class="error">*User Name is required.</span>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input name="password" type="password" ng-model="connectioDetails.password" required>
+                        <input name="password" type="password" ng-model="connectionDetails.password" required>
                         <div class="errorbox">
-                            <span ng-show="addNewConnection.password.$error.required" class="error">*Password is required.</span>
+                            <div ng-show="addNewConnection.$submitted || addNewConnection.password.$touched || showValidations">
+                                <span ng-show="addNewConnection.password.$error.required" class="error">*Password is required.</span>
+                            </div>
+
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Port</label>
-                        <input name="port" type="text" ng-model="connectioDetails.port" required>
+                        <input name="port" type="text" ng-model="connectionDetails.port" required>
                         <div class="errorbox">
-                            <span ng-show="addNewConnection.port.$error.required" class="error">*Port Number is required.</span>
+                            <div ng-show="addNewConnection.$submitted || addNewConnection.port.$touched || showValidations">
+                                <span ng-show="addNewConnection.port.$error.required" class="error">*Port Number is required.</span>
+                            </div>
                         </div>
                     </div>
                     <div class="clear"></div>
                     <div class="separator mt20"></div>
                     <div class="clear"></div>
                     <div class="form-action mt20">
-                        <button class="save" type="submit"><i class="fa fa-save"></i> Save</button>
-                        <button class="cancel" ui-sref="DataAdmin.database">Cancel</button>
+                        <button class="btn save" type="submit"><i class="fa fa-save"></i> Save</button>
+                        <button class="btn cancel" ui-sref="DataAdmin.database"><i class="fa fa-close"></i> Cancel</button>
+                        <a class="btn btn-xl btn-primary f-right" ng-click="testConnection(addNewConnection.$valid, connectionDetails)">
+                            <span class="i-width green"><i class="fa fa-check" ng-show="testConnectionVerified == true"></i></span>
+                            <span class="i-width red"><i class="fa fa-close" ng-show="testConnectionVerified == false"></i></span>  Test Connection
+                        </a>
                     </div>
                 </div>
             </form>
-
             <div class="clear"></div>
         </section>
         <!--workspace ends here -->

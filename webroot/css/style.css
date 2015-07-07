@@ -1,4 +1,3 @@
-@import "styleguide.css";
 /*************************Global Style classes*******************************************/
 * {
     -webkit-box-sizing: border-box;
@@ -7,18 +6,18 @@
 }
 
 html, body {
-    font-size: 14px;
+    font-size: 13px;
     line-height: 16px;
     background: #fff;
     color: #555;
     font-family: 'open_sansregular',sans-serif;
-    min-width: 768px;
+    min-width: 960px;
     height: 100%;
     position: relative;
 }
 
 .scroll {
-    min-height: 600px;
+    min-height: 80vh;
 }
 
 ul, li {
@@ -46,10 +45,29 @@ a:hover {
 .clear {
     clear: both;
 }
+
+.btn-xl {
+    font-size: 16px;
+    padding: 12px 24px;
+    border-radius: 3px;
+}
+
+.form-action .i-width {
+    width: 16px;
+    display: inline-block;
+    margin-left: -12px;
+}
+
+.form-action .green {
+    color: green;
+}
+
+.form-action .red {
+    color: #d24726;
+}
 /*===================================== Header Elements Starts Here =====================================*/
 .main-header {
     padding: 0px;
-    height: 70px;
 }
 
 .main-header .logo {
@@ -98,6 +116,11 @@ a:hover {
     position: relative;
     margin-top: 25px;
     padding: 0 0 25px 0;
+    cursor: pointer;
+}
+
+.main-header .header-menu > ul > li:nth-child(2) {
+    min-width: 140px;
 }
 
 .main-header .header-menu > ul > li > a, .main-header .header-menu > ul > li > span {
@@ -119,7 +142,7 @@ a:hover {
 .main-header .header-menu > ul > li > ul {
     position: absolute;
     z-index: 10;
-    width: 156px;
+    width: 170px;
     background: #f1f0f0;
     top: 120%;
     float: left;
@@ -147,7 +170,7 @@ a:hover {
 .main-header .header-menu > ul > li:hover > ul {
     visibility: visible;
     opacity: 1;
-    top: 100%;
+    top: 45px;
 }
 
 .main-header .header-menu > ul > li > ul li {
@@ -158,12 +181,29 @@ a:hover {
     border-bottom: none;
 }
 
+.main-header .header-menu > ul > li > ul li .db-lst {
+    width: 124px;
+}
+
+.main-header .header-menu > ul > li > ul li i {
+    vertical-align: middle;
+}
+
 .main-header .header-menu > ul > li > ul li:first-child {
     /*border-top: none;*/
 }
 
 .main-header .header-menu > ul > li > ul li:last-child {
     border-bottom: 1px solid #cbc7c7;
+    border-top: 2px solid #777;
+}
+
+.main-header .header-menu > ul > li > ul > li > ul > li:last-child {
+    border: 1px solid #cbc7c7;
+}
+
+.main-header .header-menu > ul > li > ul > li:last-child {
+    border-top: 2px solid #777;
 }
 
 .main-header .header-menu > ul > li > ul li a {
@@ -281,10 +321,16 @@ a:hover {
 }
 
 /****************Popup Style Starts Here***********************/
-/*pop up box css*/
-/*.overlay.dark-opacity {
-    opacity: 0.8;
-}*/
+
+/***************Popup Boxes Using Angular ngDialog************/
+
+
+/***************Login Box popup Start Here************/
+
+.login-popup .ngdialog-overlay {
+    background: rgba(0, 0, 0, 0.9)!important;
+}
+
 .login-popup {
     padding: 150px 0px;
 }
@@ -481,14 +527,275 @@ a:hover {
     margin-top: 2%;
     height: 15px;
 }
+/***************Login Box popup Start Here************/
+
+/************* Start: ngDialog Popup Buttons Design ************/
+.ngdialog-content .ngdialog-buttons .btn-ok {
+    background: #598ff3;
+    border: 1px solid #5a88d6;
+    color: #ffffff;
+    cursor: pointer;
+    float: left;
+    font-size: 16px;
+    height: 60px;
+    line-height: 60px;
+    width: 100%;
+}
+
+.ngdialog-content .msg {
+    font-size: 14px;
+    text-align: center;
+    padding: 60px 0px;
+}
+/************* End: ngDialog Popup Buttons Design ************/
+
+/***************Confirmation Box popup Start Here************/
+.confirm-popup {
+    padding: 250px 0px;
+}
+
+
+.confirm-popup .ngdialog-content {
+    -webkit-animation: ngdialog-flyin .5s;
+    animation: ngdialog-flyin .5s;
+    margin: 0 auto;
+    max-width: 100%;
+    overflow: hidden;
+    position: relative;
+    border-radius: 5px;
+    width: 400px;
+}
+
+
+
+.confirm-popup .ngdialog-content .ngdialog-buttons {
+    width: 100%;
+}
+
+.confirm-popup .ngdialog-content .ngdialog-buttons button {
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 16px;
+    height: 60px;
+    line-height: 60px;
+}
+
+.confirm-popup .ngdialog-content .ngdialog-buttons button:focus {
+    outline: none;
+}
+
+.confirm-popup .ngdialog-content .ngdialog-buttons .btn-delete {
+    background: #fc7169;
+    float: left;
+    width: 50%;
+}
+
+.confirm-popup .ngdialog-content .ngdialog-buttons .btn-delete:hover {
+    opacity: 1;
+}
+
+
+.confirm-popup .ngdialog-content .ngdialog-buttons .btn-cancel {
+    background: #b6bece;
+    float: left;
+    width: 50%;
+}
+
+
+/***************Confirmation Box popup End Here************/
+
+/***************Info Message Box (Only OK button) popup Start Here************/
+.info-popup {
+    padding: 250px 0px;
+}
+
+
+.info-popup .ngdialog-content {
+    -webkit-animation: ngdialog-flyin .5s;
+    animation: ngdialog-flyin .5s;
+    margin: 0 auto;
+    max-width: 100%;
+    overflow: hidden;
+    position: relative;
+    border-radius: 5px;
+    width: 400px;
+}
+
+
+
+/***************Info Message Box (Only OK button) popup Start Here************/
+
+/***************Popup Boxes Using Angular ngDialog************/
+
+/************Popup Box using Angular CSS Ends here***********************/
+.overlay.dark-opacity {
+    opacity: 0.8;
+}
+
+.popupbox.register {
+    background: #384d5b;
+    box-shadow: none;
+    height: auto;
+    padding: 0;
+    width: 611px;
+    border-radius: 5px;
+}
+
+.popupbox.register .poptxt-tp {
+    float: left;
+    margin-bottom: 5px;
+    padding: 10px;
+    width: 100%;
+}
+
+.popupbox.register .poptxt-tp figure {
+    background: none repeat scroll 0 0 #ff9100;
+    border-radius: 5px;
+    float: left;
+    margin-right: 20px;
+    padding: 10px;
+}
+
+.popupbox.register .poptxt-tp .lg-tp-text {
+    float: left;
+    padding-top: 5px;
+}
+
+.popupbox.register .poptxt-tp .lg-tp-text h3 {
+    color: #fff;
+    float: left;
+    font-size: 22px;
+    font-family: "open_sansbold";
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.popupbox.register .poptxt-tp .lg-tp-text h5 {
+    color: #aaaaaa;
+    font-size: 16px;
+    font-family: "open_sansbold";
+}
+
+.popupbox.register .form-part-main {
+    background: none repeat scroll 0 0 #fff;
+    border-radius: 3px;
+    float: left;
+    padding: 20px;
+    width: 100%;
+}
+
+.popupbox.register .log-left {
+    border-left: 1px solid #ccc;
+    display: table-cell;
+    padding-left: 20px;
+    width: 50%;
+}
+
+.popupbox.register .log-left .form-group {
+    float: left;
+    margin-bottom: 5px;
+    text-align: left;
+    width: 100%;
+}
+
+.popupbox.register .log-left .form-group label {
+    color: #5f5f5f;
+    float: left;
+    font-size: 14px;
+    margin-bottom: 10px;
+    width: 25%;
+}
+
+.popupbox.register .log-left .form-group input[type="text"], .popupbox.register .log-left .form-group input[type="email"], .popupbox.register .log-left .form-group input[type="password"] {
+    border: 1px solid #ccc;
+    float: left;
+    font-size: 14px;
+    margin-right: 20px;
+    padding: 5px;
+    width: 100%;
+}
+
+.popupbox.register .log-left .form-action {
+    float: left;
+    width: 100%;
+}
+
+.popupbox.register .log-left .form-action .form-remember {
+    float: left;
+}
+
+.log-left .form-action button {
+    background: none repeat scroll 0 0 #598ff3;
+    border: 1px solid #376ed6;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    float: right;
+    font-size: 16px;
+    padding: 5px 10px;
+}
+
+.popupbox.register .right-pop {
+    display: table-cell;
+    text-align: left;
+    vertical-align: top;
+    width: 50%;
+}
+
+.popupbox.register .right-pop .scl-btn {
+    margin-bottom: 20px;
+}
+
+.popupbox.register .right-pop .scl-btn.or-spacer {
+    margin-bottom: 10px;
+    margin-top: 60px;
+    text-align: center;
+}
+
+.popupbox.register .right-pop .scl-btn.register-psac {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.popupbox.register .right-pop .scl-btn a.registe-btn {
+    color: #598ff3;
+    font-size: 14px;
+    display: inline-block;
+    padding: 10px;
+    border: 1px solid #ccc;
+    width: 200px;
+    margin: 15px 0px;
+}
+
+.loginerror {
+    float: left;
+    color: red;
+    margin-left: 1%;
+    margin-top: 2%;
+    height: 15px;
+}
+
 /***********************Database List Pages**************************/
 .db-list {
     padding: 20px 0px;
 }
 
+.db-list h2 {
+    padding-bottom: 10px;
+}
+
+.db-list .btn-box {
+    padding: 10px 0px 0px 0px;
+}
+
+.db-list .list {
+    padding-top: 10px;
+}
+
 .db-list .list > ul > li {
     border-bottom: 1px solid #b5b5b5;
-    padding: 10px 0px;
+    /*padding: 10px 0px;*/
 }
 
 .btn-box {
@@ -497,6 +804,8 @@ a:hover {
 
 .db-name {
     float: left;
+    font-size: 15px;
+    padding: 10px 2px;
 }
 
 .db-name a i {
@@ -505,6 +814,12 @@ a:hover {
 
 .db-option {
     float: right;
+    padding-top: 15px;
+    padding-right: 5px;
+}
+
+.db-option ul li a:hover {
+    color: #e08e00;
 }
 /***********************Create New Database Connection**************************/
 .connection {
@@ -544,13 +859,14 @@ a:hover {
     margin: 0px!important;
 }
 
-.form-group input {
+.form-group input[type="text"], .form-group input[type="password"] {
     width: 100%;
     border: 1px solid #b5b5b5;
     color: #555;
     height: 28px;
     padding-left: 10px;
 }
+
 
 .form-group select {
     width: 100%;
@@ -567,23 +883,35 @@ a:hover {
 
 .form-action .save {
     cursor: pointer;
-    background: none repeat scroll 0 0 #20a14b;
+    background: none repeat scroll 0 0 #6aa84f;
     border: 1px solid #085120;
     color: #fff;
     display: inline-block;
-    font-size: 20px;
-    padding: 12px 24px;
+    font-size: 16px;
+    padding: 12px 20px;
     border-radius: 3px;
 }
 
+.form-action .reset {
+    cursor: pointer;
+    border: 1px solid #666666;
+    color: #fff;
+    display: inline-block;
+    font-size: 16px;
+    padding: 12px 10px;
+    border-radius: 3px;
+    float: right;
+}
+
 .form-action .cancel {
+    background: #eee;
+    border: 1px solid #777;
+    border-radius: 3px;
     cursor: pointer;
     display: inline-block;
-    font-size: 20px;
-    padding: 12px 24px;
+    font-size: 16px;
+    padding: 12px 16px;
     color: #555;
-    border: none;
-    background: #fff;
 }
 
 .form-group .errorbox {
@@ -595,8 +923,31 @@ a:hover {
     padding: 4px 0px 0px 0px;
     display: inline-block;
     font-size: 12px;
+    /*display: none;*/
 }
 /**********************Left Menu STyle**************************/
+@-webkit-keyframes fadeIn {
+    from {
+        opacity: 0;
+        width: 100px;
+    }
+
+    to {
+        opacity: 1;
+        width: 300px;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
 .database {
 }
 
@@ -605,7 +956,16 @@ a:hover {
     border-right: 1px solid #ccc;
     width: 20%;
     position: relative;
+    display: block;
+    -moz-animation: fadeIn 1s;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+    -moz-transition: all .3s ease .15s;
+    -webkit-transition: all .3s ease .15s;
+    transition: all .3s ease .15s;
+    overflow: hidden;
 }
+
 
 .database .rgt .add-user {
     margin: 0 auto;
@@ -616,18 +976,95 @@ a:hover {
     width: 80%;
     padding: 20px;
     float: left;
+    /*-moz-animation: fadeIn 1s;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;*/
+    -moz-transition: all .3s ease .15s;
+    -webkit-transition: all .3s ease .15s;
+    transition: all .3s ease .15s;
 }
 
+.visible {
+    /*-moz-animation: fadeIn 1s;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+    -moz-transition: all .3s ease .15s;
+    -webkit-transition: all .3s ease .15s;
+    transition: all .3s ease .15s;*/
+    width: 20%!important;
+}
+
+.invisible {
+    /*-moz-animation: fadeIn 1s;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+    -moz-transition: all .3s ease .15s;
+    -webkit-transition: all .3s ease .15s;
+    transition: all .3s ease .15s;*/
+    width: 0px!important;
+}
+
+.withleftmenu {
+    /*-moz-animation: fadeIn 1s;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+    -moz-transition: all .3s ease .15s;
+    -webkit-transition: all .3s ease .15s;
+    transition: all .3s ease .15s;*/
+}
+
+.withoutleftmenu {
+    width: 99%!important;
+    /*-moz-animation: fadeIn 1s;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+    -moz-transition: all .3s ease .15s;
+    -webkit-transition: all .3s ease .15s;
+    transition: all .3s ease .15s;*/
+}
+
+/*.invisible .sub-menu {
+    display: none;
+}
+
+.invisible .menu-title {
+    display: none;
+}*/
+
+.add-user .form-group {
+    position: relative;
+}
+
+.add-user .form-group .user-suggestions {
+    background: #fff;
+    position: absolute;
+    width: 100%;
+    border: 1px solid #b5b5b5;
+    max-height: 200px;
+    overflow: auto;
+    z-index: 999;
+}
+
+.add-user .form-group .user-suggestions ul li {
+    border-bottom: 1px solid #b5b5b5;
+    padding: 6px;
+    cursor: pointer;
+    height: 28px;
+}
+
+.add-user .form-group .user-suggestions ul li:last-child {
+    border: none;
+}
 /**********************Databse Page**************************/
 
 
 .db-title {
     font-size: 18px;
-    padding: 10px;
+    /*padding: 10px;*/
     color: #fff;
     background: #a4bcc4;
-    border-bottom: 2px solid #7d9faa;
-    height: 38px;
+    /*border-bottom: 2px solid #7d9faa;*/
+    height: 36px;
 }
 
 /**********************Add New User Page**************************/
@@ -716,6 +1153,11 @@ a:hover {
 .manage-user .action-search .action ul li a {
     display: inline-block;
     padding: 0px 10px;
+    font-size: 14px;
+}
+
+.manage-user .action-search .action ul li a i {
+    font-size: 16px;
 }
 
 .manage-user .action-search .action ul li:hover a {
@@ -735,11 +1177,22 @@ a:hover {
     float: right;
     width: 60%;
     margin-right: 5px;
+    height: 28px;
+}
+
+.manage-user .action-search .search .search-box .serch-icn {
+    font-size: 16px;
+    left: -5px;
+    position: relative;
+    top: -22px;
+    color: #ccc;
+    float: right;
 }
 
 .manage-user .action-search .search .search-box input {
     width: 100%;
     height: 28px;
+    padding: 5px;
 }
 
 .manage-user .action-search .search .search-type select {
@@ -766,6 +1219,7 @@ a:hover {
 .manage-user .user-list ul li {
     display: inline-block;
     padding: 5px 0px;
+    vertical-align: middle;
 }
 
 .manage-user .user-list .head {
@@ -783,19 +1237,19 @@ a:hover {
 }
 
 .manage-user .user-list .head > li:nth-child(2) {
-    width: 14%;
+    width: 18%;
 }
 
 .manage-user .user-list .head > li:nth-child(3) {
-    width: 20%;
+    width: 24%;
 }
 
 .manage-user .user-list .head > li:nth-child(4) {
-    width: 8%;
+    width: 10%;
 }
 
 .manage-user .user-list .head > li:nth-child(5) {
-    width: 23%;
+    width: 15%;
 }
 
 .manage-user .user-list .head > li:nth-child(6) {
@@ -803,7 +1257,7 @@ a:hover {
 }
 
 .manage-user .user-list .head > li:nth-child(7) {
-    width: 16%;
+    width: 14%;
 }
 
 .manage-user .user-list .list {
@@ -819,30 +1273,34 @@ a:hover {
     background: #eee;
 }
 
+.manage-user .user-list .list .lst-span {
+    display: block;
+    padding: 3px 0px;
+}
+
 .manage-user .user-list .list > li > ul > li {
     width: 100%;
     padding: 3px 0px 3px 5px;
 }
-
 
 .manage-user .user-list .list > li > ul > li:nth-child(1) {
     width: 4%;
 }
 
 .manage-user .user-list .list > li > ul > li:nth-child(2) {
-    width: 14%;
+    width: 18%;
 }
 
 .manage-user .user-list .list > li > ul > li:nth-child(3) {
-    width: 20%;
+    width: 24%;
 }
 
 .manage-user .user-list .list > li > ul > li:nth-child(4) {
-    width: 8%;
+    width: 10%;
 }
 
 .manage-user .user-list .list > li > ul > li:nth-child(5) {
-    width: 23%;
+    width: 15%;
 }
 
 .manage-user .user-list .list > li > ul > li:nth-child(6) {
@@ -850,13 +1308,20 @@ a:hover {
 }
 
 .manage-user .user-list .list > li > ul > li:nth-child(7) {
-    width: 16%;
+    width: 14%;
 }
 
 .manage-user .user-list .list > li > ul > li:nth-child(7) a:hover {
     color: #e27a3e;
 }
 
+/**********************Import Export**************************/
+
+.set-password {
+    width: 20%;
+    margin: 0 auto;
+    padding: 150px 0px;
+}
 /**********************Import Export**************************/
 .import-export {
     width: 100%;
@@ -880,12 +1345,38 @@ a:hover {
 .import-export .upload {
 }
 
+.import-export .upload .upload-box {
+    width: 70%;
+    margin-right: 1%;
+    display: inline-block;
+}
+
+.import-export .upload .upload-box span {
+    border: 1px solid #b5b5b5;
+    display: inline-block;
+    height: 30px;
+    padding: 5px;
+    width: 100%;
+}
+
+.import-export .upload .upload-box .inactive {
+    color: #ccc;
+}
+
+.import-export .upload .upload-box .loading {
+    background-color: white;
+    background-repeat: no-repeat;
+    width: 100%;
+    display: inline-block;
+}
+
 .import-export .upload input {
     width: 70%;
     margin-right: 1%;
     height: 30px;
     padding: 5px;
     color: #555;
+    border: 1px solid #b5b5b5;
 }
 
 .import-export .upload a {
@@ -894,6 +1385,11 @@ a:hover {
 
 .import-export .upload .btn-sm {
     line-height: 30px;
+}
+
+.import-export .export .upload .btn {
+    margin-left: 71%;
+    float: left;
 }
 
 .import-export h5 {
@@ -914,6 +1410,30 @@ a:hover {
 }
 
 /**********************Import Export**************************/
+.lft-menu-icon {
+    font-size: 24px;
+    padding: 0px 10px;
+    vertical-align: middle;
+    cursor: pointer;
+    background-color: #7d9faa;
+    height: 36px;
+    width: 40px;
+    display: inline-block;
+}
+
+.lft-menu-icon:hover {
+    background-color: #446C79;
+}
+
+.lft-menu-icon i {
+    padding: 6px 0px;
+}
+
+.db-title .name {
+    padding: 6px;
+    display: inline-block;
+}
+
 .lft {
 }
 
@@ -933,26 +1453,292 @@ a:hover {
 .lft-menu > ul > li > a {
     color: #555;
     font-weight: 600;
-    padding: 15px 20px 15px 15px;
+    padding: 15px 20px 15px 14px;
     display: block;
+    font-size: 14px;
+}
+
+.lft-menu > ul > li > a > i {
+    width: 15px;
 }
 
 .sub-menu {
     background: #fff;
 }
 
+.sub-menu li:hover {
+    background: #a4bcc4;
+}
+
+.sub-menu li:active {
+    background: #a4bcc4;
+}
+
+.sub-menu .selected {
+    background: #a4bcc4;
+}
+
+
+
 .sub-menu > li > a {
     color: #555;
-    font-weight: 600;
-    padding: 10px 20px 10px 30px;
+    font-weight: 300;
+    padding: 10px 20px 10px 32px;
     display: block;
     border-bottom: 1px solid #ccc;
 }
+
+
 /**********************IUS list**************************/
+.ius {
+    /*padding-left: 20px;*/
+}
+
+.ius a:hover {
+    cursor: pointer;
+}
+
+.ius .action-search {
+    width: 100%;
+}
+
+.ius .action-search .action {
+    float: left;
+    width: 70%;
+}
+
+.ius .action-search .action ul li {
+    display: inline-block;
+    height: 28px;
+    padding: 10px 0px;
+}
+
+.ius .action-search .action ul li:first-child {
+    padding-left: 5px;
+}
+
+.ius .action-search .action ul li a {
+    display: inline-block;
+    padding: 0px 5px;
+}
+
+.ius .action-search .action ul li:first-child a {
+    font-size: 14px;
+}
+
+.ius .action-search .action ul li a i {
+    font-size: 16px;
+}
+
+.ius .action-search .action ul li:hover a {
+    color: #e27a3e;
+}
+
+
+.ius .action-search .search {
+    float: left;
+    width: 30%;
+}
+
+.ius .action-search .search .search-box {
+    float: right;
+    width: 90%;
+    /*margin-right: 5px;*/
+    height: 28px;
+}
+
+.ius .action-search .search .search-box .serch-icn {
+    font-size: 16px;
+    left: -5px;
+    position: relative;
+    top: -22px;
+    color: #ccc;
+    float: right;
+}
+
+.ius .action-search .search .search-box input {
+    width: 100%;
+    height: 28px;
+    padding: 5px;
+}
+
+.ius .action-search .search .search-type select {
+    width: 100%;
+    height: 28px;
+    background: #eee;
+}
+
+.ius .action-search .search .search-type select option {
+    width: 100%;
+    height: 28px;
+    background: #eee;
+    line-height: 28px;
+}
+
+.ius .action-search .search .search-type {
+    float: right;
+    width: 35%;
+}
+
+.ius .ius-list {
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+
+.ius .ius-list i {
+    padding: 0px 5px;
+}
+
+.ius .open i {
+    color: #666;
+    transform: rotate(90deg);
+    transform-origin: 50% 53% 0;
+    -webkit-transform: rotate(90deg);
+    -webkit-transform-origin: 50% 53% 0;
+    -ms-transform: rotate(90deg);
+    -ms-transform-origin: 50% 53% 0;
+    -moz-transform: rotate(90deg);
+    -moz-transform-origin: 50% 53% 0;
+}
+
+.ius .ius-list a:hover {
+    color: #e27a3e;
+}
+
+.ius-list ul {
+    padding: 5px 0px;
+}
+
 .ius-list ul li {
     display: inline-block;
+    padding: 3px;
+}
+
+.ius-list ul li a {
+    padding-right: 5px;
 }
 
 .ius-list > ul > li {
     width: 100%;
 }
+
+.ius-list > ul > li > ul {
+    background: #eee;
+}
+
+/*.ius-list > ul > li > ul > li:first-child {
+    min-width: 25%;
+}*/
+
+.ius-sub-list {
+    padding-left: 5%;
+}
+
+.ius-sub-list > ul > li {
+    width: 70%;
+}
+
+.ius-sub-list > ul > .selected {
+    color: #e27a3e;
+}
+
+.ius-sub-list > ul > li a i {
+    width: 24px;
+    margin-left: -24px;
+    vertical-align: bottom;
+    display: none;
+}
+
+.ius-sub-list > ul > .selected a i {
+    display: inline-block!important;
+}
+
+/*.ius-sub-list > ul > li:nth-child(1) {
+    text-align: right;
+    min-width: 20%;
+    padding-right: 20px;
+}*/
+
+/*.ius-list > ul > li > ul > li:nth-child(2) a, .ius-list > ul > li > ul > li:nth-child(3) a, .ius-list > ul > li > ul > li:nth-child(4) a {
+    color: #6969BA;
+}*/
+
+/*.ius-sub-list > ul > li:nth-child(2) a, .ius-sub-list > ul > li:nth-child(3) a, .ius-sub-list > ul > li:nth-child(4) a {
+    color: #6969BA;
+}*/
+
+.ius .message {
+    font-size: 13px;
+    padding: 5px 0px;
+    color: #999;
+}
+
+/***********IUS Validations*********/
+.ius-validation {
+    width: 40%;
+    margin: 0 auto;
+}
+
+.ius-validation .title {
+    text-align: center;
+}
+
+.ius-validation .title label {
+    text-align: center;
+    font-size: 16px!important;
+    font-weight: 600;
+    padding-bottom: 5px;
+}
+
+.ius-validation .form-group input[type="text"] {
+    width: 100%;
+    border: 1px solid #b5b5b5;
+    color: #555;
+    height: 28px;
+    padding-left: 10px;
+}
+
+.ius-validation .form-group {
+    width: 60%!important;
+    margin: 0 auto!important;
+}
+
+.ius-validation .form-action {
+    width: 60%!important;
+    margin: 0 auto!important;
+    margin-top: 20px!important;
+}
+
+.ius-validation .btnbox {
+}
+
+.ius-validation .btnbox .btn-lg {
+    font-size: 18px;
+}
+
+/***********IUS update*********/
+/*.ius-list > ul > li > ul > li {
+    width: 100%;
+}
+
+.ius-list .list-name {
+    display: inline-block;
+    float: left;
+}
+
+.ius-list .list-option {
+    display: inline-block;
+    float: right;
+}
+
+.ius-list .list-option a {
+    padding: 0px 5px;
+    color: #6969BA;
+}
+
+.ius-sub-list > ul > li {
+    width: 100%;
+}*/
+
+
+/*******************************/

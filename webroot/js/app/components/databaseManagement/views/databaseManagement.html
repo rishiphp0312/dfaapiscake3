@@ -1,42 +1,65 @@
 <div class="scroll">
     <div class="database">
-        <div class="db-title">{{databaseDetails.name}}</div>
-        <div class="lft">
+        <div class="db-title">
+            <span class="lft-menu-icon" ng-click="changeClass()"><i class="fa fa-bars"></i></span>
+            <span class="name">{{currentDatabase.name}}</span>
+        </div>
+        <div class="lft" ng-class="lftmenu">
             <div class="lft-menu">
                 <ul>
-                    <li><a><i class="fa fa-th-large"></i><span> Template</span><span class="fa arrow"></span></a>
+                    <li ng-if="showTemplate">
+                        <a>
+                            <i class="fa fa fa-file"></i>
+                            <span class="menu-title">Template</span>
+                            <span class="fa arrow"></span>
+                        </a>
                         <ul class="sub-menu">
-                            <li><a><i class="fa fa-folder"></i><span> Indicators</span><span class="fa arrow"></span></a></li>
-                            <li><a><i class="fa fa-folder"></i><span> Units</span><span class="fa arrow"></span></a></li>
-                            <li><a><i class="fa fa-folder"></i><span> Subgroups</span><span class="fa arrow"></span></a></li>
-                            <li><a ui-sref=".iusManagement"><i class="fa fa-folder"></i><span> IUS</span><span class="fa arrow"></span></a></li>
-                            <li><a><i class="fa fa-folder"></i><span> Indicator Classifications</span><span class="fa arrow"></span></a></li>
-                            <li><a><i class="fa fa-folder"></i><span> Geographic Areas</span><span class="fa arrow"></span></a></li>
-                            <li><a ui-sref=".importExportManagement"><i class="fa fa-folder"></i><span> Import/Export Using Excel</span><span class="fa arrow"></span></a></li>
+                            <li><a> Indicators</a></li>
+                            <li><a> Units</a></li>
+                            <li><a> Subgroups</a></li>
+                            <li ui-sref-active="selected"><a ui-sref=".iusManagement"> IUS</span></a></li>
+                            <li><a> Indicator Classifications</a></li>
+                            <li><a> Geographic Areas</a></li>
+                            <li ui-sref-active="selected"><a ui-sref=".importExportManagement"> Import/Export Using Excel</a></li>
                         </ul>
                     </li>
-                    <li><a><i class="fa fa-th-large"></i><span> Data Entry</span><span class="fa arrow"></span></a>
+                    <li ng-show="showData">
+                        <a>
+                            <i class="fa fa fa-keyboard-o"></i>
+                            <span class="menu-title">Data Entry</span>
+                            <span class="fa arrow"></span>
+                        </a>
                         <ul class="sub-menu">
-                            <li><a><i class="fa fa-folder"></i><span> Enter Data</span><span class="fa arrow"></span></a></li>
-                            <li><a><i class="fa fa-folder"></i><span> Import/Export Using Excel</span><span class="fa arrow"></span></a></li>
+                            <li><a> Enter Data</a></li>
+                            <li><a> Import/Export Using Excel</a></li>
                         </ul>
                     </li>
-                    <li><a><i class="fa fa-th-large"></i><span> Publish</span><span class="fa arrow"></span></a>
+                    <li ng-show="showDatabase">
+                        <a>
+                            <i class="fa fa-cloud-upload"></i>
+                            <span class="menu-title">Publish</span>
+                            <span class="fa arrow"></span>
+                        </a>
                         <ul class="sub-menu">
-                            <li><a><i class="fa fa-folder"></i><span> Publish Data</span><span class="fa arrow"></span></a></li>
+                            <li><a>Publish Data</a></li>
                         </ul>
                     </li>
-                    <li><a><i class="fa fa-th-large"></i><span> Database</span><span class="fa arrow"></span></a>
+                    <li ng-show="showDatabase">
+                        <a>
+                            <i class="fa fa-database"></i>
+                            <span class="menu-title">Database</span>
+                            <span class="fa arrow"></span>
+                        </a>
                         <ul class="sub-menu">
-                            <li><a href="#"><i class="fa fa-folder"></i><span> Connections Details</span><span class="fa arrow"></span></a></li>
-                            <li><a ui-sref=".userManagement"><i class="fa fa-folder"></i><span> User Management</span><span class="fa arrow"></span></a></li>
-                            <li><a href="#"><i class="fa fa-folder"></i><span> Transaction Logs</span><span class="fa arrow"></span></a></li>
+                            <li><a> Settings </a></li>
+                            <li ui-sref-active="selected"><a ui-sref=".userManagement"> User Management</a></li>
+                            <li><a> Transaction Logs</a></li>
                         </ul>
                     </li>
                 </ul>
             </div>
         </div>
-        <div class="rgt" ui-view="ManagementView">
+        <div class="rgt" ui-view="ManagementView" ng-class="rgtwidth">
             <div class="db-home">
                 <p>Please Select an option from the left panel to perform the Database administration
                 </p>

@@ -6,10 +6,14 @@ var appConfig = (function () {
     var appDependencies = [
         'ui.router',
         'ngDialog',
+        'ngCookies',
+        'ngFileUpload',
         'DataAdmin.login',
         'DataAdmin.database',
         'DataAdmin.databaseManagement',
-        'DataAdmin.userManagement'
+        'DataAdmin.userManagement',
+        'DataAdmin.iusManagement',
+        'DataAdmin.importExportManagement'
     ];
 
     // Add a new vertical module
@@ -21,9 +25,14 @@ var appConfig = (function () {
         angular.module(appName).requires.push(moduleName);
     };
 
+    var serviceCallUrl = 'services/serviceQuery/';
+
     return {
         appName: appName,
         appDependencies: appDependencies,
-        registerModule: registerModule
+        registerModule: registerModule,
+        serviceCallUrl: serviceCallUrl
     };
+
+
 })();

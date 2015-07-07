@@ -9,7 +9,15 @@
     }
 
     .database .rgt .add-user {
-        width: 30%;
+        width: 35%;
+    }
+
+    .ius-validation {
+        width: 40%;
+    }
+
+    .set-password {
+        width: 20%;
     }
 }
 
@@ -23,7 +31,15 @@
     }
 
     .database .rgt .add-user {
-        width: 35%;
+        width: 40%;
+    }
+
+    .ius-validation {
+        width: 45%;
+    }
+
+    .set-password {
+        width: 25%;
     }
 }
 
@@ -37,7 +53,15 @@
     }
 
     .database .rgt .add-user {
-        width: 40%;
+        width: 45%;
+    }
+
+    .ius-validation {
+        width: 50%;
+    }
+
+    .set-password {
+        width: 25%;
     }
 }
 
@@ -51,7 +75,15 @@
     }
 
     .database .rgt .add-user {
-        width: 45%;
+        width: 50%;
+    }
+
+    .ius-validation {
+        width: 55%;
+    }
+
+    .set-password {
+        width: 30%;
     }
 }
 
@@ -65,7 +97,27 @@
     }
 
     .database .rgt .add-user {
-        width: 45%;
+        width: 55%;
+    }
+
+    .ius-validation {
+        width: 60%;
+    }
+
+    .import-export .upload input {
+        width: 65%;
+    }
+
+    .import-export .export .upload .btn {
+        margin-left: 66%;
+    }
+
+    .import-export .upload a {
+        width: 30%;
+    }
+
+    .set-password {
+        width: 40%;
     }
 }
 
@@ -79,7 +131,27 @@
     }
 
     .database .rgt .add-user {
-        width: 50%;
+        width: 60%;
+    }
+
+    .ius-validation {
+        width: 65%;
+    }
+
+    .import-export .upload input {
+        width: 65%;
+    }
+
+    .import-export .export .upload .btn {
+        margin-left: 66%;
+    }
+
+    .import-export .upload a {
+        width: 30%;
+    }
+
+    .set-password {
+        width: 40%;
     }
 }
 
@@ -93,20 +165,26 @@
     }
 
     .database .rgt .add-user {
+        width: 65%;
+    }
+
+    .ius-validation {
+        width: 70%;
+    }
+
+    .import-export .upload input {
+        width: 65%;
+    }
+
+    .import-export .export .upload .btn {
+        margin-left: 66%;
+    }
+
+    .import-export .upload a {
         width: 30%;
     }
-}
 
-@media screen and (max-width: 768px) {
-    .connection {
-        width: 90%;
-    }
-
-    .database .lft {
-        width: 20%;
-    }
-
-    .database .rgt .add-user {
-        width: 30%;
+    .set-password {
+        width: 40%;
     }
 }

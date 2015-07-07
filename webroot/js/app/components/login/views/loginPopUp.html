@@ -25,8 +25,10 @@
                         <input type="email" name="email" id="UserEmail" placeholder="Enter Your Email" ng-model="credentials.email" required />
                     </div>
                     <div class="loginerror">
-                        <span ng-show="loginForm.email.$error.required">*Email is required.</span>
-                        <span ng-show="loginForm.email.$error.email">*Email Address is invalid.</span>
+                        <div ng-show="loginForm.$submitted || loginForm.email.$touched">
+                            <span ng-show="loginForm.email.$error.required">*Email is required.</span>
+                            <span ng-show="loginForm.email.$error.email">*Email Address is invalid.</span>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
@@ -35,7 +37,10 @@
                         <input type="password" id="UserPwd" name="password" placeholder="Enter Your Password" ng-model="credentials.password" required>
                     </div>
                     <div class="loginerror">
-                        <span ng-show="loginForm.password.$error.required">*Password is required.</span>
+                        <div ng-show="loginForm.$submitted || loginForm.password.$touched">
+                            <span ng-show="loginForm.password.$error.required">*Password is required.</span>
+                            <span ng-show="loginFailed">*Invalid Email or Password</span>
+                        </div>
                     </div>
                 </div>
                 <div class="form-action">

@@ -125,7 +125,7 @@ class  RUserDatabasesTable extends Table {
 	public function checkUserDbRelation($userId,$dbId){
         
 		$count = $this->find()->where(['user_id'=>$userId,'db_id'=>$dbId])->hydrate(false)->count();
-         //pr($count);
+        
         return $count;
     }
 	

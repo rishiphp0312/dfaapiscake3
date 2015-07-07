@@ -1,54 +1,124 @@
 angular.module('DataAdmin.database')
-.controller('databaseController', ['$scope', 'authService', 'USER_ROLES', function ($scope, authService, USER_ROLES) {
+.controller('databaseController', ['$scope', '$rootScope', '$filter', 'authService', 'USER_ROLES', 'databaseService', 'ngDialog', function ($scope, $rootScope, $filter, authService, USER_ROLES, databaseService, ngDialog) {
 
-    $scope.databaseList = [{
-        id: 1,
-        dbName: 'Assam Tea Garden'
-    }, {
-        id: 2,
-        dbName: 'Assam Tea Garden 2'
-    }];
+    $scope.currentDatabase = null;
 
+    // selected database to be deleted.
+    $scope.selectedDatabase = '';
+
+    // set currentDatabase is empty.
+    $rootScope.currentDatabase.id = '';
+
+    $rootScope.currentDatabase.name = '';
+
+    databaseService.getDatabaseList().then(function (data) {
+        $rootScope.databaseList = data
+    }, function (fail) {
+        alert(fail.code);
+    });
+
+    // check if user is super Admin -- hide/show of add database button.
     $scope.isSuperAdmin = function () {
-        return authService.isAuthorized(USER_ROLES.superAdmin);
+        return authService.isSuperAdmin();
     }
 
-    $scope.deleteDatabaseConnection = function (databaseId) {
+    // event bind to give popup for confirmation of deletion
+    $scope.deleteDatabaseConnection = function (database) {
+
+        $scope.selectedDatabase = database;
+
+        ngDialog.openConfirm({
+            templateUrl: 'js/app/components/database/views/deleteDatabasePopUp.html',
+            showClose: false,
+            className: 'confirm-popup',
+            scope: $scope
+        });
 
     }
 
-    $scope.confirmDataseConnectionDeletion = function (databaseId) {
-
-    }
-
-    $scope.cancelDataseConnectionDeletion = function () {
-
+    // confirms delete of database connection.
+    $scope.confirmDelete = function () {
+        databaseService
+        .deleteDatabaseConnection($scope.selectedDatabase.id)
+        .then(function (res) {
+            if (res) {
+                $rootScope.databaseList = $filter('filter')($rootScope.databaseList, function (value, index) {
+                    return (value.id != $scope.selectedDatabase.id);
+                })
+                $scope.selectedDatabase = '';
+            }
+        }, function (fail) {
+            alert(fail);
+        });
+        return true;
     }
 
 } ])
-.controller('newDatabaseConnectionController', ['$scope', '$state', 'databaseService', function ($scope, $state, databaseService) {
+.controller('newDatabaseConnectionController', ['$scope', '$state', 'databaseService', 'errorService', function ($scope, $state, databaseService, errorService) {
+
+    $scope.testConnectionVerified;
+
+    $scope.isConnectionNameChanged = false;
 
     $scope.connectionDetails = {
         connectionName: '',
-        databaseType: '',
+        databaseType: 'mssql',
         hostAddress: '',
         databaseName: '',
         userName: '',
         password: '',
-        port: ''
-    }
-
-    $scope.saveConnection = function (connectionDetails) {
-        alert(JSON.stringify(connectionDetails));
-        $state.go('DataAdmin.database');
-    }
-
-    $scope.testConnection = function (connectionDetails) {
-        alert('testing Connection');
+        port: '1433'
     }
 
     databaseService.getDbTypeList().then(function (dbtypeList) {
         $scope.dbTypeDetails = dbtypeList;
     })
+
+    $scope.saveConnection = function (connectionDetails) {
+        databaseService.addNewDatabaseConnection(connectionDetails).then(function (res) {
+            $state.go('DataAdmin.database');
+        }, function (err) {
+            errorService.show(err);
+        })
+    }
+
+    $scope.verifyConnectionName = function (connectionName) {
+        if ($scope.isConnectionNameChanged) {
+            databaseService.verifyConnectionName(connectionName).then(function (res) {
+                $scope.isConnectionNameChanged = false;
+                $scope.connectionNameUnique = true;
+            }, function (fail) {
+                $scope.connectionNameUnique = false;
+            })
+        }
+    }
+
+    $scope.testConnection = function (formValid, connectionDetails) {
+        if (formValid) {
+            databaseService.testDatabaseConnection(connectionDetails)
+            .then(function (res) {
+                $scope.testConnectionVerified = true;
+            }, function (fail) {
+                $scope.testConnectionVerified = false;
+                errorService.show(fail);
+            });
+            return false;
+        } else {
+            $scope.showValidations = true;
+        }
+
+    }
+
+    $scope.$watch('connectionDetails.connectionName', function (oldValue, newValue) {
+        if (oldValue !== newValue) { $scope.isConnectionNameChanged = true; }
+    })
+
+    $scope.setDbDefaultPort = function () {
+        if ($scope.connectionDetails.databaseType == 'mssql') {
+            $scope.connectionDetails.port = '1433';
+        } else {
+            $scope.connectionDetails.port = '3306';
+        }
+    }
 
 } ])

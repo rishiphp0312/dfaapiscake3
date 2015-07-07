@@ -1,0 +1,92 @@
+<div class="title">
+    <h2 ng-if="!modifyUser">User Management <i class="fa fa-angle-double-right"></i> Add New user</h2>
+    <h2 ng-if="modifyUser">User Management <i class="fa fa-angle-double-right"></i> Modify user</h2>
+</div>
+<div class="add-user">
+    <div class="form-elem mt20">
+        <form name="addModifyUser" method="post" ng-submit="addModifyUser.$valid && userDetails.roles.length > 0&& emailInvalid != true && saveUser(userDetails)" novalidate>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" name="userName" ng-model="userDetails.name" ng-focus="showNameSuggestion = true;" ng-blur="onBlur('Name')" required>
+                <div class="user-suggestions" ng-show="userDetails.name && showNameSuggestion">
+                    <ul>
+                        <li ng-repeat="user in suggestionUsersList | filter: {name: userDetails.name}">
+                            <div ng-click="autoSuggestionSelected(user)">{{user.name}}</div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="errorbox">
+                    <div ng-show="addModifyUser.$submitted || addModifyUser.userName.$touched">
+                        <span class="error" ng-show="addModifyUser.userName.$error.required">*Name is required.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email (Login)</label>
+                <input type="text" name="userEmail" ng-model="userDetails.email" ng-focus="showEmailSuggestion = true;" ng-blur="onBlur('Email')" required>
+                <div class="user-suggestions" ng-show="userDetails.email && showEmailSuggestion">
+                    <ul>
+                        <li ng-repeat="user in suggestionUsersList | filter: {email: userDetails.email}">
+                            <div ng-click="autoSuggestionSelected(user)">{{user.email}}</div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="errorbox">
+                    <div ng-show="addModifyUser.$submitted || addModifyUser.userEmail.$touched">
+                        <span class="error" ng-show="addModifyUser.userEmail.$error.required">*Email is required.</span>
+                        <span class="error" ng-show="emailInvalid == true">*Email Address is invalid.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="separator mt10 mb10"></div>
+            <div class="form-action">
+                <div class="role">
+                    <label>Role</label>
+                    <ul>
+                        <li><input type="checkbox" ng-class="{disable: userDetails.roles.indexOf('TEMPLATE') >= 0 || userDetails.roles.indexOf('DATAENTRY') >= 0}" ng-click="roleClicked('ADMIN')" ng-checked="userDetails.roles.indexOf('ADMIN') >= 0">Admin</li>
+                        <li><input type="checkbox" ng-class="{disable: userDetails.roles.indexOf('ADMIN') >= 0}" ng-click="roleClicked('TEMPLATE')" ng-checked="userDetails.roles.indexOf('TEMPLATE') >= 0">Template</li>
+                    </ul>
+                    <div class="access">
+                        <div class="access-lft">
+                            <input type="checkbox" ng-class="{disable: userDetails.roles.indexOf('ADMIN') >= 0}" ng-click="roleClicked('DATAENTRY')" ng-checked="userDetails.roles.indexOf('DATAENTRY') >= 0">Data Entry
+                        </div>
+                        <div class="access-rgt">
+                            <label>Access</label>
+                            <ul>
+                                <li>
+                                    <ul>
+                                        <li><a>Areas</a></li>
+                                        <li><a>Select Areas</a></li>
+                                        <li><a>All</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <ul>
+                                        <li><a>Indicators</a></li>
+                                        <li><a>Select Indicators</a></li>
+                                        <li><a>All</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <div class="errorbox">
+                    <div ng-show="addModifyUser.$submitted">
+                        <span class="error" ng-show="userDetails.roles.length <= 0">*Atleast one role should be selected.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="separator mt10 mb10"></div>
+            <label ng-if="modifyUser == false">
+                <input type="checkbox" ng-model="createAnother.checked"> Create Another
+            </label>
+            <div class="form-action mt10">
+                <button class="btn save"><i class="fa fa-save"></i> Save</button>
+                <button class="btn cancel" ui-sref="DataAdmin.databaseManagement.userManagement"><i class="fa fa-close"></i> Cancel</button>
+                <button class="btn btn-grey reset" ui-sref="DataAdmin.databaseManagement.userManagement"><i class="fa fa-rotate-left"></i> Reset Password</button>
+            </div>
+        </form>
+    </div>
+</div>
