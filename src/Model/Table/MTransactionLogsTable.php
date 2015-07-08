@@ -60,8 +60,10 @@ class MTransactionLogsTable extends Table
         $MTransactionLogs = $this->newEntity();
         $MTransactionLogs = $this->patchEntity($MTransactionLogs, $fieldsArray);
         
-        if ($this->save($MTransactionLogs)) {
-            return 1;
+        $result = $this->save($MTransactionLogs);
+        
+        if ($result) {
+            return $result->{_MTRANSACTIONLOGS_ID};
         } else {
             return 0;
         }        
@@ -84,7 +86,6 @@ class MTransactionLogsTable extends Table
         
         //Execute
         $query->execute();
-        debug($query);exit;
     }
 
     /**

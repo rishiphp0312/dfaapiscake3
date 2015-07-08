@@ -920,19 +920,12 @@ class ServicesController extends AppController {
                 //if($this->request->is('post')):
                 try {
                     $filename = $extra['filename'];
-                    //$params[]['filename'] = $filename ;//= 'C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\Area.xls';
-                    $params[]['filename'] =  'C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\Area.xls';
-                    //$returnData = $this->CommonInterface->bulkUploadXlsOrCsvForIndicator($params);                    
-                    $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForArea', $params, $dbConnection);
-                    die;
-            
-                    $returnData['status'] = _SUCCESS;
-                    $returnData['data'] = '';
-                    $returnData['responseKey'] = '';
+                    $params[]['filename'] = $filename;
+                    return $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForArea', $params, $dbConnection);
                 } catch (Exception $e) {
                     $returnData['errMsg'] = $e->getMessage();
                 }
-                
+
                 break;
 
             // service for adding databases
@@ -1191,17 +1184,16 @@ class ServicesController extends AppController {
 
                             if (isset($_POST['email']) && !empty($_POST['email']))
                                 $conditions[_USER_EMAIL] = $this->request->data[_USER_EMAIL] = trim($_POST['email']);
-                            
+
                             $userId = '0';
                             if (isset($this->request->data[_USER_ID]) && !empty($this->request->data[_USER_ID])) {
                                 $userId = $this->request->data[_USER_ID];
-
                             } else {
                                 $this->request->data[_USER_STATUS] = _INACTIVE; // 0 means Inactive
                             }
 
                             $isModified = $this->request->data['isModified']; // case of add is false 
-                           
+
 
                             $userRelDbstatus = 0; //user is not associated with db 		
                             $chkuserDbRel = 0;
@@ -1214,12 +1206,11 @@ class ServicesController extends AppController {
                                 if (isset($dbId) && !empty($dbId)) {
                                     $chkEmail = $this->UserCommon->checkEmailExists($this->request->data[_USER_EMAIL], $this->request->data[_USER_ID]);
                                     if ($chkEmail == 0) {   // email is unique
-                                        if ($isModified == 'false' && $userId !='0') {
+                                        if ($isModified == 'false' && $userId != '0') {
                                             $chkuserDbRel = $this->UserCommon->checkUserDbRelation($userId, $dbId); //check whether user is already added or not 							 
                                         }
-                                        
-                                        if ($chkuserDbRel == 0) {    //user is not  associated with this db 
 
+                                        if ($chkuserDbRel == 0) {    //user is not  associated with this db 
                                             $lastIdinserted = $this->UserCommon->addModifyUser($this->request->data, $dbId);
                                             if ($lastIdinserted > 0) {
                                                 $returnData['status'] = _SUCCESS;
@@ -1231,11 +1222,11 @@ class ServicesController extends AppController {
                                                     $userdetails = $this->UserCommon->getDataByParams($fields, $conditions);
                                                     if (!empty($userdetails)) {
                                                         $registeredUserId = current($userdetails)[_USER_ID];
-                                                        $this->Common->sendActivationLink($registeredUserId, $this->request->data[_USER_EMAIL],$this->request->data[_USER_NAME]);
+                                                        $this->Common->sendActivationLink($registeredUserId, $this->request->data[_USER_EMAIL], $this->request->data[_USER_NAME]);
                                                     }
-                                                }else{
-                                                    if ($isModified == 'false') { 
-                                                       $this->Common->sendDbAddNotify($this->request->data[_USER_EMAIL],$this->request->data[_USER_NAME]);
+                                                } else {
+                                                    if ($isModified == 'false') {
+                                                        $this->Common->sendDbAddNotify($this->request->data[_USER_EMAIL], $this->request->data[_USER_NAME]);
                                                     }
                                                 }
                                             } else {
@@ -1613,7 +1604,7 @@ class ServicesController extends AppController {
             case 2307: //Bulk Insert/Update Data -- ICIUS table
                 //if($this->request->is('post')):
                 if (true):
-                    
+
                     //$params['filename'] = $filename = 'C:\-- Projects --\xls\Temp_Selected_ExcelFile.xls';
                     $params['filename'] = $extra['filename'];
                     $params['component'] = 'Icius';
@@ -1626,52 +1617,67 @@ class ServicesController extends AppController {
             case 2401: //Upload Files
                 //if ($this->request->is('post')):
                 if (true):
-                    
+
                     try {
                         $extraParam = [];
-                        $seriveToCall = $this->request->data['type'];
-                        if($seriveToCall == 'ICIUS'){
-                            $allowedExtensions = ['xls', 'xlsx'];
-                            $extraParam['createLog'] = true;
-                            $case = 2307;
-                        }else if($seriveToCall == 'AREA'){
-                            $allowedExtensions = ['xls', 'xlsx'];
-                            $extraParam['createLog'] = true;
-                            $case = 904;
-                        }
+
+                        $seriveToCall = strtolower($this->request->data['type']);
+                        $allowedExtensions = ['xls', 'xlsx'];
+                        $extraParam['createLog'] = true;
+                        $module = 'TEMPLATE';
+                        
+                        // Kept here to include other params like allowed ext as well
+                        switch ($seriveToCall):
+                            case _ICIUS:
+                                $case = 2307;
+                                break;
+                            case _AREA:
+                                $case = 904;
+                                break;
+                        endswitch;
                         
                         $filePaths = $this->Common->processFileUpload($_FILES, $allowedExtensions, $extraParam);
-                        
-                        if(isset($filePaths['error'])){
+
+                        if (isset($filePaths['error'])) {
                             $returnData['errMsg'] = $filePaths['error'];
-                        }else{
-                            // maintain Transaction Log
+						}else{
+                            //-- TRANSAC Log
                             $fieldsArray = [
                                     _MTRANSACTIONLOGS_DB_ID => $dbId,
                                     _MTRANSACTIONLOGS_ACTION => 'IMPORT',
-                                    _MTRANSACTIONLOGS_MODULE => 'TEMPLATE',
+                                    _MTRANSACTIONLOGS_MODULE => $module,
                                     _MTRANSACTIONLOGS_SUBMODULE => $seriveToCall,
                                     _MTRANSACTIONLOGS_IDENTIFIER => '',
-                                    _MTRANSACTIONLOGS_STATUS => 'STARTED'
+                                    _MTRANSACTIONLOGS_STATUS => _STARTED
                                     ];
-                            $this->TransactionLogs->createRecord($fieldsArray);
+                            $LogId = $this->TransactionLogs->createRecord($fieldsArray);
                             
+                            //Actual Service Call
                             $extra['filename'] = $filePaths[0];
                             $return = $this->serviceQuery($case, $extra);
                             
                             if(isset($return['error'])){
+                                //-- TRANSAC Log
+                                $fieldsArray = [_MTRANSACTIONLOGS_STATUS => _FAILED];
+                                $conditions = [_MTRANSACTIONLOGS_ID => $LogId];
+                                $this->TransactionLogs->updateRecord($fieldsArray, $conditions);
+                                
                                 $returnData['errMsg'] = $return['error'];
                             }else{
+                                //-- TRANSAC Log
+                                $fieldsArray = [_MTRANSACTIONLOGS_STATUS => _SUCCESS, _MTRANSACTIONLOGS_IDENTIFIER => $return];
+                                $conditions = [_MTRANSACTIONLOGS_ID => $LogId];
+                                $this->TransactionLogs->updateRecord($fieldsArray, $conditions);
+                                
                                 $returnData['data'] = $return;
-                                $returnData['status'] = 'success';
-                                $returnData['errCode'] = '';
-                                $returnData['errMsg'] = '';
+                                $returnData['responseKey'] = $seriveToCall;
+                                $returnData['status'] = _SUCCESS;
                             }
                         }
-                    }catch(Exception $e){
+                    } catch (Exception $e) {
                         $returnData['errMsg'] = $e->getMessage();
                     }
-                endif;
+                endif;                
                 break;
 
             case 2402: //Export ICIUS

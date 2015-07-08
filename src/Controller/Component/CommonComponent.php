@@ -280,7 +280,7 @@ class CommonComponent extends Component {
                     return ['error' => 'File uploaded via unaccepted method.'];
                 endif;
 
-                $dest = WWW_ROOT . 'uploads' . DS . 'xls' . DS . $fileDetails['name'];
+                $dest = _XLS_PATH . DS . $fileDetails['name'];
                 
                 $mimeType = $fileDetails['type'];
                 if( !in_array($mimeType, $this->mimeTypes($allowedExtensions)) ){
@@ -292,8 +292,8 @@ class CommonComponent extends Component {
                 if (move_uploaded_file($fileDetails['tmp_name'], $dest)) :
                     if(isset($extra['createLog']) && $extra['createLog'] == true){
                         $pathinfo = pathinfo($fileDetails['name']);
-                        $copyDest = WWW_ROOT . 'uploads' . DS . 'logs' . DS . md5(time()). '.' . $pathinfo['extension'];
-                        if (!copy($dest, $copyDest)){
+                        $copyDest = _LOGS_PATH . DS . md5(time()). '.' . $pathinfo['extension'];
+                        if (!@copy($dest, $copyDest)){
                             return ['error' => 'File upload failed.'];
                         }
                         define('_LOGPATH', $copyDest);
