@@ -1,5 +1,5 @@
 angular.module('DataAdmin.importExportManagement')
-.controller('templateImportExportController', ['$scope', '$stateParams', 'templateImportService', 'errorService', 'onSuccessDialogService', function ($scope, $stateParams, templateImportService, errorService, onSuccessDialogService) {
+.controller('templateImportExportController', ['$scope', '$stateParams', 'templateImportService', 'commonService', 'SERVICE_CALL', 'errorService', 'onSuccessDialogService', function ($scope, $stateParams, templateImportService, commonService, SERVICE_CALL, errorService, onSuccessDialogService) {
 
     $scope.progressStatus = {
         ius: 0,
@@ -13,49 +13,49 @@ angular.module('DataAdmin.importExportManagement')
 
     $scope.dbId = $stateParams.dbId;
 
-    $scope.uploadFile = function (uploadType) {
+    $scope.generateFileDataIcIus = {
+        url: commonService.createServiceCallUrl(SERVICE_CALL.templateManagement.importFile),
+        fields: { 'dbId':  $stateParams.dbId, type: 'ICIUS' },
+        sendFieldsAs: 'form'
+    };
 
-        var file = (uploadType == 'ICIUS' ? $scope.files.iusFile[0] : $scope.files.areaFile[0]);
+    $scope.generateFileDataArea = {
+        url: commonService.createServiceCallUrl(SERVICE_CALL.templateManagement.importFile),
+        fields: { 'dbId':  $stateParams.dbId, type: 'AREA' },
+        sendFieldsAs: 'form'
+    };
 
-        //if (uploadType == 'ICIUS')
-        //    $scope.progressStatus.ius = 0;
+    $scope.onFileSuccess = function (successObj, fileData) {
 
-        //if (uploadType == 'AREA')
-        //    $scope.progressStatus.area = 0;
+        var uploadType = fileData.fields.type;
 
-        templateImportService.uploadFile($scope.dbId, file, uploadType, function (progressPercent) {
-            if (uploadType == 'ICIUS') {
-                $scope.progressStatus.ius = { 'background': 'linear-gradient(90deg, #69E089 ' + progressPercent + '%, white 0%)' };
+        var msg = (uploadType == 'ICIUS' ? 'IUS and Indicator Classifications have been imported successfully.' : 'Geographic Areas have been imported successfully.');
 
-            } else {
-                $scope.progressStatus.area = { 'background': 'linear-gradient(90deg, #69E089 ' + progressPercent + '%, white 0%)' };
-            }
-        }).then(function (res) {
-            var msg = (uploadType == 'ICIUS' ? 'IUS and Indicator Classifications have been imported successfully.' : 'Geographic Areas have been imported successfully.');
-
-            onSuccessDialogService.show(msg, function () {
-                if (uploadType == 'ICIUS')
-                    $scope.progressStatus.ius = 0;
-
-                if (uploadType == 'AREA')
-                    $scope.progressStatus.area = 0;
-            });
-
-        }, function (err) {
-
-            errorService.show(err);
-
-            if (uploadType == 'ICIUS') {
+        onSuccessDialogService.show(msg, function () {
+            if (uploadType == 'ICIUS')
                 $scope.progressStatus.ius = 0;
-                $scope.files.iusFile = '';
-            }
 
-            if (uploadType == 'AREA') {
+            if (uploadType == 'AREA')
                 $scope.progressStatus.area = 0;
-                $scope.files.areaFile = '';
-            }
-
         });
+    }
+
+    $scope.onFileFail = function (err, fileData) {
+
+        var uploadType = fileData.fields.type;
+
+        errorService.show(err);
+
+        if (uploadType == 'ICIUS') {
+            $scope.progressStatus.ius = 0;
+            $scope.files.iusFile = '';
+        }
+
+        if (uploadType == 'AREA') {
+            $scope.progressStatus.area = 0;
+            $scope.files.areaFile = '';
+        }
+
     }
 
 } ])

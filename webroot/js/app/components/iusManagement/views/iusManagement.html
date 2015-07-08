@@ -23,16 +23,17 @@
         <ul>
             <li ng-repeat="ius in iusList | filter: {iName: searchIndicator}">
                 <ul>
-                    <li ng-class="{open: ius.selected}"><a ng-click="showSubgroup(ius)"><i class="fa fa-play"></i>{{ius.iName}}, Deaths per 1000 live births</a></li>
+                    <li ng-class="{open: ius.selected}">
+                        <a ng-click="showSubgroup(ius)"><i class="fa fa-play"></i></a>
+                        <a class="selected">{{ius.iName}}, Deaths per 1000 live births <span><i class="fa fa-check"></i> </span></a>
+                    </li>
                 </ul>
                 <div class="ius-sub-list" ng-if="ius.selected">
                     <ul>
                         <li class="selected"><a><i class="fa fa-check"></i>Total</a></li>
                         <li><a><i class="fa fa-check"></i>Male</a></li>
                         <li><a><i class="fa fa-check"></i>Female</a></li>
-
                     </ul>
-
                 </div>
             </li>
         </ul>

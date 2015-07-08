@@ -328,7 +328,8 @@ a:hover {
 /***************Login Box popup Start Here************/
 
 .login-popup .ngdialog-overlay {
-    background: rgba(0, 0, 0, 0.9)!important;
+    background: #000!important;
+    opacity: 0.95;
 }
 
 .login-popup {
@@ -344,15 +345,16 @@ a:hover {
     position: relative;
     border-radius: 5px;
     width: 600px;
+    background: none;
 }
 
 
 .login-popup .register {
-    background: #384d5b;
     color: #fff;
     box-shadow: none;
     height: auto;
     padding: 0;
+    opacity: 0.95;
 }
 
 .login-popup .register .close {
@@ -470,6 +472,7 @@ a:hover {
 .login-popup .register .log-left .form-action {
     float: left;
     width: 100%;
+    margin-top: 3px!important;
 }
 
 .login-popup .register .log-left .form-action .form-remember {
@@ -893,24 +896,32 @@ a:hover {
 }
 
 .form-action .reset {
+    background: #fff;
+    border: none;
+    outline: none;
     cursor: pointer;
-    border: 1px solid #666666;
-    color: #fff;
+    border: none;
     display: inline-block;
     font-size: 16px;
     padding: 12px 10px;
     border-radius: 3px;
     float: right;
+    color: #888;
 }
 
 .form-action .cancel {
-    background: #eee;
-    border: 1px solid #777;
+    background: #fff;
+    border: none;
     border-radius: 3px;
     cursor: pointer;
     display: inline-block;
     font-size: 16px;
     padding: 12px 16px;
+    color: #888;
+    outline: none;
+}
+
+.form-action .cancel:hover, .form-action .reset:hover {
     color: #555;
 }
 
@@ -957,9 +968,9 @@ a:hover {
     width: 20%;
     position: relative;
     display: block;
-    -moz-animation: fadeIn 1s;
+    /*-moz-animation: fadeIn 1s;
     -webkit-animation: fadeIn 1s;
-    animation: fadeIn 1s;
+    animation: fadeIn 1s;*/
     -moz-transition: all .3s ease .15s;
     -webkit-transition: all .3s ease .15s;
     transition: all .3s ease .15s;
@@ -976,9 +987,6 @@ a:hover {
     width: 80%;
     padding: 20px;
     float: left;
-    /*-moz-animation: fadeIn 1s;
-    -webkit-animation: fadeIn 1s;
-    animation: fadeIn 1s;*/
     -moz-transition: all .3s ease .15s;
     -webkit-transition: all .3s ease .15s;
     transition: all .3s ease .15s;
@@ -987,40 +995,46 @@ a:hover {
 .visible {
     /*-moz-animation: fadeIn 1s;
     -webkit-animation: fadeIn 1s;
-    animation: fadeIn 1s;
+    animation: fadeIn 1s;*/
     -moz-transition: all .3s ease .15s;
     -webkit-transition: all .3s ease .15s;
-    transition: all .3s ease .15s;*/
+    transition: all .3s ease .15s;
     width: 20%!important;
 }
 
 .invisible {
     /*-moz-animation: fadeIn 1s;
     -webkit-animation: fadeIn 1s;
-    animation: fadeIn 1s;
+    animation: fadeIn 1s;*/
     -moz-transition: all .3s ease .15s;
     -webkit-transition: all .3s ease .15s;
-    transition: all .3s ease .15s;*/
+    transition: all .3s ease .15s;
     width: 0px!important;
+}
+
+.invisible .lft-menu {
+    -moz-transition: all .3s ease .15s;
+    -webkit-transition: all .3s ease .15s;
+    transition: all .3s ease .15s;
 }
 
 .withleftmenu {
     /*-moz-animation: fadeIn 1s;
     -webkit-animation: fadeIn 1s;
-    animation: fadeIn 1s;
+    animation: fadeIn 1s;*/
     -moz-transition: all .3s ease .15s;
     -webkit-transition: all .3s ease .15s;
-    transition: all .3s ease .15s;*/
+    transition: all .3s ease .15s;
 }
 
 .withoutleftmenu {
     width: 99%!important;
     /*-moz-animation: fadeIn 1s;
     -webkit-animation: fadeIn 1s;
-    animation: fadeIn 1s;
+    animation: fadeIn 1s;*/
     -moz-transition: all .3s ease .15s;
     -webkit-transition: all .3s ease .15s;
-    transition: all .3s ease .15s;*/
+    transition: all .3s ease .15s;
 }
 
 /*.invisible .sub-menu {
@@ -1456,6 +1470,7 @@ a:hover {
     padding: 15px 20px 15px 14px;
     display: block;
     font-size: 14px;
+    height: 48px;
 }
 
 .lft-menu > ul > li > a > i {
@@ -1464,6 +1479,10 @@ a:hover {
 
 .sub-menu {
     background: #fff;
+}
+
+.sub-menu li {
+    height: 37px;
 }
 
 .sub-menu li:hover {
@@ -1620,6 +1639,20 @@ a:hover {
 
 .ius-list > ul > li {
     width: 100%;
+}
+
+.ius-list > ul > li a span i {
+    display: none;
+}
+
+.ius-list > ul > li .selected {
+    color: #e27a3e;
+}
+
+.ius-list > ul > li .selected span i {
+    color: #e27a3e;
+    display: inline-block!important;
+    transform: none;
 }
 
 .ius-list > ul > li > ul {

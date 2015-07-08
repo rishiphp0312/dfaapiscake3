@@ -8,6 +8,8 @@ var appConfig = (function () {
         'ngDialog',
         'ngCookies',
         'ngFileUpload',
+        'ngProgressBar',
+        'ngFileUploader',
         'DataAdmin.login',
         'DataAdmin.database',
         'DataAdmin.databaseManagement',
