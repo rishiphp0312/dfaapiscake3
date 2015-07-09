@@ -72,10 +72,11 @@ class AreasTable extends Table {
             $options['fields'] = $fields;
         if (!empty($conditions))
             $options['conditions'] = $conditions;
+		//pr($options);die;
         if ($type == 'list')
             $this->setListTypeKeyValuePairs($fields);
 
-        $data = $this->find($type, $options)->all()->toArray();    
+        $data = $this->find($type, $options)->hydrate(false)->all()->toArray();    
     
         return $data;
     }

@@ -21,6 +21,8 @@ class AreaComponent extends Component
         //parent::initialize($config);
         $this->AreaObj = TableRegistry::get('DevInfoInterface.Areas');
         $this->AreaLevelObj = TableRegistry::get('DevInfoInterface.AreaLevel');
+		        require_once(ROOT . DS . 'vendor' . DS . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
+
     }
     
 
@@ -50,6 +52,55 @@ class AreaComponent extends Component
 
         return $this->AreaObj->getDataByParams($fields, $conditions, $type);
     }
+	
+	
+	public function exportArea($fields, $conditions){
+		
+		$module='Area';
+		$authUserId = 1; //$this->Auth->User('id');   
+        $objPHPExcel = new \PHPExcel();
+        $objPHPExcel->setActiveSheetIndex(0);
+        $startRow = $objPHPExcel->getActiveSheet()->getHighestRow();
+        $rowCount = 1;
+        $firstRow = ['A' => 'AreaId', 'B' => 'AreaName', 'C' => 'AreaLevel', 'D' => 'AreaGId', 'E' => 'ParentAreaId'];
+
+        foreach ($firstRow as $index => $value) {
+            $objPHPExcel->getActiveSheet()->SetCellValue($index . $rowCount, $value);
+        }
+		$conditions=['1'=>'1'];
+		$areadData = $this->AreaObj->getDataByParams( $fields, $conditions,'all');
+		
+		$startRow = 2;
+		foreach ($areadData as $index => $value) {
+			 $value['Area_Parent_NId'];
+			$newconditions =[];
+			$newconditions =[_AREA_AREA_NID => $value['Area_Parent_NId']];
+			$newfields =[_AREA_AREA_ID];
+        	$parentnid= $this->getDataByParams($newfields,$newconditions);
+			pr($parentnid);//die;
+			if($value['Area_Parent_NId']!='-1')
+			$parentnid= current($parentnid)[_AREA_AREA_ID];
+			else
+		    $parentnid= '-1';
+			//die;
+			$objPHPExcel->getActiveSheet()->SetCellValue('A' . $startRow, (isset($value['Area_ID'])) ? $value['Area_ID'] : '' );
+            $objPHPExcel->getActiveSheet()->SetCellValue('B' . $startRow, (isset($value['Area_Name'])) ? $value['Area_Name'] : '');
+            $objPHPExcel->getActiveSheet()->SetCellValue('C' . $startRow, (isset($value['Area_Level'])) ? $value['Area_Level'] : '');
+            $objPHPExcel->getActiveSheet()->SetCellValue('D' . $startRow, (isset($value['Area_GId'])) ? $value['Area_GId'] : '' );
+            $objPHPExcel->getActiveSheet()->SetCellValue('E' . $startRow, (isset($parentnid)) ? $parentnid : '' );
+          //  $objPHPExcel->getActiveSheet()->SetCellValue('F' . $startRow,  '' );
+          //  $objPHPExcel->getActiveSheet()->SetCellValue('G' . $startRow,  '' );
+            $startRow++;
+			
+		}
+	
+
+
+        $objWriter = new \PHPExcel_Writer_Excel2007($objPHPExcel);
+        $returnFilename = 'Export_'. $module . '_' . $authUserId . '_' . date('Y-m-d') . '.xlsx';
+        $objWriter->save($returnFilename);
+        return $returnFilename;
+	}
 	
 	/**
      * getDataByParams for Area Level method

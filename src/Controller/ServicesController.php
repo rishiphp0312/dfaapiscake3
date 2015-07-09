@@ -932,6 +932,24 @@ class ServicesController extends AppController {
                 }
 
                 break;
+				
+            case 905:
+                // service for bulk export  of area excel sheet                
+                //if($this->request->is('post')):
+                try {
+                    //$filename = $extra['filename'];
+                    //$params[]['filename'] = $filename;
+					 $params[] = 		$fields = [_AREA_AREA_ID,_AREA_AREA_NAME,_AREA_AREA_GID,_AREA_AREA_LEVEL,_AREA_PARENT_NId];
+
+                   $params[] = $conditions=[];
+
+                     $returnData = $this->CommonInterface->serviceInterface('Area', 'exportArea', $params, $dbConnection);
+                } catch (Exception $e) {
+                    $returnData['errMsg'] = $e->getMessage();
+                }
+
+                break;
+
 
             // service for adding databases
             case 1101:
