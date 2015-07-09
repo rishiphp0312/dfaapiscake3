@@ -61,6 +61,7 @@ class CommonComponent extends Component {
     public function createDatabasesConnection($data = array()) {
         return $this->MDatabaseConnections->insertData($data);
     }
+	
 
     /*
      * 
@@ -118,6 +119,21 @@ class CommonComponent extends Component {
                 return $e->getMessage();
             }
         }
+    }
+	
+	
+	/*
+      Function getDbDetails is to get  the database information with respect to passed database id
+      @$dbId is used to pass the database id
+     */
+
+    public function getDbConnectionDetails($dbId) {
+
+        $databasedetails = array();
+
+        $databasedetails = $this->MDatabaseConnections->getDbConnectionDetails($dbId);
+
+        return $databasedetails;
     }
 
     /*

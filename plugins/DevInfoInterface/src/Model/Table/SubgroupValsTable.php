@@ -6,7 +6,7 @@ use App\Model\Entity\SubgroupVal;
 use Cake\ORM\Table;
 
 /**
- * SubgroupValTable Model
+ * SubgroupValsTable Model
  */
 class SubgroupValsTable extends Table {
 

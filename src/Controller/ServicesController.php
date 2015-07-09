@@ -67,9 +67,14 @@ class ServicesController extends AppController {
         $dbConnection = 'test';
         $authUserId = $this->Auth->user(_USER_ID); // logged in user id
         $dbId = '';
-        if (isset($this->request->data['dbId']) && !empty($this->request->data['dbId']))
+        if (isset($this->request->data['dbId']) && !empty($this->request->data['dbId'])){
             $dbId = $this->request->data['dbId'];
-        // $dbConnectionDetails = $this->Common->getDbDetails($dbId);//dbId
+            $dbConnection = $this->Common->getDbConnectionDetails($dbId);//dbId
+			//$dbConnection  = json_decode($dbConnection,true);
+			//pr($dbConnection);//die;
+			
+		}
+		   
 
         switch ($case):
 

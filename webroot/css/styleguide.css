@@ -76,7 +76,7 @@
 .ml20 {
     margin-left: 20px !important;
 }
-/*Padfding hlp Classes*/
+/*Padding hlp Classes*/
 .p0 {
     padding: 0 !important;
 }
@@ -304,6 +304,26 @@ p {
     width: 100%;
 }
 
+/**/
+/*Width Container*/
+.container {
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 20px;
+}
+
+.container-nav {
+    margin: 0 auto;
+    width: 100%;
+    padding: 0;
+}
+
+.container-1024 {
+    margin: 0 auto;
+    width: 1024px;
+    padding: 0 20px;
+}
+
 /*===================================== Button Styling Starts Here =====================================*/
 /*Main Button Styling*/
 .btn {
@@ -398,16 +418,8 @@ p {
     background-color: #cdcdcd;
 }
 /*Button Grey*/
-/******Button DFA Green******/
-.btn-green {
-    color: #fff;
-    background: #66ad9b;
-    border-color: #4b917f;
-}
-.btn-green:hover, .btn-green:active {
-    color: #fff;
-    background: #4b917f;
-}
+
+
 
 /*Button Success*/
 .btn-success {
@@ -593,7 +605,6 @@ p {
 .main-header.header-dark .header-menu ul li a, .main-header.header-dark .header-menu ul li span {
     color: #ededed;
 }
-
 /*Header Light*/
 .main-header.header-light {
     background: #fff;
@@ -604,52 +615,6 @@ p {
 }
 /*===================================== Header elements Ends Here =====================================*/
 
-/*===================================== Body Main Layout Starts Here =====================================*/
-.main {
-    width: 100%;
-    padding: 0px;
-    margin: 0px;
-}
-
-.content {
-    width: 100%;
-    padding: 0px;
-    margin: 0px;
-}
-
-.container {
-    margin: 0 auto;
-    width: 100%;
-    padding: 0 20px;
-}
-
-.container-nav {
-    margin: 0 auto;
-    width: 100%;
-    padding: 0;
-}
-
-.container-1024 {
-    margin: 0 auto;
-    width: 1024px;
-    padding: 0 20px;
-}
-/*===================================== Home Page Layout Starts Here =====================================*/
-.video {
-    height: 400px;
-    overflow: hidden;
-}
-
-.video-info {
-    max-height: 400px;
-    position: absolute;
-    margin: 30px 0px;
-    z-index: 9;
-    color: #fff;
-}
-
-
-/*===================================== Home Page Layout Ends Here =====================================*/
 /*===================================== Breadcrumb Nav Starts Here ===================================== */
 .breadcrum-nav {
     height: 44px;
@@ -1271,9 +1236,51 @@ ul.vertical-tab li.selected a:hover {
     line-height: 18px;
     padding: 0px 6px;
 }
+
 .footer .ft-nav ul li:first-child a {
-padding-left: 0px;
+    padding-left: 0px;
 }
+
 .footer .ft-nav ul li:last-child {
     border-right: 0px;
+}
+
+/*===================================== Body Main Layout Starts Here =====================================*/
+.main {
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+}
+
+.content {
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+}
+
+/*===================================== Home Page Layout Starts Here =====================================*/
+.video {
+    height: 400px;
+    overflow: hidden;
+}
+
+.video-info {
+    max-height: 400px;
+    position: absolute;
+    margin: 30px 0px;
+    z-index: 9;
+    color: #fff;
+}
+
+/*===================================== Home Page Layout Ends Here =====================================*/
+/******Button DFA Green******/
+.btn-green {
+    color: #fff;
+    background: #66ad9b;
+    border-color: #4b917f;
+}
+
+.btn-green:hover, .btn-green:active {
+    color: #fff;
+    background: #4b917f;
 }

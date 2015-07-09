@@ -104,7 +104,7 @@ class UnitTable extends Table
 
         // Calling execute will execute the query
         // and return the result set.
-        $results = $query->all();
+        $results = $query->hydrate(false)->all();
 
         // Once we have a result set we can get all the rows
         $data = $results->toArray();

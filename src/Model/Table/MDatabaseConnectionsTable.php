@@ -30,6 +30,24 @@ class MDatabaseConnectionsTable extends Table {
         ]);
           
     }
+	
+	public function getDbConnectionDetails($ID = null) {
+        $result = false;
+        $db_jsondetails   = '';
+        $options = [];
+        if (isset($ID) && !empty($ID)) {
+            $options['conditions'] = array(_DATABASE_CONNECTION_DEVINFO_DB_ID=> $ID, 'archived' => 0);
+            //$options['fields'] => array('devinfo_db_connection') ;
+        }
+        if ($ID != '') {
+            $MDatabaseConnections = $this->find('all', $options);                   
+            $result = $MDatabaseConnections->hydrate(false)->first();             
+            if (!empty($result)) {
+                 $db_jsondetails = $result[_DATABASE_CONNECTION_DEVINFO_DB_CONN];   
+            }
+        }
+        return $db_jsondetails;
+    }
    /*
     * getDbNameByID function 
     * get db details on basis of Id 

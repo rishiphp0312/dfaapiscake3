@@ -99,7 +99,7 @@ class IndicatorClassificationsTable extends Table
         
         if($type == 'list') $this->setListTypeKeyValuePairs($fields);
 
-        $results = $this->find('list')->where($conditions);
+        //$results = $this->find('list')->where($conditions);
         //print_r($results);exit;
 
         // Find all the rows.
@@ -108,7 +108,7 @@ class IndicatorClassificationsTable extends Table
         
         // Calling execute will execute the query
         // and return the result set.
-        $results = $query->all();
+        $results = $query->hydrate(false)->all();
 
         // Once we have a result set we can get all the rows
         $data = $results->toArray();
@@ -263,18 +263,17 @@ class IndicatorClassificationsTable extends Table
      */
     public function updateDataByParams($fieldsArray = [], $conditions = [])
     {
-        //Get Entities based on Coditions
-        $IndicatorClassifications = $this->get($conditions);
+        //Initialize
+        $query = $this->query();
         
-        //Update Entity Object with data
-        $IndicatorClassifications = $this->patchEntity($IndicatorClassifications, $fieldsArray);
+        //Set
+        $query->update()
+            ->set($fieldsArray)
+            ->where($conditions);
         
-        //Update the Data
-        if ($this->save($IndicatorClassifications)) {
-            return 1;
-        } else {
-            return 0;
-        }  
+        //Execute
+        $query->execute();
+        
     }
     
 
@@ -286,12 +285,65 @@ class IndicatorClassificationsTable extends Table
      * @param array $NIdColumnName Column used to generate NId. {DEFAULT : empty}
      * @return void
      */
-	public function autoGenerateNIdFromTable($connection = null){
+    public function autoGenerateNIdFromTable($connection = null){
 
-		$maxNId = $this->find()->select(_IC_IC_NID)->max(_IC_IC_NID);
+        $maxNId = $this->find()->select(_IC_IC_NID)->max(_IC_IC_NID);
         return $maxNId->{_IC_IC_NID};
 
-	}
+    }
+
+    /**
+     * getConcatedFields method     *
+     * @param array $conditions The WHERE conditions for the Query. {DEFAULT : empty}
+     * @param array $fields The Fields to SELECT from the Query. {DEFAULT : empty}
+     * @return void
+     */
+    public function getConcatedFields(array $fields, array $conditions, $type = null) {
+
+        $options = [];
+
+        if (isset($fields) && !empty($fields))
+            $options['fields'] = $fields;
+
+        if ($type == 'list' && empty($fields))
+            $options['fields'] = array($fields[0], $fields[1]);
+
+        if (!empty($conditions))
+            $options['conditions'] = $conditions;
+
+        if (empty($type))
+            $type = 'all';
+
+        if ($type == 'list') {
+            $options['keyField'] = $fields[0];
+            $options['valueField'] = $fields[1];
+            if(array_key_exists(2, $fields)){
+                $options['groupField'] = $fields[2];
+            }
+            
+            $query = $this->find($type, $options);
+        } else {
+            $query = $this->find($type, $options);
+        }
+        
+        if(array_key_exists(2, $fields)){
+            $concat = $query->func()->concat([
+                '(',
+                $fields[0] => 'literal',
+                ',\'',
+                $fields[1] => 'literal',
+                '\')'
+            ]);
+            $query->select(['concatinated' => $concat]);
+        }
+        
+        $results = $query->hydrate(false)->all();
+
+        // Once we have a result set we can get all the rows
+        $data = $results->toArray();
+
+        return $data;
+    }
 
 
     /**
