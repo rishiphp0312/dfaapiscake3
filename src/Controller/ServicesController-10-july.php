@@ -67,10 +67,12 @@ class ServicesController extends AppController {
         $dbConnection = 'test';
         $authUserId = $this->Auth->user(_USER_ID); // logged in user id
         $dbId = '';
-		//$_REQUEST['dbId']=49;  // for testing 
-        if (isset($_REQUEST['dbId']) && !empty($_REQUEST['dbId'])){
-            $dbId = $_REQUEST['dbId'];
+        if (isset($this->request->data['dbId']) && !empty($this->request->data['dbId'])){
+            $dbId = $this->request->data['dbId'];
             $dbConnection = $this->Common->getDbConnectionDetails($dbId);//dbId
+			//$dbConnection  = json_decode($dbConnection,true);
+			//pr($dbConnection);//die;
+			
 		}
 		   
 
@@ -132,6 +134,19 @@ class ServicesController extends AppController {
 
             case 105: //Insert New Data -- Indicator table
                 if ($this->request->is('post')):
+
+                    $this->request->data = [
+                        _INDICATOR_INDICATOR_NID => '384',
+                        _INDICATOR_INDICATOR_NAME => 'Custom_test_name2',
+                        _INDICATOR_INDICATOR_GID => 'SOME_001_TEST',
+                        _INDICATOR_INDICATOR_INFO => '<?xml version="1.0" encoding="utf-8"?><metadata><Category name="Definition"><para /></Category><Category name="Method of Computation"><para /></Category><Category name="Overview"><para /></Category><Category name="Comments and Limitations"><para /></Category><Category name="Data Collection for Global Monitoring"><para /></Category><Category name="Obtaining Data:"><para /></Category><Category name="Data Availability:"><para /></Category><Category name="Treatment of Missing Values:"><para /></Category><Category name="Regional and Global Estimates:"><para /></Category><Category name="Data Availability"><para /></Category></metadata>',
+                        _INDICATOR_INDICATOR_GLOBAL => '0',
+                        _INDICATOR_SHORT_NAME => 'Short name',
+                        _INDICATOR_KEYWORDS => 'Some Keyword',
+                        _INDICATOR_INDICATOR_ORDER => '5',
+                        _INDICATOR_DATA_EXIST => '1',
+                        _INDICATOR_HIGHISGOOD => '1'
+                    ];
 
                     //insertData(array $fieldsArray = $this->request->data)
                     $params['conditions'] = $conditions = $this->request->data;
@@ -223,15 +238,11 @@ class ServicesController extends AppController {
                 ];
                 $conditions = [_UNIT_UNIT_NID => '43'];
 
-                //if ($this->request->is('post')):
-                if (true):
+                if ($this->request->is('post')):
                     //updateDataByParams(array $fields, array $conditions)
-                    $fields = [_UNIT_UNIT_NAME=>'Percent'];
-                    $conditions = [_UNIT_UNIT_GID=>'B602B58B-6879-4188-9D49-DD833281FE4E'];
                     $params[] = $fields;
                     $params[] = $conditions;
                     $returnData = $this->CommonInterface->serviceInterface('Unit', 'updateDataByParams', $params, $dbConnection);
-                    debug($returnData);exit;
                 endif;
 
                 break;
@@ -921,23 +932,6 @@ class ServicesController extends AppController {
                 }
 
                 break;
-				
-            case 905:
-                // service for bulk export  of area in excel sheet                
-                try {
-                 
-					$params[] = $fields     = [_AREA_AREA_ID,_AREA_AREA_NAME,_AREA_AREA_GID,_AREA_AREA_LEVEL,_AREA_PARENT_NId];
-
-					$params[] = $conditions = [];
-
-                    $returnData = $this->CommonInterface->serviceInterface('Area', 'exportArea', $params, $dbConnection);
-					
-                } catch (Exception $e) {
-                    $returnData['errMsg'] = $e->getMessage();
-                }
-
-                break;
-
 
             // service for adding databases
             case 1101:
@@ -1635,7 +1629,8 @@ class ServicesController extends AppController {
                         $seriveToCall = strtolower($this->request->data['type']);
                         $allowedExtensions = ['xls', 'xlsx'];
                         $extraParam['createLog'] = true;
-                        $module = 'TEMPLATE';                        
+                        $module = 'TEMPLATE';
+                        
                         // Kept here to include other params like allowed ext as well
                         switch ($seriveToCall):
                             case _ICIUS:
@@ -1695,27 +1690,13 @@ class ServicesController extends AppController {
                 if (true):
                     $returnData['data'] = $this->CommonInterface->serviceInterface('CommonInterface', 'exportIcius', [], $dbConnection);
 
-                    $returnData['status'] = _SUCCESS;
-                    $returnData['responseKey'] = _ICIUSEXPORT;
+                    $returnData['status'] = 'success';
+                    $returnData['responseKey'] = 'iciusExport';
                     $returnData['errCode'] = '';
                     $returnData['errMsg'] = '';
                 endif;
                 break;
-				case 2403:
-				try {
-						//unlink(WWW_ROOT."uploads/test/TPL_Import_Area_1_2015-07-10.xlsx");die;
-                    $filename = $extra['filename'] ='C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\MDG5B Areas TPL.xls';
-                    $params[]['filename'] = $filename;
-                     $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForArea', $params, $dbConnection);
-					die;
-				} catch (Exception $e) {
-                    $returnData['errMsg'] = $e->getMessage();
-                }
-				//$this->CommonInterface->serviceInterface('Area', 'addAreaLevel', [], $dbConnection);
-				
-				break;
 
-				
 
         endswitch;
 

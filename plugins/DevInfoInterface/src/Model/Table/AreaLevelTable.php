@@ -77,7 +77,7 @@ class AreaLevelTable extends Table {
             $this->setListTypeKeyValuePairs($fields);
 
         
-        $data = $this->find($type, $options)->all()->toArray();
+        $data = $this->find($type, $options)->hydrate(false)->all()->toArray();
         return $data;
     }
 
@@ -132,7 +132,7 @@ class AreaLevelTable extends Table {
 
                 $Area = $this->patchEntity($Area, $fieldsArray);
                 if ($this->save($Area)) {
-                    return 1;
+                    return $Area->id;
                 } else {
                     return 0;
                 }

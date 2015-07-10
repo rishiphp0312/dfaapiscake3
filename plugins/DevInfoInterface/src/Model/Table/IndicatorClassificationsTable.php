@@ -326,22 +326,29 @@ class IndicatorClassificationsTable extends Table
             $query = $this->find($type, $options);
         }
         
-        if(array_key_exists(2, $fields)){
+        /*if(array_key_exists(2, $fields)){
             $concat = $query->func()->concat([
                 '(',
+                //'CONVERT(varchar, '.$fields[0].')' => 'literal',
                 $fields[0] => 'literal',
                 ',\'',
                 $fields[1] => 'literal',
                 '\')'
             ]);
             $query->select(['concatinated' => $concat]);
-        }
+        }*/
         
         $results = $query->hydrate(false)->all();
 
         // Once we have a result set we can get all the rows
         $data = $results->toArray();
-
+        
+        if(array_key_exists(2, $fields)){
+            foreach($data as $key => &$value){
+                $value['concatinated'] = '(' . $value[$fields[0]] . ',\'' . $value[$fields[1]] . '\')';
+            }
+        }
+        
         return $data;
     }
 

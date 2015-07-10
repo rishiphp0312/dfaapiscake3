@@ -182,8 +182,8 @@ class SubgroupComponent extends Component {
      * @param array $fields Fields to fetch. {DEFAULT : empty}
      * @return void
      */
-    public function getDataByParams(array $fields, array $conditions, $type = 'all') {
-        return $this->SubgroupObj->getDataByParams($fields, $conditions, $type);
+    public function getDataByParams(array $fields, array $conditions, $type = 'all', $debug = false) {
+        return $this->SubgroupObj->getDataByParams($fields, $conditions, $type, $debug);
     }
 
     /**

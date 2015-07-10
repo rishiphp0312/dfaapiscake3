@@ -71,7 +71,7 @@ class SubgroupTable extends Table {
      * @param array $fields The Fields to SELECT from the Query. {DEFAULT : empty}
      * @return void
      */
-    public function getDataByParams(array $fields, array $conditions, $type = null) {
+    public function getDataByParams(array $fields, array $conditions, $type = null, $debug = false) {
 
         $options = [];
 
@@ -94,8 +94,13 @@ class SubgroupTable extends Table {
         } else {
             $query = $this->find($type, $options);
         }
-
+        
+        if($debug == true){
+            debug($query);exit;
+        }
+            
         $results = $query->hydrate(false)->all();
+        
         $data = $results->toArray();
 
         return $data;

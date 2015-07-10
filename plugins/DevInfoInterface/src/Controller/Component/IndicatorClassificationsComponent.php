@@ -175,6 +175,14 @@ class IndicatorClassificationsComponent extends Component {
             return $this->IndicatorClassificationsObj->getConcatedFields($fields, $conditions, $type);
         }
     }
+    
+    public function find($type, $options =[]) {
+        $query =  $this->IndicatorClassificationsObj->find($type, $options);
+        $results = $query->hydrate(false)->all();
+        $data = $results->toArray();
+        return $data;
+         
+    }
 
     /**
      * testCasesFromTable method
