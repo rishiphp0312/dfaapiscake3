@@ -418,7 +418,7 @@ class AreaComponent extends Component
 				 $data[_AREALEVEL_AREA_LEVEL] = $finallevel;
 				 $data[_AREALEVEL_LEVEL_NAME] = _LevelName.$finallevel;
 				 $this->AreaLevelObj->insertData($data);
-				 echo '--',$finallevel;
+
 				 return  $finallevel;			
 			 }else{
 				  echo '--nnn--',$finallevel = current($getlevelDetails)[_AREALEVEL_AREA_LEVEL]; 	
@@ -429,6 +429,7 @@ class AreaComponent extends Component
 			 echo 'jyada';
 			 
 			 $levelConditions[_AREALEVEL_AREA_LEVEL] = $level;
+
 			 $getlevelDetails   = $this->AreaLevelObj->getDataByParams($levelFields, $levelConditions, 'all');
 			 if(empty($getlevelDetails)){
 				 $data[_AREALEVEL_AREA_LEVEL] = $level;
@@ -436,7 +437,7 @@ class AreaComponent extends Component
 				 $this->AreaLevelObj->insertData($data);
 				 return  $level;			
 			 }else{
-				 pr($getlevelDetails);
+
 				return $level = current($getlevelDetails)[_AREALEVEL_AREA_LEVEL]; 				
 			 }
 		 }		
@@ -444,7 +445,6 @@ class AreaComponent extends Component
 				unset($areaConditions);
 				unset($data);
 	 }
-	 
 	 
 	 
 	}  //  function ends here 

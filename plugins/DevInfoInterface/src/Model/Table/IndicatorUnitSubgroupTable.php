@@ -314,7 +314,7 @@ class IndicatorUnitSubgroupTable extends Table
 
         $query = $this->find($type, $options);
 
-        $concat = $query->func()->concat([
+        /*$concat = $query->func()->concat([
                     '(',
                     _IUS_INDICATOR_NID => 'literal',
                     ',',
@@ -325,13 +325,17 @@ class IndicatorUnitSubgroupTable extends Table
                     _IUS_SUBGROUP_NIDS => 'literal',
                     '\')'
                 ]);
-        $query->select(['concatinated' => $concat]);
+        $query->select(['concatinated' => $concat]);*/
         
         $results = $query->hydrate(false)->all();
 
         // Once we have a result set we can get all the rows
         $data = $results->toArray();
 
+        foreach($data as $key => &$value){
+            $value['concatinated'] = '(' . $value[_IUS_INDICATOR_NID] . ',' . $value[_IUS_UNIT_NID] . ',' . $value[_IUS_SUBGROUP_VAL_NID] . ',\'' . $value[_IUS_SUBGROUP_NIDS] . '\')';
+        }
+        
         return $data;
     }
 

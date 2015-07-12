@@ -99,9 +99,9 @@ class SubgroupValsSubgroupTable extends Table {
             $query = $this->find($type, $options);
         }
 
-        if(array_key_exists('group', $extra)){
+        /*if(array_key_exists('group', $extra)){
             $query->group($extra['group']);
-        }
+        }*/
         if(array_key_exists('order', $extra)){
             $query->order($extra['order']);
         }
@@ -110,7 +110,22 @@ class SubgroupValsSubgroupTable extends Table {
 
         // Once we have a result set we can get all the rows
         $data = $results->toArray();
-
+        
+        if(array_key_exists('group', $extra)){
+            $data = array_intersect_key($data, array_unique(array_map('serialize', $data)));
+            foreach($data as $key => $value){
+                $newData[SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID . '_CONCATED'][$value[$fields[0]]][] = $value[$fields[1]];
+            }
+            $data = [];
+            foreach($newData[SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID . '_CONCATED'] as $key => &$value){
+                sort($value);
+                $value = implode(',', $value);
+                $dataFields[$fields[0]] = $key;
+                $dataFields[SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID . '_CONCATED'] = $value;
+                $data[] = $dataFields;
+            }
+        }
+        //debug($data);exit;
         return $data;
     }
 
@@ -208,20 +223,26 @@ class SubgroupValsSubgroupTable extends Table {
             $query = $this->find($type, $options);
         }
 
-        $concat = $query->func()->concat([
+        /*$concat = $query->func()->concat([
             '(',
             _SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID => 'literal',
             ',',
             SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID => 'literal',
             ')'
         ]);
-        $query->select(['concatinated' => $concat]);
+        $query->select(['concatinated' => $concat]);*/
         
         $results = $query->hydrate(false)->all();
 
         // Once we have a result set we can get all the rows
         $data = $results->toArray();
 
+        if(array_key_exists(2, $fields)){
+            foreach($data as $key => &$value){
+                $value['concatinated'] = '(' . $value[_SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID] . ',' . $value[SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID] . ')';
+            }
+        }
+        
         return $data;
     }
 

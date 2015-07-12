@@ -223,6 +223,7 @@ class UnitTable extends Table
      */
     public function updateDataByParams($fieldsArray = [], $conditions = [])
     {
+        /*
         //Get Entities based on Coditions
         $Unit = $this->get($conditions);
         
@@ -234,7 +235,18 @@ class UnitTable extends Table
             return 1;
         } else {
             return 0;
-        }  
+        }  */
+        //Initialize
+        $query = $this->query();
+        
+        //Set
+        $query->update()
+            ->set($fieldsArray)
+            ->where($conditions);
+        
+        //Execute
+        $query->execute();
+        //debug($query);exit;
     }
 
 
