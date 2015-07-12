@@ -12,16 +12,16 @@ class AreaComponent extends Component
 {
     
     // The other component your component uses
-    public $components = [];
+    public $components = ['Auth'];
     public $AreaObj = NULL;
     public $AreaLevelObj = NULL;
  
 	public function initialize(array $config)
     {
-        //parent::initialize($config);
+       // parent::initialize($config);
         $this->AreaObj = TableRegistry::get('DevInfoInterface.Areas');
         $this->AreaLevelObj = TableRegistry::get('DevInfoInterface.AreaLevel');
-		        require_once(ROOT . DS . 'vendor' . DS . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
+		require_once(ROOT . DS . 'vendor' . DS . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
 
     }
     
@@ -49,57 +49,61 @@ class AreaComponent extends Component
      */
     public function getDataByParams(array $fields, array $conditions, $type = 'all')
     {				        
-
         return $this->AreaObj->getDataByParams($fields, $conditions, $type);
     }
 	
 	
-	public function exportArea($fields, $conditions){
+	public function exportArea($fields, $conditions,$module='Area'){
 		
-		$module='Area';
-		$authUserId = 1; //$this->Auth->User('id');   
+		
+		$authUserId =$this->Auth->User('id');   
         $objPHPExcel = new \PHPExcel();
         $objPHPExcel->setActiveSheetIndex(0);
         $startRow = $objPHPExcel->getActiveSheet()->getHighestRow();
+
+		$returnFilename = _TPL_Export_. $module . '_' . $authUserId . '_' . date('Y-m-d') . '.xls';		
         $rowCount = 1;
-        $firstRow = ['A' => 'AreaId', 'B' => 'AreaName', 'C' => 'AreaLevel', 'D' => 'AreaGId', 'E' => 'ParentAreaId'];
+        $firstRow = ['A' => 'AreaId', 'B' => 'AreaName', 'C' => 'AreaLevel', 'D' => 'AreaGId', 'E' => 'Parent AreaId'];
 
         foreach ($firstRow as $index => $value) {
             $objPHPExcel->getActiveSheet()->SetCellValue($index . $rowCount, $value);
         }
-		$conditions=['1'=>'1'];
+		
+		//$conditions=['1'=>'1'];
+		 $conditions=[];
 		$areadData = $this->AreaObj->getDataByParams( $fields, $conditions,'all');
 		
 		$startRow = 2;
 		foreach ($areadData as $index => $value) {
-			 $value['Area_Parent_NId'];
-			$newconditions =[];
-			$newconditions =[_AREA_AREA_NID => $value['Area_Parent_NId']];
+			
+			
+			
+			$newconditions =[_AREA_AREA_NID => $value[_AREA_PARENT_NId]];
 			$newfields =[_AREA_AREA_ID];
         	$parentnid= $this->getDataByParams($newfields,$newconditions);
-			pr($parentnid);//die;
-			if($value['Area_Parent_NId']!='-1')
+			
+			if($value[_AREA_PARENT_NId]!='-1')   //case when not empty or -1
 			$parentnid= current($parentnid)[_AREA_AREA_ID];
 			else
 		    $parentnid= '-1';
-			//die;
-			$objPHPExcel->getActiveSheet()->SetCellValue('A' . $startRow, (isset($value['Area_ID'])) ? $value['Area_ID'] : '' );
-            $objPHPExcel->getActiveSheet()->SetCellValue('B' . $startRow, (isset($value['Area_Name'])) ? $value['Area_Name'] : '');
-            $objPHPExcel->getActiveSheet()->SetCellValue('C' . $startRow, (isset($value['Area_Level'])) ? $value['Area_Level'] : '');
-            $objPHPExcel->getActiveSheet()->SetCellValue('D' . $startRow, (isset($value['Area_GId'])) ? $value['Area_GId'] : '' );
+		
+			$objPHPExcel->getActiveSheet()->SetCellValue('A' . $startRow, (isset($value[_AREA_AREA_ID])) ? $value[_AREA_AREA_ID] : '' );
+            $objPHPExcel->getActiveSheet()->SetCellValue('B' . $startRow, (isset($value[_AREA_AREA_NAME])) ? $value[_AREA_AREA_NAME] : '');
+            $objPHPExcel->getActiveSheet()->SetCellValue('C' . $startRow, (isset($value[_AREA_AREA_LEVEL])) ? $value[_AREA_AREA_LEVEL] : '');
+            $objPHPExcel->getActiveSheet()->SetCellValue('D' . $startRow, (isset($value[_AREA_AREA_GID])) ? $value[_AREA_AREA_GID] : '' );
             $objPHPExcel->getActiveSheet()->SetCellValue('E' . $startRow, (isset($parentnid)) ? $parentnid : '' );
-          //  $objPHPExcel->getActiveSheet()->SetCellValue('F' . $startRow,  '' );
-          //  $objPHPExcel->getActiveSheet()->SetCellValue('G' . $startRow,  '' );
-            $startRow++;
+			$startRow++;		
 			
 		}
 	
+	    $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		header('Content-Type: application/vnd.ms-excel;');
+		header('Content-Disposition: attachment;filename='.$returnFilename);
+		header('Cache-Control: max-age=0');
+		$objWriter->save('php://output');
+		exit;
 
 
-        $objWriter = new \PHPExcel_Writer_Excel2007($objPHPExcel);
-        $returnFilename = 'Export_'. $module . '_' . $authUserId . '_' . date('Y-m-d') . '.xlsx';
-        $objWriter->save($returnFilename);
-        return $returnFilename;
 	}
 	
 	/**
@@ -265,6 +269,184 @@ class AreaComponent extends Component
     {
         return $this->AreaObj->updateDataByParams($fieldsArray, $conditions);
     }
+    
+    /**
+    * find method 
+    *
+    * @param string $type Query Type
+    * @param array $options Extra options
+    * @return void
+    */
+    public function find($type, $options =[]) {
+        $query =  $this->AreaObj->find($type, $options);
+        $results = $query->hydrate(false)->all();
+        $data = $results->toArray();
+        return $data;
+         
+    }
+	
+	/*
+	 function to add area level if not exists and validations while import for level according to  parent id 
+	 returns area level 
+	 if $type is New that means parent id don't exist in db and have childs in excel sheet 
+	
+	*/
+	
+    public function returnAreaLevel($level='',$parentNid='',$type=''){
+		
+		$areaFields=[_AREA_AREA_LEVEL];
+		$levelFields =[_AREALEVEL_AREA_LEVEL];
+				echo '<br>';
 
+        echo $level.'--------parentnid=='.$parentNid;
+		$data=[];
+		echo '<br>';
+		//$level=1;
+		//$parentNid='IND030001005';
+		if($type  ='NEW' && !empty($parentNid) && $parentNid!='-1'){
+			
+			$areaConditions[_AREA_AREA_ID] = $parentNid;
+			$levelValue = $this->AreaObj->getDataByParams($areaFields, $areaConditions, 'all');
+			if(!empty($levelValue)){
+					$level  = current($levelValue)[_AREA_AREA_LEVEL]+1;
+					$levelConditions[_AREALEVEL_AREA_LEVEL]=$level;
+					 $getlevelDetails   = $this->AreaLevelObj->getDataByParams($levelFields, $levelConditions, 'all');
+					 if(empty($getlevelDetails)){
+						 $data[_AREALEVEL_AREA_LEVEL] = $level;
+						 $data[_AREALEVEL_LEVEL_NAME] = _LevelName.$level;
+						 $this->AreaLevelObj->insertData($data);
+						 return  $level;			
+					 }else{
+						return $finallevel = current($getlevelDetails)[_AREALEVEL_AREA_LEVEL]; 				
+					 }
+		    
+			}else{
+				if(empty($level)){
+					$level=2;
+				}
+				if($level<=1){
+					$level=2;
+				}
+			 $levelConditions[_AREALEVEL_AREA_LEVEL]=$level;
+			 $getlevelDetails   = $this->AreaLevelObj->getDataByParams($levelFields, $levelConditions, 'all');
+			 if(empty($getlevelDetails)){
+				 $data[_AREALEVEL_AREA_LEVEL] = $level;
+				 $data[_AREALEVEL_LEVEL_NAME] = _LevelName.$level;
+				 $this->AreaLevelObj->insertData($data);
+				 return  $level;			
+			 }else{
+				return $finallevel = current($getlevelDetails)[_AREALEVEL_AREA_LEVEL]; 				
+			 }
+			}
+			unset($areaConditions);
+			unset($levelConditions);
+		}
+	
+     // case 1 when level is empty but parent nid is not  empty 
+	 if(empty($level) && !empty($parentNid) && $parentNid!='-1'){
+		    
+			echo 'block1';
+		 	echo '<br>';
+			$areaConditions[_AREA_AREA_ID]=$parentNid;
+			$levelValue = $this->AreaObj->getDataByParams($areaFields, $areaConditions, 'all');
+			if(!empty($levelValue))
+			$parentAreaLevel  = current($levelValue)[_AREA_AREA_LEVEL]+1;
+		    else
+			$parentAreaLevel  =1;	
+		    
+		
+		   if($parentAreaLevel){
+		     $levelConditions[_AREALEVEL_AREA_LEVEL]=$parentAreaLevel;
+			 $getlevelDetails   = $this->AreaLevelObj->getDataByParams($levelFields, $levelConditions, 'all');
+			 if(empty($getlevelDetails)){
+				 $data[_AREALEVEL_AREA_LEVEL] = $parentAreaLevel;
+				 $data[_AREALEVEL_LEVEL_NAME] = _LevelName.$parentAreaLevel;
+				 $this->AreaLevelObj->insertData($data);
+				 return  $parentAreaLevel;			
+			 }else{
+				return $finallevel = current($getlevelDetails)[_AREALEVEL_AREA_LEVEL]; 				
+			 }
+		 
+		 unset($levelConditions);
+		 unset($areaConditions);
+		 unset($data);
+	 }
+	 }
+	 
+	 // case 2 when level  may be empty or not  but parent nid is empty or -1
+	 if((!empty($level)||empty($level)) && (empty($parentNid) || $parentNid=='-1')){
+			 $level = 1;
+			 		 echo 'block2';		echo '<br>';
+
+
+		     $levelConditions[_AREALEVEL_AREA_LEVEL]= $level;
+			 $getlevelDetails   = $this->AreaLevelObj->getDataByParams($levelFields, $levelConditions, 'all');
+			 if(empty($getlevelDetails)){
+				 $data[_AREALEVEL_AREA_LEVEL] = $level;
+				 $data[_AREALEVEL_LEVEL_NAME] = _LevelName.$level;
+				 $this->AreaLevelObj->insertData($data);
+				 return  $level;			
+			 }else{
+				return $level = current($getlevelDetails)[_AREALEVEL_AREA_LEVEL]; 				
+			 }
+		 
+		 unset($levelConditions);
+		 unset($areaConditions);
+		  unset($data);
+		  
+	  }
+	  
+	 // case 3 when both not empty 
+	 if(!empty($level) && !empty($parentNid) && $parentNid!='-1'){
+	     
+		 $areaConditions[_AREA_AREA_ID]=$parentNid;
+		 $parentAreaLevel = 0;
+		 $levelValue = $this->AreaObj->getDataByParams($areaFields, $areaConditions, 'all');
+		 pr($levelValue);
+		 pr($areaConditions);
+		 $parentAreaLevel  = current($levelValue)[_AREA_AREA_LEVEL];
+					 		 echo 'block3';
+							 		echo '<br>';
+
+
+		 if($parentAreaLevel >= $level){
+			 echo 'kam';
+			 $finallevel = $parentAreaLevel+1;
+			 $levelConditions[_AREALEVEL_AREA_LEVEL] = $finallevel;
+			 $getlevelDetails   = $this->AreaLevelObj->getDataByParams($levelFields, $levelConditions, 'all');
+			 if(empty($getlevelDetails)){
+				 $data[_AREALEVEL_AREA_LEVEL] = $finallevel;
+				 $data[_AREALEVEL_LEVEL_NAME] = _LevelName.$finallevel;
+				 $this->AreaLevelObj->insertData($data);
+				 echo '--',$finallevel;
+				 return  $finallevel;			
+			 }else{
+				  echo '--nnn--',$finallevel = current($getlevelDetails)[_AREALEVEL_AREA_LEVEL]; 	
+				return 	$finallevel;		
+			 }			 
+		 }else{			 
+			  
+			 echo 'jyada';
+			 
+			 $levelConditions[_AREALEVEL_AREA_LEVEL] = $level;
+			 $getlevelDetails   = $this->AreaLevelObj->getDataByParams($levelFields, $levelConditions, 'all');
+			 if(empty($getlevelDetails)){
+				 $data[_AREALEVEL_AREA_LEVEL] = $level;
+				 $data[_AREALEVEL_LEVEL_NAME] = _LevelName.$level;
+				 $this->AreaLevelObj->insertData($data);
+				 return  $level;			
+			 }else{
+				 pr($getlevelDetails);
+				return $level = current($getlevelDetails)[_AREALEVEL_AREA_LEVEL]; 				
+			 }
+		 }		
+				unset($levelConditions);
+				unset($areaConditions);
+				unset($data);
+	 }
+	 
+	 
+	 
+	}  //  function ends here 
 
 }
