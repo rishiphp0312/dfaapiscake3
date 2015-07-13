@@ -6,20 +6,24 @@ use Cake\ORM\TableRegistry;
 
 
 /**
- * Area Component
+ * Data Component
  */
-class AreaComponent extends Component
+class DataComponent extends Component
 {
     
     // The other component your component uses
-    public $components = ['Auth'];
-    public $AreaObj = NULL;
+    public $components   = ['Auth'];
+    public $AreaObj      = NULL;
     public $AreaLevelObj = NULL;
+    public $DataObj      = NULL;
+    public $TimeperiodObj      = NULL;
  
 	public function initialize(array $config)
     {
        // parent::initialize($config);
         $this->AreaObj = TableRegistry::get('DevInfoInterface.Areas');
+        $this->DataObj = TableRegistry::get('DevInfoInterface.Data');
+        $this->TimeperiodObj = TableRegistry::get('DevInfoInterface.TimePeriods');
         $this->AreaLevelObj = TableRegistry::get('DevInfoInterface.AreaLevel');
 		require_once(ROOT . DS . 'vendor' . DS . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
 

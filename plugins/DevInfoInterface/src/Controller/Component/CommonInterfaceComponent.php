@@ -27,9 +27,12 @@ use Cake\I18n\Time;
  */
 class CommonInterfaceComponent extends Component {
 
-	//public $dbcon ='';
+    //public $dbcon ='';
+    
     //Loading Components
-    public $components = ['Auth',
+
+    public $components = [
+        'Auth',
         'DevInfoInterface.Indicator',
         'DevInfoInterface.Unit',
         'DevInfoInterface.Timeperiod',
@@ -44,12 +47,12 @@ class CommonInterfaceComponent extends Component {
     ];
 
     public function initialize(array $config) {
-       
-		//parent::initialize($config);
-         
+        parent::initialize($config);
         $this->session = $this->request->session();
         $this->arrayDepth = 1;
         $this->arrayDepthIterator = 1;
+        $this->icDepth = 1;
+        $this->conn;
     }
 
     /**
@@ -65,7 +68,7 @@ class CommonInterfaceComponent extends Component {
         $db_source = $dbConnection['db_source'];
         $db_connection_name = $dbConnection['db_connection_name'];
         $db_password = $dbConnection['db_password'];
-		/*
+	
         $config = [
                 'className' => 'Cake\Database\Connection',
                 'persistent' => false,
@@ -85,26 +88,13 @@ class CommonInterfaceComponent extends Component {
         } else {
             $config['driver'] = 'Cake\Database\Driver\Sqlserver';
         }
-        */
-	
-	$config = [
-            'className' => 'Cake\Database\Connection',
-            'driver' => 'Cake\Database\Driver\Mysql',
-            'persistent' => false,
-            'host' => 'localhost',
-            //'port' => 'nonstandard_port_number',
-            'username' => 'root',
-            'password' => '',
-            'database' => 'developer_evaluation_database',
-            'encoding' => 'utf8',
-            'timezone' => 'UTC',
-            'cacheMetadata' => true,
-            'quoteIdentifiers' => false,
-        ];
-        
+
+         
+
         ConnectionManager::config('devInfoConnection', $config);
 
-        $conn = ConnectionManager::get('devInfoConnection');
+        $this->conn = ConnectionManager::get('devInfoConnection');
+        
     }
 
     /**
@@ -114,10 +104,10 @@ class CommonInterfaceComponent extends Component {
      * 	or MissingViewException in debug mode.
      */
     public function serviceInterface($component = NULL, $method = NULL, $params = null, $dbConnection = null) {
-		if (!empty($dbConnection)) {
+        if (!empty($dbConnection)) {
             $this->setDbConnection($dbConnection);
         }
-        
+
         if ($component . 'Component' == (new \ReflectionClass($this))->getShortName()) {
             return call_user_func_array([$this, $method], $params);
         } else {
@@ -158,7 +148,6 @@ class CommonInterfaceComponent extends Component {
     public function divideNameAndGids($insertDataKeys = null, $insertDataArr = null, $extra = null) {
         $insertDataNames = [];
         $insertDataGids = [];
-
         foreach ($insertDataArr as $row => &$value) {
 
             $value = array_combine($insertDataKeys, $value);
@@ -307,8 +296,6 @@ class CommonInterfaceComponent extends Component {
      * @return void
      */
     public function divideAreaids($insertDataKeys = null, $insertDataArr = null, $extra = null) {
-        //pr($insertDataKeys);die;
-
 
         $insertDataAreaids = [];
         $insertDataAreaParentids = [];
@@ -316,6 +303,7 @@ class CommonInterfaceComponent extends Component {
         $areaidswithparentid = [];
 		$limitedRows =[];
 		$compareAreaidDParentId =[];
+		$allAreaParents =[];
 		//$compareAreaidDParentId =[];
 		
 		foreach($insertDataArr as $index=>$valueArray){
@@ -334,16 +322,16 @@ class CommonInterfaceComponent extends Component {
 		
 		
         $newinsertDataArr = $limitedRows;
-        $compareAreaidDParentId = $limitedRows;
+        $compareAreaidParentId = $limitedRows;
         $errorLogArray = [];
 		
 		$insertDataArr=$limitedRows;
-		//pr($insertDataArr);die;
         // loop to get all parent nids 
         foreach ($insertDataArr as $row => &$value) {		
 			
             $value = array_combine($insertDataKeys, $value);			
             $value = array_filter($value);
+			//$value[_AREA_AREA_GLOBAL]=0;
 			
             if (array_key_exists('areaid', $insertDataKeys) && !isset($value[$insertDataKeys['areaid']])) {
                 unset($value); //unset($newcats); //removing unnecesaary row 
@@ -356,117 +344,229 @@ class CommonInterfaceComponent extends Component {
         $insertDataAreaParentids = array_unique($insertDataAreaParentids);
         $fields = [_AREA_AREA_NID, _AREA_AREA_ID];
         $conditions = array();
-        $conditions = [_AREA_AREA_ID . ' IN ' => $insertDataAreaParentids];//pr($insertDataAreaParentids);die;
-        $areaidswithparentid = $this->Area->getDataByParams($fields, $conditions, 'list'); //getting databse exists parentnids 
+        $conditions = [_AREA_AREA_ID . ' IN ' => $insertDataAreaParentids];
+        $areaidswithparentid = $this->Area->getDataByParams($fields, $conditions, 'list'); //getting database exists parentnids 
 		if (isset($newinsertDataArr) && !empty($newinsertDataArr)) {
 			$finalareaids=[];
 			$chkuniqueAreaids=[];
+			$ignoreAreaIdsAsSubParent=[];
+			$forParentAreaId=[];
+			$allAreaIdsAsSubParent=[];
             foreach ($newinsertDataArr as $row => &$value) {
 				
 			    $allAreblank=false;
                 $value = array_combine($insertDataKeys, $value);
                 $value = array_filter($value);
-				pr($insertDataKeys);
-				pr($value);
 				
 				if(empty($value))
 				{
 					$allAreblank=true;
 				}
-
-                if (array_key_exists('areaid', $insertDataKeys) && (!isset($value[$insertDataKeys['areaid']]) || empty($value[$insertDataKeys['areaid']]) )) { //ignore if area id is blank
+			
+                if (array_key_exists('areaid', $insertDataKeys) && (!isset($value[$insertDataKeys['areaid']]) || empty($value[$insertDataKeys['areaid']]) )) { 
+				//ignore if area id is blank
                        if($allAreblank == false  ){
-							$_SESSION['errorLog'][]=$errorLogArray[$row] = $value;
+							$_SESSION['errorLog'][]= $value;
 							$_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Error';
-							$_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = 'Area Id not found ';
+							$_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = 'Area id  not empty!!';
 						}
 					
 
                     unset($value);
                     unset($newinsertDataArr[$row]);
                 }else if (isset($value[$insertDataKeys['areaid']]) && !empty($value[$insertDataKeys['areaid']])) {
-                    if (!empty($value[$insertDataKeys['parentnid']]) && $value[$insertDataKeys['parentnid']]!='-1' && in_array($value[$insertDataKeys['parentnid']], $areaidswithparentid) == true) {
-                        if($allAreblank == false  ){
-						$_SESSION['errorLog'][]= $errorLogArray[$row] = $value;   
-						$_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Done';
-                        $_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = 'Update ';	
-						}						
-                        $insertDataAreaids[$row] = $value[$insertDataKeys['areaid']];					
+                    if (!empty($value[$insertDataKeys['parentnid']]) && $value[$insertDataKeys['parentnid']]!='-1' && in_array($value[$insertDataKeys['parentnid']],$areaidswithparentid) == true) {
+						//case when parent id is not empty and exists in database also 
+				        if($allAreblank == false  ){
+							$_SESSION['errorLog'][]= $errorLogArray[$row] = $value;   
+						}
+						if(!array_key_exists($insertDataKeys['level'],$value)){
+							$level='';
+						}else{
+							$level=$value[$insertDataKeys['level']];
+						}
+						$value[$insertDataKeys['level']] =  $this->Area->returnAreaLevel($level,$value[$insertDataKeys['parentnid']]);
+						$value[$insertDataKeys['parentnid']] = array_search($value[$insertDataKeys['parentnid']], $areaidswithparentid);
 						
-                        $finalareaids[$value[$insertDataKeys['areaid']]]['areaid'] = $value[$insertDataKeys['areaid']];
-                        $finalareaids[$value[$insertDataKeys['areaid']]]['parentareaNid'] = array_search($value[$insertDataKeys['parentnid']], $areaidswithparentid);
-                        $value[$insertDataKeys['parentnid']] = array_search($value[$insertDataKeys['parentnid']], $areaidswithparentid);                        
-						$value[$insertDataKeys['level']] =  $this->Area->returnAreaLevel($value[$insertDataKeys['level']],$value[$insertDataKeys['parentnid']]);
-						if(!empty($chkuniqueAreaids)){
-							if(in_array($value[$insertDataKeys['areaid']], $chkuniqueAreaids)==true){
-								if($allAreblank == false){
-								 $_SESSION['errorLog']['STATUS'][]=$errorLogArray[$row]['STATUS'] = 'Error';
-                                 $_SESSION['errorLog']['Description'][]=  $errorLogArray[$row]['Description'] = 'Duplicate entry ';
-								}
-								$finalareaids[$value[$insertDataKeys['areaid']]]['areaid'] = '';
-                                $finalareaids[$value[$insertDataKeys['areaid']]]['parentareaNid'] = '';
-								unset($value);
-							}
-						}
-						$chkuniqueAreaids[] = $value[$insertDataKeys['areaid']];
+						$uniquestatus=false; // false means yet not added in array chkuniqueAreaids
+						$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']]; // will be needed for  update
+					   	
+						if($allAreblank == false){
+								 $_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Done';
+							     $_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = '';	
+						}else{						
+								$_SESSION['errorLog']['STATUS'][]=$errorLogArray[$row]['STATUS'] = 'Done';      // Error //Duplicate entry 222
+								$_SESSION['errorLog']['Description'][]=  $errorLogArray[$row]['Description'] = '';
+						}					
+						
+						
+				}elseif (!empty($value[$insertDataKeys['parentnid']]) && ($value[$insertDataKeys['parentnid']]!='-1') && in_array($value[$insertDataKeys['parentnid']],$areaidswithparentid) == false) {
+						
+						//case when parent id is not empty and do not exists in database  
+						if($allAreblank == false){
 
-					
-					} elseif (empty($value[$insertDataKeys['parentnid']]) || $value[$insertDataKeys['parentnid']] == '-1') {
-                        if($allAreblank == false  ){
-						$_SESSION['errorLog'][]= $errorLogArray[$row] = $value;
-                        $_SESSION['errorLog']['STATUS'][]= $errorLogArray[$row]['STATUS'] = 'Done';
-                        $_SESSION['errorLog']['Description'][] =$errorLogArray[$row]['Description'] = 'Insert';
+							$_SESSION['errorLog'][] = $value;
 						}
-						//pr($value);die;
-						//foreach($compareAreaidDParentId as $index=>)
-						//$forParentAreaId[$value[$insertDataKeys['areaid']]]['details']       =  
-
-                        $insertDataAreaids[$row] = $value[$insertDataKeys['areaid']];
-                        $finalareaids[$value[$insertDataKeys['areaid']]]['areaid'] = $value[$insertDataKeys['areaid']];
-                        $finalareaids[$value[$insertDataKeys['areaid']]]['parentareaNid'] = '-1';
-						$value[$insertDataKeys['parentnid']] = '-1';
-						$value[$insertDataKeys['level']] = $this->Area->returnAreaLevel($value[$insertDataKeys['level']],$value[$insertDataKeys['parentnid']]);
-						if(!empty($chkuniqueAreaids)){
-							if(in_array($value[$insertDataKeys['areaid']], $chkuniqueAreaids)==true){
-								//
-								if($allAreblank == false  ){
-								 $_SESSION['errorLog']['STATUS'][] =$errorLogArray[$row]['STATUS'] = 'Error';
-                                 $_SESSION['errorLog']['Description'][] =$errorLogArray[$row]['Description'] = 'Duplicate entry ';
-								}
+						$uniqueStatus = false;
+						$errcnt = 0;
+						if(!empty($LogAreaIds) ){
 								
-								//
-								$finalareaids[$value[$insertDataKeys['areaid']]]['areaid'] = '';
-                                $finalareaids[$value[$insertDataKeys['areaid']]]['parentareaNid'] = '';
-								unset($value);
-							}
+							$keylog = array_search($value[$insertDataKeys['areaid']],$LogAreaIds);
+							if(($keylog==$row) && (in_array($value[$insertDataKeys['areaid']],$LogAreaIds)==true)){
+								$uniqueStatus=false;
+							}else{
+								$uniqueStatus=true;
+							if(empty($keylog)){
+								$errcnt =1; // 	 //means areaid before parent id	
+							}elseif($keylog < $row){
+								$errcnt =2; // means areaid repeated  twice after parent id
+							}else{
+								$errcnt =1; // 	 //means areaid before parent id	 
+							}								 
+						  }
+						}else{
+								$errcnt =1; // means areaid before parent id	
+								$uniqueStatus=true;
 						}
-						$chkuniqueAreaids[] = $value[$insertDataKeys['areaid']];
+				
+					
+					if($uniqueStatus==true){
+							if($allAreblank == false){
+								if($errcnt==1){
+									$_SESSION['errorLog']['STATUS'][] = 'Error';
+									$_SESSION['errorLog']['Description'][] = 'Parent id not found ';
+								}  else{																	
+									$_SESSION['errorLog']['STATUS'][] = 'Done'; // Error 'Duplicate entry';
+									$_SESSION['errorLog']['Description'][] = '';	
+									//$_SESSION['errorLog']['Description'][] = 'Duplicate entry';
+								}
+							    	
+							}
+							unset($value);
+							unset($newinsertDataArr[$row]);
+				    }else{
+							if($allAreblank == false){
+								$_SESSION['errorLog']['STATUS'][]=$errorLogArray[$row]['STATUS'] = 'Done';
+								$_SESSION['errorLog']['Description'][]=  $errorLogArray[$row]['Description'] = '';
+							}						  
+					}
+				
+				}elseif ( empty($value[$insertDataKeys['parentnid']]) || ($value[$insertDataKeys['parentnid']] == '-1')) {
+		                        //case when parent id is empty 
+						if($allAreblank == false  ){
+						   $_SESSION['errorLog'][]= $errorLogArray[$row] = $value;
+						}
+					
+						$value[$insertDataKeys['parentnid']] = '-1';
+						$value[$insertDataKeys['level']]=1; // do hardcore level value 1 for parent area ids 
+						$value[$insertDataKeys['level']] = $this->Area->returnAreaLevel($value[$insertDataKeys['level']],$value[$insertDataKeys['parentnid']]);
 						
-					} else {
+						$conditions =[];
+						$fields =[];
+						$areadbdetails = '';
+						
+						$conditions =[_AREA_AREA_ID => $value[$insertDataKeys['areaid']]];
+			            $fields =[_AREA_AREA_ID];
+						$chkAreaId = $this->Area->getDataByParams($fields,$conditions);
+			           
+						if(!empty($chkAreaId))
+						$areadbdetails = current(current($chkAreaId));
+					
+						if($areadbdetails!=''){
+							//case when parent nid is blank and also exists in database 
+							$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']]; // will be needed for  update 
+
+							if($allAreblank == false){
+								$_SESSION['errorLog']['STATUS'][] = 'Done';
+								$_SESSION['errorLog']['Description'][] = '';
+							}	
+						
+						}else{
+							
+							//case when parent nid is blank and also do not exists in database 
+							$uniquestatus=false;
+							//////////// code for last ids
+							if(!empty($allAreaParents) && in_array($value[$insertDataKeys['areaid']],$allAreaParents)==true) {
+								$uniquestatus = true; // if value is  unset will not be added in array 
+								
+							}
+							if($uniquestatus ==false){
+									//
+								if(empty($allAreaParents)  ||  !in_array($value[$insertDataKeys['areaid']],$allAreaParents)){
+							 
+								$forParentAreaId[$value[$insertDataKeys['areaid']]]['parentiddetails']=$value;
+								foreach($compareAreaidParentId as $index=>$compareParentId){
+									if(($value[$insertDataKeys['areaid']]==$compareParentId[4]) && ($index>$row)){
+										$LogAreaIds[$index]=$compareParentId[0];
+										$combinedValue  = array_combine($insertDataKeys,$compareParentId);
+										$combinedValue[$insertDataKeys['level']] = $this->Area->returnAreaLevel($combinedValue[$insertDataKeys['level']],$combinedValue[$insertDataKeys['parentnid']],'NEW');								
+										if(empty($allAreaIdsAsSubParent) ||  !in_array($compareParentId[0],$allAreaIdsAsSubParent))
+										$forParentAreaId[$value[$insertDataKeys['areaid']]]['childiddetails'][]=$combinedValue;
+										$allAreaIdsAsSubParent[] = $compareParentId[0];
+									
+									
+									}
+								
+									if(($value[$insertDataKeys['areaid']]==$compareParentId[4])&& ($index<$row)){
+										$ignoreAreaIdsAsSubParent[$index]=$compareParentId[0]; //ignore area ids which not to be inserted 								
+									}
+									
+							    }
+							  }
+							  
+								$allAreaParents[]=$value[$insertDataKeys['areaid']]; // adding all parent ids 
+						
+								$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']]; // will be needed for  update 
+							  
+								if($allAreblank == false){
+									 $_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Done';
+									 $_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = '';	
+								  }
+									//
+							}else{
+							
+								if($allAreblank == false){
+									 $_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Done';  // 'Error';
+									 $_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = '';	//'Duplicate entry of parent id ';
+										//$_SESSION['errorLog']['STATUS'][]=$errorLogArray[$row]['STATUS'] = 'Error';
+										//$_SESSION['errorLog']['Description'][]=  $errorLogArray[$row]['Description'] = 'Duplicate entry of parent id ';
+								  }
+								unset($value);
+								unset($newinsertDataArr[$row]);
+							}
+							
+							
+						}
+						
+					
+				
+				}else {
 						if($allAreblank == false  ){
 							$_SESSION['errorLog'][]=$errorLogArray[$row] = $value;
 							$_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Error';
-							$_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = 'Parent Nid not found ';
+							$_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = 'Invalid Details ';
 
 						}
-                       
-                        unset($value); 
+					   
+						unset($value); 
 
-                        unset($newinsertDataArr[$row]);
+						unset($newinsertDataArr[$row]);
                     }
-                }
 				
-            }
-			
-			//pr($newinsertDataArr);die;
-			
+				} // end of isset of area id 
+				
+				
+				
+				
+            }// for loop
 
         }
         $newinsertDataArr = array_filter($newinsertDataArr);
-        //pr($chkuniqueAreaids);
-		//pr($errorLogArray);
+		$allParentChild = array_merge($allAreaIdsAsSubParent,$allAreaParents);
+
+       
 		
-        return ['dataArray' => $newinsertDataArr, 'insertDataAreaids' => $insertDataAreaids, 'finalareaids' => $finalareaids];
+        return ['dataArray' => $newinsertDataArr, 'insertDataAreaids' => $insertDataAreaids, 'allParentChild' => $allParentChild,'ignoreAreaIdsAsSubParent'=>$ignoreAreaIdsAsSubParent, 'forParentAreaId'=>$forParentAreaId];
     }
 
     /**
@@ -509,7 +609,6 @@ class CommonInterfaceComponent extends Component {
             }
         }
 
-		//pr($insertDataArr);die('prepare');
         return $divideNameAndGids = $this->splitInsertUpdate($insertDataKeys, $insertDataArr, $extra);
     }
 
@@ -591,7 +690,7 @@ class CommonInterfaceComponent extends Component {
         extract($loadDataFromXlsOrCsv);
         $insertArrayFromGids = [];
         $insertArrayFromNames = [];
-		//pr($loadDataFromXlsOrCsv);die;
+		//pr($loadDataFromXlsOrCsv);
         $insertDataAreaIdsData = [];
         $extraParam['updateGid'] = isset($params['updateGid']) ? $params['updateGid'] : false;
         $insertDataKeys = $params['insertDataKeys'];
@@ -603,7 +702,6 @@ class CommonInterfaceComponent extends Component {
                 $extraParam['nid'] = $params['nid'];
                 $extraParam['component'] = $component;
                 $insertArrayFromGids = $this->updateColumnsFromGid($insertDataGids, $dataArray, $insertDataKeys, $extraParam);
-
                 unset($insertDataGids); //save Buffer
             }
         }
@@ -613,38 +711,39 @@ class CommonInterfaceComponent extends Component {
             $extraParam['nid'] = $params['nid'];
             $extraParam['component'] = $component;
             $insertArrayFromNames = $this->updateColumnsFromName($insertDataNames, $dataArray, $insertDataKeys, $extraParam);
-
             unset($insertDataNames);    //save Buffer
         }
 
         //Update records based on Area ids
+	
         if (!empty($insertDataAreaids)) {
-			//pr($insertDataAreaids);die;
-			//
+			
             $extraParam['nid'] = $params['nid'];
             $extraParam['component'] = $component;
-            $insertDataAreaIdsData = $this->updateColumnsFromAreaIds($insertDataAreaids, $dataArray, $insertDataKeys, $extraParam);
-
+            $insertDataAreaIdsData = $this->updateColumnsFromAreaIds($insertDataAreaids, $dataArray, $insertDataKeys,$allParentChild,$ignoreAreaIdsAsSubParent,$forParentAreaId,$extraParam);
             unset($insertDataAreaids);  //save Buffer
         }
-
-        $insertArray = array_merge(array_keys($insertArrayFromGids), array_keys($insertArrayFromNames), array_keys($insertDataAreaIdsData));
+        
+        $insertArray = array_merge(array_keys($insertArrayFromGids), array_keys($insertArrayFromNames), array_keys($insertDataAreaIdsData));        
 
         //save Buffer
         unset($insertArrayFromGids);
         unset($insertArrayFromNames);
         unset($insertDataAreaIds);
 
-        $insertArray = array_flip($insertArray);
-        $insertArray = array_intersect_key($dataArray, $insertArray);
-
+        $insertArray = array_flip($insertArray);	
+        $insertArray = array_intersect_key($dataArray, $insertArray);      
         unset($dataArray);  //save Buffer
         //Check if New records
         if (!empty($insertArray)) {
             //Prepare Insert Data
             array_walk($insertArray, function(&$val, $key) use($params, $insertDataKeys) {
                 //auto-generate GUID if not set
-			//	pr($val);die;
+				
+				  if (!array_key_exists(_AREA_AREA_GLOBAL, $val)) {
+                   
+                    $val[_AREA_AREA_GLOBAL] = '0';
+                }
                 if (!array_key_exists($insertDataKeys['gid'], $val)) {
                     $autoGenGuid = $this->guid();
                     $val[$insertDataKeys['gid']] = $autoGenGuid;
@@ -654,7 +753,6 @@ class CommonInterfaceComponent extends Component {
                     $val[$insertDataKeys['highIsGood']] = 0;
                 }
             });
-			//pr($insertArray);die('insertArray');
             //Insert New records
             $this->{$component}->insertBulkData($insertArray, $insertDataKeys);
         }
@@ -678,7 +776,7 @@ class CommonInterfaceComponent extends Component {
                 'unit',
                 'subgroup'
             ];
-        } else if ($type == 'area') {
+        } else if ($type == _MODULE_NAME_AREA) {
             return [
                 'areaid',
                 'areaname',
@@ -1106,7 +1204,7 @@ class CommonInterfaceComponent extends Component {
                     . ')'];*/
 
                 $conditions = ['OR' => $iusCombinations];
-                //debug($conditions);exit;
+                
                 $getExistingRecords = $this->IndicatorUnitSubgroup->getConcatedIus($columnKeys, $conditions, 'list');
                 
                 if (!empty($getExistingRecords)) {
@@ -1354,26 +1452,77 @@ class CommonInterfaceComponent extends Component {
      * @param array $names Names Array. {DEFAULT : empty}
      * @return void
      */
-    public function updateColumnsFromAreaIds($areaids = [], $dataArray, $insertDataKeys, $extra = null) {
-
+    public function updateColumnsFromAreaIds($areaids = [], $dataArray, $insertDataKeys,$allParentChild,$ignoreAreaIdsAsSubParent,$forParentAreaId, $extra = null) {
+		
+		
         $component = 'Area';
         $fields = [$extra['nid'], $insertDataKeys['areaid']];
         $conditions = [$insertDataKeys['areaid'] . ' IN' => $areaids];
         $updateGid = $extra['updateGid']; // true/false
         //Get NIds based on areaid found in db 
-        $getDataByAreaid = $this->{$component}->getDataByParams($fields, $conditions, 'list');
-        if (!empty($getDataByAreaid)) {
+        $getDataByAreaid = $this->{$component}->getDataByParams($fields, $conditions, 'list');//data which needs to be updated       
+		
+		if (!empty($getDataByAreaid)) {
             foreach ($getDataByAreaid as $Nid => $areaId) {
                 $key = array_search($areaId, $areaids);
-                $updateData = $dataArray[$key]; // data which needs to be updated using area  nid                   
+                $updateData = $dataArray[$key]; // data which needs to be updated using area  nid                 		
                 $this->{$component}->updateDataByParams($updateData, [$extra['nid'] => $Nid]);
             }
         }
-
+		
         //Get Areaids that are not found in the database
-        return $freshRecordsNames = array_diff($areaids, $getDataByAreaid);
-    }
+		$freshRecordsNames = array_diff($areaids, $getDataByAreaid);// records which needs to be inserted 
+		$freshRecordsNames = array_unique($freshRecordsNames);		 
+		$finalrecordsforinsert = array_diff($freshRecordsNames,$allParentChild);
+		
+		if(!empty($forParentAreaId)){			
+			
+			foreach($forParentAreaId as $parentAreaId=>$AreaData){				  
+		   		  $parentNewid='';	
+				  $areaParentData='';
+					if(empty($AreaData['parentiddetails'][$insertDataKeys['gid']])){
+						$AreaData['parentiddetails'][$insertDataKeys['gid']]= $this->guid();
+					}
+					if(!array_key_exists($insertDataKeys['gid'],$AreaData['parentiddetails'])){
+						$AreaData['parentiddetails'][$insertDataKeys['gid']]= $this->guid();
+					}
+					if (!array_key_exists(_AREA_AREA_GLOBAL, $AreaData['parentiddetails'])) {
+                   
+						$AreaData['parentiddetails'][_AREA_AREA_GLOBAL] = '0';
+					}
+					
+				  $areaParentData  = 	$AreaData['parentiddetails'];				 
+				  $parentNewid = $this->{$component}->insertUpdateAreaData($areaParentData);
+				 
+				  if(isset($AreaData['childiddetails']) && count($AreaData['childiddetails'])>0){
+					array_walk($AreaData['childiddetails'],function(&$val, $key) use($parentNewid,$insertDataKeys) {
+						
+						$autoGenGuid = $this->guid();
+						if (!array_key_exists(_AREA_AREA_GLOBAL, $val)) {
+                   
+							$val[_AREA_AREA_GLOBAL] = '0';
+						}
 
+						if (!array_key_exists($insertDataKeys['gid'], $val)) {
+						   $val[$insertDataKeys['gid']] = $autoGenGuid;
+                         }
+						if(empty($val[$insertDataKeys['gid']])){
+						    $val[$insertDataKeys['gid']] = $autoGenGuid;                    
+						}
+						$val[$insertDataKeys['parentnid']]=$parentNewid;						
+						
+					});
+					
+					$bulkchildiddetails = $AreaData['childiddetails'];
+					$this->{$component}->insertBulkData($bulkchildiddetails, $insertDataKeys);
+				  }
+			}		
+			
+		}
+		return  $finalrecordsforinsert;
+	}
+	
+	
     /**
      * updateColumnsFromName method
      *
@@ -1608,15 +1757,15 @@ class CommonInterfaceComponent extends Component {
         $insertFieldsArr = [];
         $insertDataArrRows = [];
         $insertDataArrCols = [];
-        $extra['limitRows'] = 2; // Number of rows in each file chunks
+        $extra['limitRows'] = 200; // Number of rows in each area chunks file 
         $extra['startRows'] = 1; // Row from where the data reading starts
         $extra['callfunction'] = 'Area';
 
-        $insertDataKeys = ['areaid' => _AREA_AREA_ID,
-            'name' => _AREA_AREA_NAME,
-            'level' => _AREA_AREA_LEVEL,
-            'gid' => _AREA_AREA_GID,
-            'parentnid' => _AREA_PARENT_NId,
+        $insertDataKeys = [_INSERTKEYS_AREAID => _AREA_AREA_ID,
+            _INSERTKEYS_NAME=> _AREA_AREA_NAME,
+            _INSERTKEYS_LEVEL => _AREA_AREA_LEVEL,
+            _INSERTKEYS_GID => _AREA_AREA_GID,
+            _INSERTKEYS_PARENTNID => _AREA_PARENT_NId,
         ];
 
         $objPHPExcel = $this->readXlsOrCsv($filename['filename']);
@@ -1635,7 +1784,7 @@ class CommonInterfaceComponent extends Component {
             $cell = $objPHPExcel->getActiveSheet()->getCellByColumnAndRow($col, $startRow);
             $titlearray[] = $val = $cell->getValue();
         }
-        $validFormat = $this->importFormatCheck('area');  //Check file Columns format
+        $validFormat = $this->importFormatCheck(_MODULE_NAME_AREA);  //Check file Columns format
         $formatDiff = array_diff($validFormat, array_map('strtolower', $titlearray));
         if (!empty($formatDiff)) {
             return ['error' => 'Invalid Columns Format'];
@@ -1647,20 +1796,15 @@ class CommonInterfaceComponent extends Component {
         $divideXlsOrCsvInChunks = $this->divideXlsOrCsvInChunkFiles($objPHPExcel, $extra); // split  the file in chunks 
 
         $firstRow = ['A' => 'AreaId', 'B' => 'AreaName', 'C' => 'AreaLevel', 'D' => 'AreaGId', 'E' => 'Parent AreaId', 'F' => 'Status', 'G' => 'Description'];
-        $areaErrorLog = $this->createErrorLog($firstRow, 'Area');   //returns error log file 
-        $extra['logFileName'] = $areaErrorLog;
-
-
+        //$areaErrorLog = $this->createErrorLog($firstRow, 'Area');   //returns error log file 
+		$this->resetLogdata();
+		
         foreach ($divideXlsOrCsvInChunks as $filename) {
-            $loadDataFromXlsOrCsv = $this->prepareDataFromXlsOrCsv($filename, $insertDataKeys, $extra);
+            
+			$loadDataFromXlsOrCsv = $this->prepareDataFromXlsOrCsv($filename, $insertDataKeys, $extra);
 			
-		  array_walk($loadDataFromXlsOrCsv['dataArray'], function(&$val, $key) use($insertDataKeys) {
-
-        
-
-        
-
-                if (!array_key_exists($insertDataKeys['gid'], $val)) {
+			array_walk($loadDataFromXlsOrCsv['dataArray'], function(&$val, $key) use($insertDataKeys) {
+			  if (!array_key_exists($insertDataKeys['gid'], $val)) {
                     $val[$insertDataKeys['gid']] = $this->guid();
                 }
             });
@@ -1672,9 +1816,9 @@ class CommonInterfaceComponent extends Component {
             $this->nameGidLogic($loadDataFromXlsOrCsv, $component, $params);
             unlink($filename);
         }
-		echo 'session log';
-		pr($_SESSION['errorLog']);
-        $this->appendErrorLogData(WWW_ROOT.$areaErrorLog,$_SESSION['errorLog']); // pr($extra);die('hua');
+		
+       // $this->appendErrorLogData(WWW_ROOT.$areaErrorLog,$_SESSION['errorLog']); //
+        $this->appendErrorLogData($firstRow,$_SESSION['errorLog']); //
         return true;
     }
 
@@ -1712,8 +1856,11 @@ class CommonInterfaceComponent extends Component {
             }
         }
 
+        $IcIusDataArrayUnique = array_intersect_key($IcIusDataArray, array_unique(array_map('serialize', $IcIusDataArray)));
+        
         $fields = [_ICIUS_IC_NID, _ICIUS_IUSNID, _ICIUS_IC_IUSNID];
-        $conditions = ['(' . _ICIUS_IC_NID . ',' . _ICIUS_IUSNID . ') IN (' . implode(',', array_unique($IcIusCombination)) . ')'];
+        //$conditions = ['(' . _ICIUS_IC_NID . ',' . _ICIUS_IUSNID . ') IN (' . implode(',', array_unique($IcIusCombination)) . ')'];
+        $conditions = ['OR' => $IcIusDataArrayUnique];
         $getExistingRecords = $this->IcIus->getConcatedFields($fields, $conditions, 'list');
 
         if (!empty($getExistingRecords)) {
@@ -1748,7 +1895,7 @@ class CommonInterfaceComponent extends Component {
         $columnToWrite = [];
         $columnToWrite['status'] = ++$lastColumn;
         $columnToWrite['description'] = ++$lastColumn;
-        $PHPExcel = $this->readXlsOrCsv(_LOGPATH);
+        $PHPExcel = $this->readXlsOrCsv(_LOG_FILEPATH);
 
         $PHPExcel->getActiveSheet()->SetCellValue($columnToWrite['status'] . '1', _STATUS);
         $PHPExcel->getActiveSheet()->SetCellValue($columnToWrite['description'] . '1', _DESCRIPTION);
@@ -1779,10 +1926,10 @@ class CommonInterfaceComponent extends Component {
 
         $PHPExcel->setActiveSheetIndex(0);
         $objWriter = new \PHPExcel_Writer_Excel2007($PHPExcel);
-        $sheetPath = _LOGPATH;
+        $sheetPath = _LOG_FILEPATH;
         $objWriter->save($sheetPath);
 
-        return _LOGPATH;
+        return _LOG_FILEPATH;
     }
 
     /*
@@ -1793,34 +1940,237 @@ class CommonInterfaceComponent extends Component {
 
     public function exportIcius() {
 
+        $titleRow = $icLevels = $sTypeRows = [];
+        
+        //ICIUS Records
         $iciusFields = [_ICIUS_IC_NID, _ICIUS_IUSNID];
         $iciusConditions = [];
         $iciusRecords = $this->IcIus->getDataByParams($iciusFields, $iciusConditions);
         
+        //IC_NIDS from ICIUS
         $icNids = array_column($iciusRecords, _ICIUS_IC_NID);
+        
+        //IUS_NIDS from ICIUS
         $iusNids = array_unique(array_column($iciusRecords, _ICIUS_IUSNID));
         
+        //IC Records
         $icFields = [_IC_IC_NID, _IC_IC_PARENT_NID, _IC_IC_NAME, _IC_IC_TYPE];
         $icConditions = [];//[_IC_IC_NID . ' IN' => array_unique($icNids)];
         $icRecords = $this->IndicatorClassifications->getDataByParams($icFields, $icConditions);
         
-        $iusFields = [_IUS_INDICATOR_NID, _IUS_UNIT_NID, _IUS_SUBGROUP_VAL_NID, _IUS_SUBGROUP_NIDS];
+        //IC_NIDS - Independent
+        $icNidsIndependent = array_column($icRecords, _IC_IC_NID);
+        
+        //IUS Records
+        $iusFields = [_IUS_IUSNID, _IUS_INDICATOR_NID, _IUS_UNIT_NID, _IUS_SUBGROUP_VAL_NID, _IUS_SUBGROUP_NIDS];
         $iusConditions = [_IUS_IUSNID . ' IN' => array_unique($iusNids)];
         $iusRecords = $this->IndicatorUnitSubgroup->getDataByParams($iusFields, $iusConditions);
         
+        //Get Individual Indicator, Unit, Subgroup, SubgroupVals
+        $iusNids    = array_unique(array_column($iusRecords, _IUS_IUSNID));
+        $iNids      = array_unique(array_column($iusRecords, _IUS_INDICATOR_NID));
+        $uNids      = array_unique(array_column($iusRecords, _IUS_UNIT_NID));
+        $sValNids   = array_unique(array_column($iusRecords, _IUS_SUBGROUP_VAL_NID));
+        $sNids      = array_unique(array_column($iusRecords, _IUS_SUBGROUP_NIDS));
+        
+        //convert comma separated NIDs into Individual NIDs
+        $sNidsArr = [];
+        array_map(function($val) use (&$sNidsArr) {
+            $explodedVals = explode(',', $val);
+            $sNidsArr = array_merge($sNidsArr, $explodedVals);
+            $sNidsArr = array_unique($sNidsArr);
+        }, $sNids);
+        sort($sNidsArr);
+        unset($sNids); //save buffer
+        
+        //get Indicator Records
+        $iFields = [_INDICATOR_INDICATOR_NID, _INDICATOR_INDICATOR_NAME, _INDICATOR_INDICATOR_GID];
+        $iConditions = [_INDICATOR_INDICATOR_NID . ' IN' => $iNids];
+        $iRecords = $this->Indicator->getDataByParams($iFields, $iConditions);
+        $iNidsIndependent = array_column($iRecords, _INDICATOR_INDICATOR_NID);
+        
+        //get Unit Records
+        $uFields = [_UNIT_UNIT_NID, _UNIT_UNIT_NAME, _UNIT_UNIT_GID];
+        $uConditions = [_UNIT_UNIT_NID . ' IN' => $uNids];
+        $uRecords = $this->Unit->getDataByParams($uFields, $uConditions);
+        $uNidsIndependent = array_column($uRecords, _UNIT_UNIT_NID);
+        
+        //get SubgroupVals Records
+        $sValFields = [_SUBGROUP_VAL_SUBGROUP_VAL_NID, _SUBGROUP_VAL_SUBGROUP_VAL, _SUBGROUP_VAL_SUBGROUP_VAL_GID];
+        $sValConditions = [_SUBGROUP_VAL_SUBGROUP_VAL_NID . ' IN' => $sValNids];
+        $sValRecords = $this->SubgroupVals->getDataByParams($sValFields, $sValConditions);
+        $sValNidsIndependent = array_column($sValRecords, _SUBGROUP_VAL_SUBGROUP_VAL_NID);
+        
+        //get Subgroups Records
+        $sFields = [_SUBGROUP_SUBGROUP_NID, _SUBGROUP_SUBGROUP_NAME, _SUBGROUP_SUBGROUP_GID, _SUBGROUP_SUBGROUP_TYPE];
+        $sConditions = [_SUBGROUP_SUBGROUP_NID . ' IN' => $sNidsArr];
+        $sRecords = $this->Subgroup->getDataByParams($sFields, $sConditions);
+        $sNidsIndependent = array_column($sRecords, _SUBGROUP_SUBGROUP_NID);
+        
+        //SubgroupType Nids from Subgroups
+        $sTypeNidsTypeList = array_column($sRecords, _SUBGROUP_SUBGROUP_TYPE, _SUBGROUP_SUBGROUP_NID);
+        $sTypeNidsArr = array_unique($sTypeNidsTypeList);
+        
+        //get Subgroups type Records
+        $sTypeFields = [_SUBGROUPTYPE_SUBGROUP_TYPE_NID, _SUBGROUPTYPE_SUBGROUP_TYPE_NAME, _SUBGROUPTYPE_SUBGROUP_TYPE_GID, _SUBGROUPTYPE_SUBGROUP_TYPE_ORDER];
+        $sTypeConditions = [_SUBGROUPTYPE_SUBGROUP_TYPE_NID . ' IN' => $sTypeNidsArr];
+        $sTypeRecords = $this->SubgroupType->getDataByParams($sTypeFields, $sTypeConditions);
+        
+        //Get Max IC levels
         $parentChildNodes = $this->getParentChild('IndicatorClassifications', '-1');
+        $maxIcLevel = max(array_column($parentChildNodes, 'arrayDepth'));
         
+        //Prepare levels
+        for($i = 1; $i <= $maxIcLevel; $i++){ $icLevels[] = 'Level' . $i; }
         
-        debug($parentChildNodes);
-        debug(max(array_column($parentChildNodes, 'arrayDepth')));exit;
-        // Write File
+        //Prepare Subugroup Types List
+        foreach($sTypeRecords as $sTypeValue){
+            $sTypeRows[] = $sTypeValue[_SUBGROUPTYPE_SUBGROUP_TYPE_NAME];
+        }
+        
+        //Prepare Title row for Excel
+        $titleRow = ['Class type'];
+        $titleRow = array_merge($titleRow, $icLevels);
+        $titleRow = array_merge($titleRow, ['Indicator', 'IndicatorGid', 'Unit', 'UnitGid', 'Subgroup', 'SubgroupGid']);
+        $titleRow = array_merge($titleRow, $sTypeRows);
+        
+        //------ Write File
+        //Get PHPExcel vendor
+        require_once(ROOT . DS . 'vendor' . DS . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
+        $objPHPExcel = new \PHPExcel();
+        $objPHPExcel->setActiveSheetIndex(0);
+        
+        //Prepare Title row Cells
         $character = 'A';
-        $PHPExcel = new \PHPExcel();
-        $PHPExcel->getActiveSheet()->SetCellValue($character, $cellValue);
-        $PHPExcel->setActiveSheetIndex(0);
-        $objWriter = new \PHPExcel_Writer_Excel2007($PHPExcel);
-        $sheetPath = _LOGPATH;
-        $objWriter->save($sheetPath);
+        $row = 1;
+        foreach($titleRow as $titleColumns){
+            $objPHPExcel->getActiveSheet()->SetCellValue($character . $row, $titleColumns);
+            $character++;
+        }
+        
+        //Prepare Data row Cells
+        foreach($iciusRecords as $iciuskey => $iciusValue){
+            $character = 'A';
+            //IC
+            $icNidsKey = array_search($iciusValue[_ICIUS_IC_NID], $icNidsIndependent);
+            $getIcDepthReturn = $this->getIcDepth($iciusValue[_ICIUS_IC_NID], $icRecords);
+            
+            //Skip this step if No IC found
+            if($getIcDepthReturn === false) continue;
+            
+            //Auto Increment row numbers
+            $row++;
+            
+            //IC Type
+            $icCombination[$iciuskey] = $getIcDepthReturn;
+            $objPHPExcel->getActiveSheet()->SetCellValue($character . $row, $getIcDepthReturn[0][_IC_IC_TYPE]);
+            $character++;//Increment Column
+            
+            //Levels
+            for($i = 1; $i <= $maxIcLevel; $i++){
+                if(array_key_exists($i-1, $getIcDepthReturn)){
+                    $objPHPExcel->getActiveSheet()->SetCellValue($character . $row, $getIcDepthReturn[$i-1][_IC_IC_NAME]);
+                }
+                $character++;//Increment Column
+            }
+            
+            //IUS
+            $iusNidsKey = array_search($iciusValue[_ICIUS_IUSNID], $iusNids);
+            
+            //Indicator
+            $iNidsKey = array_search($iusRecords[$iusNidsKey][_IUS_INDICATOR_NID], $iNidsIndependent);
+            $iName = $iRecords[$iNidsKey][_INDICATOR_INDICATOR_NAME];
+            $iGid = $iRecords[$iNidsKey][_INDICATOR_INDICATOR_GID];
+            
+            $objPHPExcel->getActiveSheet()->SetCellValue($character . $row, $iName);//Indicator name
+            $character++;//Increment Column
+            $objPHPExcel->getActiveSheet()->SetCellValue($character . $row, $iGid);//Indicator GID
+            $character++;//Increment Column
+                 
+            //Unit
+            $uNidsKey = array_search($iusRecords[$iusNidsKey][_IUS_UNIT_NID], $uNidsIndependent);
+            $uName = $uRecords[$uNidsKey][_UNIT_UNIT_NAME];
+            $uGid = $uRecords[$uNidsKey][_UNIT_UNIT_GID];
+            
+            $objPHPExcel->getActiveSheet()->SetCellValue($character . $row, $uName);//Unit name
+            $character++;//Increment Column
+            $objPHPExcel->getActiveSheet()->SetCellValue($character . $row, $uGid);//Unit GID
+            $character++;//Increment Column
+            
+            //SubgroupVals
+            $sValNidsKey = array_search($iusRecords[$iusNidsKey][_IUS_SUBGROUP_VAL_NID], $sValNidsIndependent);
+            $sValName = $sValRecords[$sValNidsKey][_SUBGROUP_VAL_SUBGROUP_VAL];
+            $sValGid = $sValRecords[$sValNidsKey][_SUBGROUP_VAL_SUBGROUP_VAL_GID];
+            
+            $objPHPExcel->getActiveSheet()->SetCellValue($character . $row, $sValName);//SubgroupVals name
+            $character++;//Increment Column
+            $objPHPExcel->getActiveSheet()->SetCellValue($character . $row, $sValGid);//SubgroupVals GID
+            $character++;//Increment Column
+            
+            //Subgroup
+            //$sValNidsKey = array_search($iusRecords[$iusNidsKey][_IUS_SUBGROUP_NIDS], $sNidsIndependent);
+            $sNids = explode(',', $iusRecords[$iusNidsKey][_IUS_SUBGROUP_NIDS]);
+            $sNidsFlipped = array_flip($sNids);
+            $sNidsWithType = array_intersect_key($sTypeNidsTypeList, $sNidsFlipped);
+            
+            foreach($sTypeRecords as $sTypeValue){
+                if(in_array($sTypeValue[_SUBGROUPTYPE_SUBGROUP_TYPE_NID], $sNidsWithType)){
+                    $sNid = array_search($sTypeValue[_SUBGROUPTYPE_SUBGROUP_TYPE_NID], $sNidsWithType);
+                    $sKey = array_search($sNid, $sNidsIndependent);
+                    $objPHPExcel->getActiveSheet()->SetCellValue($character . $row, $sRecords[$sKey][_SUBGROUP_SUBGROUP_NAME]);//SubgroupVals GID
+                }
+                $character++;//Increment Column
+            }            
+        }
+        
+        //Write Title and Data to Excel
+        $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $module = _ICIUS;
+        $authUserId = $this->Auth->User('id');
+        $returnFilename = _TPL_Export_. $module . '_' . $authUserId . '_' . date('Y-m-d-h-i-s') . '.xls';
+        header('Content-Type: application/vnd.ms-excel;');
+        header('Content-Disposition: attachment;filename='.$returnFilename);
+        header('Cache-Control: max-age=0');
+        $objWriter->save('php://output');
+        exit;
+    }
+
+    /*
+     * getIcDepth
+     *
+     * @return Get IC depth
+     */
+
+    public function getIcDepth($icNid, $icRecords) {
+        
+        $icDepthArray = [];
+        
+        //IC_NIDS - Independent
+        $icNidsIndependent = array_column($icRecords, _IC_IC_NID);
+        //_IC_IC_PARENT_NID, _IC_IC_NAME, _IC_IC_TYPE
+        
+        if(in_array($icNid, $icNidsIndependent)){
+            $icNidsKey = array_search($icNid, $icNidsIndependent);
+            $icRecordsChild = [_IC_IC_NAME => $icRecords[$icNidsKey][_IC_IC_NAME], _IC_IC_TYPE => $icRecords[$icNidsKey][_IC_IC_TYPE]];
+            
+            if($icRecords[$icNidsKey][_IC_IC_PARENT_NID] != '-1'){
+                $getIcDepth = $this->getIcDepth($icRecords[$icNidsKey][_IC_IC_PARENT_NID], $icRecords);
+                if($getIcDepth !== false){
+                    array_push($getIcDepth, $icRecordsChild);
+                    $icDepthArray = $getIcDepth;
+                }else{
+                    return false;
+                }
+                
+            }else{
+                $icDepthArray[] = $icRecordsChild;
+            }
+        }else{
+            return false;
+        }
+        
+        //$this->icDepth = 1;
+        return $icDepthArray;
     }
 
     /*
@@ -1828,10 +2178,20 @@ class CommonInterfaceComponent extends Component {
      * 
      */
 
+	public function resetLogdata(){
+		 unset($_SESSION['errorLog']['STATUS']);
+         unset($_SESSION['errorLog']['Description']);
+         unset($_SESSION['errorLog']);
+	}
+	 
     public function createErrorLog($firstRowdata = [], $module) {
-        if(isset($_SESSION['errorLog']) && !empty($_SESSION['errorLog'])){
-			unset($_SESSION['errorLog']);
-		}
+        
+		unset($_SESSION['errorLog']['STATUS']);
+        unset($_SESSION['errorLog']['Description']);
+        unset($_SESSION['errorLog']);
+		
+		/*
+		
 		$authUserId = $this->Auth->User('id');   
         $objPHPExcel = new \PHPExcel();
         $objPHPExcel->setActiveSheetIndex(0);
@@ -1840,52 +2200,91 @@ class CommonInterfaceComponent extends Component {
         foreach ($firstRowdata as $index => $value) {
             $objPHPExcel->getActiveSheet()->SetCellValue($index . $rowCount, $value);
         }
-
-
         $objWriter = new \PHPExcel_Writer_Excel2007($objPHPExcel);
         $returnFilename = _IMPORTERRORLOG_FILE . $module . '_' . $authUserId . '_' .time().'.xls';
         $objWriter->save($returnFilename);
         return $returnFilename;
+		*/
     }
 
     /*
      *  function to append data 
      */
 
-    public function appendErrorLogData($filename, $data = [],$firstRowdata=[]) {
-
+    public function appendErrorLogData($firstRowdata=[],$data = []) {
+		/*style for headings */
+		
+        $authUserId = $this->Auth->User('id');   
         $objPHPExcel = new \PHPExcel();
-        $objPHPExcel = \PHPExcel_IOFactory::load($filename);
+        $objPHPExcel->setActiveSheetIndex(0);
+        $startRow = $objPHPExcel->getActiveSheet()->getHighestRow();
+        $rowCount = 1;
+		
         $objPHPExcel->setActiveSheetIndex(0);
         $chrarrya = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
         $cnt = 0;
 		$startRow = 1;
+		$objPHPExcel->getActiveSheet()->getStyle("A1:G1")->getFont()->setItalic(true);
         foreach ($firstRowdata as $index => $value) {
-            $objPHPExcel->getActiveSheet()->SetCellValue($index . $startRow, $value);
+            $objPHPExcel->getActiveSheet()->SetCellValue($index . $startRow, $value)->getStyle($index . $startRow);
         }
 		//$startRow = $objPHPExcel->getActiveSheet()->getHighestRow();
 		$startRow=2;
+		$statuslogArray=$data[_STATUS];
+		$desclogArray=$data[_DESCRIPTION];
+		unset($data[_STATUS]);
+		unset($data[_DESCRIPTION]);
+		
+		$width = 20;
+		$styleArray = array(
+			'font'  => array(
+			'bold'  => false,
+			'color' => array('rgb' => '000000'),
+			'size'  => 10,
+			'name'  => 'Arial',
+			
+			));
+			
         foreach ($data as $index => $value) { 
-		    
-            $objPHPExcel->getActiveSheet()->SetCellValue('A' . $startRow, (isset($value['Area_ID'])) ? $value['Area_ID'] : '' );
-            $objPHPExcel->getActiveSheet()->SetCellValue('B' . $startRow, (isset($value['Area_Name'])) ? $value['Area_Name'] : '');
-            $objPHPExcel->getActiveSheet()->SetCellValue('C' . $startRow, (isset($value['Area_Level'])) ? $value['Area_Level'] : '');
-            $objPHPExcel->getActiveSheet()->SetCellValue('D' . $startRow, (isset($value['Area_GId'])) ? $value['Area_GId'] : '' );
-            $objPHPExcel->getActiveSheet()->SetCellValue('E' . $startRow, (isset($value['Area_Parent_NId'])) ? $value['Area_Parent_NId'] : '' );
-            $objPHPExcel->getActiveSheet()->SetCellValue('F' . $startRow, (isset($data['STATUS'][$index])) ? $data['STATUS'][$index] : '' );
-            $objPHPExcel->getActiveSheet()->SetCellValue('G' . $startRow, (isset($data['Description'][$index])) ? $data['Description'][$index] : '' );
-            $startRow++;
+            
+			$objPHPExcel->getActiveSheet()->SetCellValue('A' . $startRow, (isset($value[_AREA_AREA_ID])) ? $value[_AREA_AREA_ID] : '' )->getColumnDimension('A')->setWidth($width);
+			$objPHPExcel->getActiveSheet()->getStyle('A'.$startRow)->applyFromArray($styleArray);           
+			
+			$objPHPExcel->getActiveSheet()->SetCellValue('B' . $startRow, (isset($value[_AREA_AREA_NAME])) ? $value[_AREA_AREA_NAME] : '')->getColumnDimension('B')->setWidth($width+10);
+            $objPHPExcel->getActiveSheet()->getStyle('B'.$startRow)->applyFromArray($styleArray);           
+
+			$objPHPExcel->getActiveSheet()->SetCellValue('C' . $startRow, (isset($value[_AREA_AREA_LEVEL])) ? $value[_AREA_AREA_LEVEL] : '')->getColumnDimension('C')->setWidth($width);
+            $objPHPExcel->getActiveSheet()->getStyle('C'.$startRow)->applyFromArray($styleArray);           
+
+			$objPHPExcel->getActiveSheet()->SetCellValue('D' . $startRow, (isset($value[_AREA_AREA_GID])) ? $value[_AREA_AREA_GID] : '' )->getColumnDimension('D')->setWidth($width+20);
+            $objPHPExcel->getActiveSheet()->getStyle('D'.$startRow)->applyFromArray($styleArray);  
+			
+
+			$objPHPExcel->getActiveSheet()->SetCellValue('E' . $startRow, (isset($value[_AREA_PARENT_NId])) ? $value[_AREA_PARENT_NId] : '' )->getColumnDimension('E')->setWidth($width);
+            $objPHPExcel->getActiveSheet()->getStyle('E'.$startRow)->applyFromArray($styleArray);  
+
+			$objPHPExcel->getActiveSheet()->SetCellValue('F' . $startRow, (isset($statuslogArray[$index])) ? $statuslogArray[$index] : '' )->getColumnDimension('F')->setWidth($width);
+            $objPHPExcel->getActiveSheet()->getStyle('F'.$startRow)->applyFromArray($styleArray);  
+
+			$objPHPExcel->getActiveSheet()->SetCellValue('G' . $startRow, (isset($desclogArray[$index])) ? $desclogArray[$index] : '' )->getColumnDimension('G')->setWidth($width+5);
+            $objPHPExcel->getActiveSheet()->getStyle('G'.$startRow)->applyFromArray($styleArray);  
+
+			$startRow++;
            
         }
-
+		$module ='Area';
         $objWriter = new \PHPExcel_Writer_Excel2007($objPHPExcel);
-        $objWriter->save($filename);
+		$returnFilename = _LOGS_PATH.DS._IMPORTERRORLOG_FILE . _MODULE_NAME_AREA . '_' . $authUserId . '_' .time().'.xls';
+		//$returnFilename = WWW_ROOT.'uploads'.DS.'logs'.DS._IMPORTERRORLOG_FILE . _MODULE_NAME_AREA . '_' . $authUserId . '_' .time().'.xls';
+        
+		$objWriter->save($returnFilename);
+       // $objWriter->save($filename);
     }
 
     /*
      * getParentChild
      */
-    public function getParentChild($component, $parentNID) {
+    public function getParentChild($component, $parentNID, $onDemand=false) {
 
         $conditions = array();
         if($component == 'IndicatorClassifications'){
@@ -1897,9 +2296,9 @@ class CommonInterfaceComponent extends Component {
         }
         $recordlist = $this->{$component}->find('all', array('conditions' => $conditions, 'fields' => array(), 'order' => $order));
 
-        $list = $this->getDataRecursive($recordlist, $component);
+        $list = $this->getDataRecursive($recordlist, $component, $onDemand);    
         //$list['levels'] = $AreaLevel->find('all', array());
-        
+      
         return $list;
     }
     
@@ -1908,9 +2307,10 @@ class CommonInterfaceComponent extends Component {
      *
      * @access public
      */
-    function getDataRecursive($recordlist, $component) {
+    function getDataRecursive($recordlist, $component, $onDemand=false) {
         
         $rec_list = array();
+        $childData = array();
         // start loop through area data
         for ($lsCnt = 0; $lsCnt < count($recordlist); $lsCnt++) {
             
@@ -1919,18 +2319,32 @@ class CommonInterfaceComponent extends Component {
             // get selected Rec details
             if($component == 'IndicatorClassifications'){
                 $NId = $recordlist[$lsCnt][_IC_IC_NID];
-                $ID = $recordlist[$lsCnt][_IC_IC_TYPE];
+                $ID = $recordlist[$lsCnt][_IC_IC_GID];
                 $name = $recordlist[$lsCnt][_IC_IC_NAME];
                 $parentNID = $recordlist[$lsCnt][_IC_IC_PARENT_NID];
                 
-                $childData = $this->{$component}->find('all', array('conditions' => array(_IC_IC_PARENT_NID => $NId), 'order' => array(_IC_IC_NAME => 'ASC')));
-            }else if($component == 'Area'){
+                if($onDemand === false) {
+                    $childData = $this->{$component}->find('all', array('conditions' => array(_IC_IC_PARENT_NID => $NId), 'order' => array(_IC_IC_NAME => 'ASC')));
+                }
+                else {
+                    $childCount = $this->{$component}->find('all', array('conditions' => array(_IC_IC_PARENT_NID => $NId)), array('count'=>1));    
+                    $childExists = ($childCount) ? true : false;
+                }
+            }
+            else if($component == 'Area'){
+
                 $NId = $recordlist[$lsCnt][_AREA_AREA_NID];
                 $ID = $recordlist[$lsCnt][_AREA_AREA_ID];
                 $name = $recordlist[$lsCnt][_AREA_AREA_NAME];
                 $parentNID = $recordlist[$lsCnt][_AREA_PARENT_NId];
                 
-                $childData = $this->{$component}->find('all', array('conditions' => array(_AREA_PARENT_NId => $NId), 'order' => array(_AREA_AREA_NAME => 'ASC')));
+                if($onDemand === false) { 
+                    $childData = $this->{$component}->find('all', array('conditions' => array(_AREA_PARENT_NId => $NId), 'order' => array(_AREA_AREA_NAME => 'ASC')));    
+                }  
+                else {
+                    $childCount = $this->{$component}->find('all', array('conditions' => array(_AREA_PARENT_NId => $NId)), array('count'=>1));    
+                    $childExists = ($childCount) ? true : false;
+                }           
             }
             
             //if child data found
@@ -1959,6 +2373,16 @@ class CommonInterfaceComponent extends Component {
 
     /**
      * function to prapare Node
+     *
+     * @access public
+     */
+    public function prepareNode($NId, $ID, $name, $childExists, $nodes = array(), $depth = 1) {
+        return array('nid' => $NId, 'id' => $ID, 'name' => $name, 'childExists' => $childExists, 'nodes' => $nodes, 'arrayDepth' => $depth);
+    }
+	
+	
+	/**
+     * function to getDEsearchData
      *
      * @access public
      */
