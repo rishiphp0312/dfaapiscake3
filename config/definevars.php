@@ -26,11 +26,11 @@ return [
     define('_UNIT_UNIT_GID', 'Unit_GId'),
     define('_UNIT_UNIT_GLOBAL', 'Unit_Global'),
     // Subgroup Type table
-    define('_SUBGROUPTYPE_SUBGROUP_TYPE_GID', 'Subgroup_Type_GID'),
+    define('_SUBGROUPTYPE_SUBGROUP_TYPE_NID', 'Subgroup_Type_NId'),
     define('_SUBGROUPTYPE_SUBGROUP_TYPE_NAME', 'Subgroup_Type_Name'),
+    define('_SUBGROUPTYPE_SUBGROUP_TYPE_GID', 'Subgroup_Type_GID'),
     define('_SUBGROUPTYPE_SUBGROUP_TYPE_GLOBAL', 'Subgroup_Type_Global'),
     define('_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER', 'Subgroup_Type_Order'),
-    define('_SUBGROUPTYPE_SUBGROUP_TYPE_NID', 'Subgroup_Type_NId'),
     // Subgroup table
     define('_SUBGROUP_SUBGROUP_NID', 'Subgroup_NId'),
     define('_SUBGROUP_SUBGROUP_NAME', 'Subgroup_Name'),
@@ -203,13 +203,38 @@ return [
     define('_ACTIVE', '1'), // User status inactive  
     define('_IMPORTERRORLOG_FILE', 'TPL_Import_'), // User status inactive  
     define('_OK', 'OK'),
-    define('_STATUS', 'STATUS'),
-    define('_DESCRIPTION', 'Description'),
+    define('_STATUS', 'STATUS'),                   // Done or Error in import log of area and ICIUS
+    define('_DESCRIPTION', 'Description'),         // Error description in  import log of area and ICIUS
     define('_ICIUS', 'icius'),
     define('_AREA', 'area'),
+    define('_ICIUSEXPORT', 'iciusExport'),
     //Chunks, Logs, xls Folders
     define('_CHUNKS_PATH', WWW_ROOT . 'uploads' . DS . 'chunks'),
     define('_LOGS_PATH', WWW_ROOT . 'uploads' . DS . 'logs'),
     define('_XLS_PATH', WWW_ROOT . 'uploads' . DS . 'xls'),
+
+    define('_TV_AREA', 'area'), // _TV_AREA -> Tree View Area
+    define('_TV_IU', 'iu'), // indicator unit
+    define('_TV_IU_S', 's'), // subgroup vals
+    define('_TV_IUS', 'ius'), // subgroup list based on indicator, unit
+    define('_TV_IC', 'ic'), // indicator classification list
+    define('_TV_ICIND', 'icind'), // indicator classification and indicator belongs to that IC
+
+    define('_TPL_Export_', 'TPL_Export_'),
+    define('_LevelName', 'Level-'), // for area level name 
+	
+	
+	// insertdatakeys indexes for area 
+	define('_INSERTKEYS_AREAID', 'areaid'),
+    define('_INSERTKEYS_NAME',  'name'),
+    define('_INSERTKEYS_LEVEL',  'level'),
+    define('_INSERTKEYS_GID',  'gid'),
+    define('_INSERTKEYS_PARENTNID',  'parentnid'),
+	
+	//Module names
+	
+	define('_MODULE_NAME_AREA', 'area'),
+	
+
 ]
 ?>

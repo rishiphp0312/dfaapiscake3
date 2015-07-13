@@ -69,31 +69,22 @@ class ServicesController extends AppController {
         $dbId = '';
 		//$_REQUEST['dbId']=49;  // for testing 
         if (isset($_REQUEST['dbId']) && !empty($_REQUEST['dbId'])){
+
             $dbId = $_REQUEST['dbId'];
-            $dbConnection = $this->Common->getDbConnectionDetails($dbId);//dbId
-		}
-		   
+            $dbConnection = $this->Common->getDbConnectionDetails($dbId); //dbId
+        }
 
         switch ($case):
 
             case 'test':
 
-                /* $fieldsArray = [
-                  _MTRANSACTIONLOGS_DB_ID => 11,
-                  _MTRANSACTIONLOGS_ACTION => 'IMPORT',
-                  _MTRANSACTIONLOGS_MODULE => 'TEMPLATE',
-                  _MTRANSACTIONLOGS_SUBMODULE => 'ICIUS',
-                  _MTRANSACTIONLOGS_IDENTIFIER => 'filepath',
-                  _MTRANSACTIONLOGS_PREVIOUSVALUE => '',
-                  _MTRANSACTIONLOGS_NEWVALUE => '',
-                  _MTRANSACTIONLOGS_STATUS => 'DONE',
-                  _MTRANSACTIONLOGS_DESCRIPTION => 'No error'
-                  ];
-                  $returnData = $this->TransactionLogs->createRecord($fieldsArray); */
-                $fields = [_MTRANSACTIONLOGS_DB_ID, _MTRANSACTIONLOGS_ACTION];
-                $conditions = [_MTRANSACTIONLOGS_ID => 3];
-                $returnData = $this->TransactionLogs->getRecords($fields, $conditions, 'all');
-                debug($returnData);
+                $fields = [_IUS_IUSNID, _IUS_INDICATOR_NID, _IUS_UNIT_NID];
+
+                $params['fields'] = $fields;
+                $params['conditions'] = [];
+                $params['extra'] = ['type' => 'all', 'unique' => true];
+                $returnData['data'] = $this->CommonInterface->serviceInterface('IndicatorUnitSubgroup', 'getAllIU', $params, $dbConnection);
+                debug($returnData['data']);
                 exit;
                 break;
 
@@ -132,6 +123,19 @@ class ServicesController extends AppController {
 
             case 105: //Insert New Data -- Indicator table
                 if ($this->request->is('post')):
+
+                    $this->request->data = [
+                        _INDICATOR_INDICATOR_NID => '384',
+                        _INDICATOR_INDICATOR_NAME => 'Custom_test_name2',
+                        _INDICATOR_INDICATOR_GID => 'SOME_001_TEST',
+                        _INDICATOR_INDICATOR_INFO => '<?xml version="1.0" encoding="utf-8"?><metadata><Category name="Definition"><para /></Category><Category name="Method of Computation"><para /></Category><Category name="Overview"><para /></Category><Category name="Comments and Limitations"><para /></Category><Category name="Data Collection for Global Monitoring"><para /></Category><Category name="Obtaining Data:"><para /></Category><Category name="Data Availability:"><para /></Category><Category name="Treatment of Missing Values:"><para /></Category><Category name="Regional and Global Estimates:"><para /></Category><Category name="Data Availability"><para /></Category></metadata>',
+                        _INDICATOR_INDICATOR_GLOBAL => '0',
+                        _INDICATOR_SHORT_NAME => 'Short name',
+                        _INDICATOR_KEYWORDS => 'Some Keyword',
+                        _INDICATOR_INDICATOR_ORDER => '5',
+                        _INDICATOR_DATA_EXIST => '1',
+                        _INDICATOR_HIGHISGOOD => '1'
+                    ];
 
                     //insertData(array $fieldsArray = $this->request->data)
                     $params['conditions'] = $conditions = $this->request->data;
@@ -223,15 +227,11 @@ class ServicesController extends AppController {
                 ];
                 $conditions = [_UNIT_UNIT_NID => '43'];
 
-                //if ($this->request->is('post')):
-                if (true):
+                if ($this->request->is('post')):
                     //updateDataByParams(array $fields, array $conditions)
-                    $fields = [_UNIT_UNIT_NAME=>'Percent'];
-                    $conditions = [_UNIT_UNIT_GID=>'B602B58B-6879-4188-9D49-DD833281FE4E'];
                     $params[] = $fields;
                     $params[] = $conditions;
                     $returnData = $this->CommonInterface->serviceInterface('Unit', 'updateDataByParams', $params, $dbConnection);
-                    debug($returnData);exit;
                 endif;
 
                 break;
@@ -925,12 +925,14 @@ class ServicesController extends AppController {
             case 905:
                 // service for bulk export  of area in excel sheet                
                 try {
-                 
-					$params[] = $fields     = [_AREA_AREA_ID,_AREA_AREA_NAME,_AREA_AREA_GID,_AREA_AREA_LEVEL,_AREA_PARENT_NId];
-
-					$params[] = $conditions = [];
-
-                    $returnData = $this->CommonInterface->serviceInterface('Area', 'exportArea', $params, $dbConnection);
+                    $type = $_REQUEST['type'];
+                    if(strtolower($type) == _ICIUS ){
+                        $returnData['data'] = $this->CommonInterface->serviceInterface('CommonInterface', 'exportIcius', [], $dbConnection);
+                    }else if(strtolower($type) == _AREA ){
+                        $params[] = $fields     = [_AREA_AREA_ID,_AREA_AREA_NAME,_AREA_AREA_GID,_AREA_AREA_LEVEL,_AREA_PARENT_NId];
+                        $params[] = $conditions = [];
+                        $returnData['data'] = $this->CommonInterface->serviceInterface('Area', 'exportArea', $params, $dbConnection);
+                    }
 					
                 } catch (Exception $e) {
                     $returnData['errMsg'] = $e->getMessage();
@@ -1517,21 +1519,27 @@ class ServicesController extends AppController {
 
 
 
-            case 2209: //get IU List -- Indicator Unit Subgroup table
+            case 2209: //get Tree Structure List
                 //if($this->request->is('post')):
                 if (true):
-                    $fields = [_IUS_IUSNID, _IUS_INDICATOR_NID, _IUS_UNIT_NID];
 
-                    $params['fields'] = $fields;
-                    $params['conditions'] = [];
-                    $params['extra'] = ['type' => 'all', 'unique' => true];
-                    $returnData['data'] = $this->CommonInterface->serviceInterface('IndicatorUnitSubgroup', 'getAllIU', $params, $dbConnection);
+                    //$this->request->data['type'] = _TV_IU;
+                    //$this->request->data['onDemand'] = false;
+                    //$this->request->data['pnid'] = '075362FE-0120-55C1-4520-914CFDA8FA0B{~}69299B62-FD0A-9936-3E72-688AD73B4709';
+                    //$this->request->data['pnid'] = '1';
+                    
+                    // Post Variables                    
+                    // possible Types Area,IU,IUS,IC and ICIND
+                    $type = (isset($this->request->data['type'])) ? $this->request->data['type'] : ''; 
+                    $parentId = (isset($this->request->data['pnid'])) ? $this->request->data['pnid'] : '-1';
+                    $onDemand = (isset($this->request->data['onDemand'])) ? $this->request->data['onDemand'] : true;
+
+                    $returnData['data'] = $this->Common->getTreeViewJSON($type, $dbId, $parentId, $onDemand);
+
                     $returnData['status'] = _SUCCESS;
-                    $returnData['responseKey'] = 'iuList';
-                    $returnData['errCode'] = '';
-                    $returnData['errMsg'] = '';
+                    $returnData['responseKey'] = $type;
                 endif;
-                break;
+            break;
 
             case 2210: //get Subgroup List from IU Gids -- Indicator Unit Subgroup table
                 //if($this->request->is('post')):
@@ -1539,7 +1547,7 @@ class ServicesController extends AppController {
                     $fields = [_IUS_SUBGROUP_VAL_NID];
 
                     $params['fields'] = $fields;
-                    $params['conditions'] = ['iGid' => 'A1946ACC-BFE5-2F12-29DF-0216C7703E9F', 'uGid' => 'NUMBER'];
+                    $params['conditions'] = ['iGid' => '075362FE-0120-55C1-4520-914CFDA8FA0B', 'uGid' => '69299B62-FD0A-9936-3E72-688AD73B4709'];
                     $params['extra'] = ['type' => 'all', 'unique' => true];
                     $returnData['data'] = $this->CommonInterface->serviceInterface('IndicatorUnitSubgroup', 'getAllSubgroupsFromIUGids', $params, $dbConnection);
                     $returnData['status'] = _SUCCESS;
@@ -1635,16 +1643,20 @@ class ServicesController extends AppController {
                         $seriveToCall = strtolower($this->request->data['type']);
                         $allowedExtensions = ['xls', 'xlsx'];
                         $extraParam['createLog'] = true;
-                        $module = 'TEMPLATE';                        
+                        
                         // Kept here to include other params like allowed ext as well
                         switch ($seriveToCall):
                             case _ICIUS:
                                 $case = 2307;
+                                $module = _ICIUS;
                                 break;
                             case _AREA:
                                 $case = 904;
+                                $module = _AREA;
                                 break;
                         endswitch;
+                        
+                        $extraParam['module'] = $module;                        
                         
                         $filePaths = $this->Common->processFileUpload($_FILES, $allowedExtensions, $extraParam);
 
@@ -1695,8 +1707,8 @@ class ServicesController extends AppController {
                 if (true):
                     $returnData['data'] = $this->CommonInterface->serviceInterface('CommonInterface', 'exportIcius', [], $dbConnection);
 
-                    $returnData['status'] = _SUCCESS;
-                    $returnData['responseKey'] = _ICIUSEXPORT;
+                    $returnData['status'] = 'success';
+                    $returnData['responseKey'] = 'iciusExport';
                     $returnData['errCode'] = '';
                     $returnData['errMsg'] = '';
                 endif;
@@ -1714,8 +1726,25 @@ class ServicesController extends AppController {
 				//$this->CommonInterface->serviceInterface('Area', 'addAreaLevel', [], $dbConnection);
 				
 				break;
+				
+				case 2404:
+				try {
+						//unlink(WWW_ROOT."uploads/test/TPL_Import_Area_1_2015-07-10.xlsx");die;
+                    $filename = $extra['filename'] ='C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\MDG5B Areas TPL.xls';
+                    $params[]['filename'] = $filename;
+                    $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForArea', $params, $dbConnection);
+					pr($returnData);
+					die;
+				
+				} catch (Exception $e) {
+                    $returnData['errMsg'] = $e->getMessage();
+                }
+				//$this->CommonInterface->serviceInterface('Area', 'addAreaLevel', [], $dbConnection);
+				
+				break;
 
 				
+
 
         endswitch;
 
