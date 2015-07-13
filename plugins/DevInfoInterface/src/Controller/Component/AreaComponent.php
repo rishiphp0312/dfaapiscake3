@@ -60,15 +60,25 @@ class AreaComponent extends Component
         $objPHPExcel = new \PHPExcel();
         $objPHPExcel->setActiveSheetIndex(0);
         $startRow = $objPHPExcel->getActiveSheet()->getHighestRow();
-
+		$width = 20;
+		$styleArray = array(
+			'font'  => array(
+			'bold'  => false,
+			'color' => array('rgb' => '000000'),
+			'size'  => 10,
+			'name'  => 'Arial',
+			
+			));
 
 		$returnFilename = _TPL_Export_. _MODULE_NAME_AREA . '_' . $authUserId . '_' .date('Y-m-d'). '.xls';		
 
         $rowCount = 1;
         $firstRow = ['A' => 'AreaId', 'B' => 'AreaName', 'C' => 'AreaLevel', 'D' => 'AreaGId', 'E' => 'Parent AreaId'];
+		$objPHPExcel->getActiveSheet()->getStyle("A1:G1")->getFont()->setItalic(true);
 
         foreach ($firstRow as $index => $value) {
-            $objPHPExcel->getActiveSheet()->SetCellValue($index . $rowCount, $value);
+            $objPHPExcel->getActiveSheet()->SetCellValue($index . $rowCount, $value)->getStyle($index . $startRow);
+			   
         }
 		
 		//$conditions=['1'=>'1'];
@@ -87,11 +97,12 @@ class AreaComponent extends Component
 			else
 		    $parentnid= '';
 		
-			$objPHPExcel->getActiveSheet()->SetCellValue('A' . $startRow, (isset($value[_AREA_AREA_ID])) ? $value[_AREA_AREA_ID] : '' )->getColumnDimension('A')->setWidth($width);
-            $objPHPExcel->getActiveSheet()->SetCellValue('B' . $startRow, (isset($value[_AREA_AREA_NAME])) ? $value[_AREA_AREA_NAME] : '')->getColumnDimension('B')->setWidth($width);
-            $objPHPExcel->getActiveSheet()->SetCellValue('C' . $startRow, (isset($value[_AREA_AREA_LEVEL])) ? $value[_AREA_AREA_LEVEL] : '')->getColumnDimension('C')->setWidth($width);
-            $objPHPExcel->getActiveSheet()->SetCellValue('D' . $startRow, (isset($value[_AREA_AREA_GID])) ? $value[_AREA_AREA_GID] : '' )->getColumnDimension('D')->setWidth($width);
-            $objPHPExcel->getActiveSheet()->SetCellValue('E' . $startRow, (isset($parentnid)) ? $parentnid : '' )->getColumnDimension('E')->setWidth($width);
+			$objPHPExcel->getActiveSheet()->SetCellValue('A' . $startRow, (isset($value[_AREA_AREA_ID])) ? $value[_AREA_AREA_ID] : '' )->getColumnDimension('A'.$startRow)->setWidth($width);
+			$objPHPExcel->getActiveSheet()->getStyle($index . $rowCount)->applyFromArray($styleArray); 
+            $objPHPExcel->getActiveSheet()->SetCellValue('B' . $startRow, (isset($value[_AREA_AREA_NAME])) ? $value[_AREA_AREA_NAME] : '')->getColumnDimension('B'.$startRow)->setWidth($width);
+            $objPHPExcel->getActiveSheet()->SetCellValue('C' . $startRow, (isset($value[_AREA_AREA_LEVEL])) ? $value[_AREA_AREA_LEVEL] : '')->getColumnDimension('C'.$startRow)->setWidth($width);
+            $objPHPExcel->getActiveSheet()->SetCellValue('D' . $startRow, (isset($value[_AREA_AREA_GID])) ? $value[_AREA_AREA_GID] : '' )->getColumnDimension('D'.$startRow)->setWidth($width);
+            $objPHPExcel->getActiveSheet()->SetCellValue('E' . $startRow, (isset($parentnid)) ? $parentnid : '' )->getColumnDimension('E'.$startRow)->setWidth($width);
 			$startRow++;		
 			
 		}
@@ -293,54 +304,15 @@ class AreaComponent extends Component
 	/*
 	 function to add area level if not exists and validations while import for level according to  parent id 
 	 returns area level 
-	 if $type is New that means parent id don't exist in db and have childs in excel sheet 
 	
 	*/
 	
-    public function returnAreaLevel($level='',$parentNid='',$type=''){
+    public function returnAreaLevel($level='',$parentNid=''){
 		
 		$areaFields=[_AREA_AREA_LEVEL];
 		$levelFields =[_AREALEVEL_AREA_LEVEL];				
 		$data=[];
 		
-		if($type  ='NEW' && !empty($parentNid) && $parentNid!='-1'){
-			
-			$areaConditions[_AREA_AREA_ID] = $parentNid;
-			$levelValue = $this->AreaObj->getDataByParams($areaFields, $areaConditions, 'all');
-			if(!empty($levelValue)){
-					$level  = current($levelValue)[_AREA_AREA_LEVEL]+1;
-					$levelConditions[_AREALEVEL_AREA_LEVEL]=$level;
-					 $getlevelDetails   = $this->AreaLevelObj->getDataByParams($levelFields, $levelConditions, 'all');
-					 if(empty($getlevelDetails)){
-						 $data[_AREALEVEL_AREA_LEVEL] = $level;
-						 $data[_AREALEVEL_LEVEL_NAME] = _LevelName.$level;
-						 $this->AreaLevelObj->insertData($data);
-						 return  $level;			
-					 }else{
-						return $finallevel = current($getlevelDetails)[_AREALEVEL_AREA_LEVEL]; 				
-					 }
-		    
-			}else{
-				if(empty($level)){
-					$level=2;
-				}
-				if($level<=1){
-					$level=2;
-				}
-			 $levelConditions[_AREALEVEL_AREA_LEVEL]=$level;
-			 $getlevelDetails   = $this->AreaLevelObj->getDataByParams($levelFields, $levelConditions, 'all');
-			 if(empty($getlevelDetails)){
-				 $data[_AREALEVEL_AREA_LEVEL] = $level;
-				 $data[_AREALEVEL_LEVEL_NAME] = _LevelName.$level;
-				 $this->AreaLevelObj->insertData($data);
-				 return  $level;			
-			 }else{
-				return $finallevel = current($getlevelDetails)[_AREALEVEL_AREA_LEVEL]; 				
-			 }
-			}
-			unset($areaConditions);
-			unset($levelConditions);
-		}
 	
      // case 1 when level is empty but parent nid is not  empty 
 	 if(empty($level) && !empty($parentNid) && $parentNid!='-1'){
@@ -400,7 +372,8 @@ class AreaComponent extends Component
 		 $levelValue = $this->AreaObj->getDataByParams($areaFields, $areaConditions, 'all');		
 		 $parentAreaLevel  = current($levelValue)[_AREA_AREA_LEVEL];
 					 		
-
+         echo 'level ---'.$level;
+         echo 'parentAreaLevel--'.$parentAreaLevel;
 
 		 if($parentAreaLevel >= $level){
 			 $finallevel = $parentAreaLevel+1;
@@ -416,7 +389,7 @@ class AreaComponent extends Component
 				  $finallevel = current($getlevelDetails)[_AREALEVEL_AREA_LEVEL]; 	
 				return 	$finallevel;		
 			 }			 
-		 }else{			 
+		 }else{
 			  
 			 
 			 $levelConditions[_AREALEVEL_AREA_LEVEL] = $level;

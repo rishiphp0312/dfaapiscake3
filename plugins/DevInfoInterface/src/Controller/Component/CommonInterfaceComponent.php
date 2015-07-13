@@ -66,17 +66,18 @@ class CommonInterfaceComponent extends Component {
         $dbConnection = json_decode($dbConnection, true);
         $db_database = $dbConnection['db_database'];
         $db_source = $dbConnection['db_source'];
+        $db_source = 'mysql';
         $db_connection_name = $dbConnection['db_connection_name'];
         $db_password = $dbConnection['db_password'];
-	
+	$dbConnection['db_host']='localhost';
         $config = [
                 'className' => 'Cake\Database\Connection',
                 'persistent' => false,
                 'host' => $dbConnection['db_host'],
-                'port' => $dbConnection['db_port'],
-                'username' => $dbConnection['db_login'],
-                'password' => $db_password,
-                'database' => $db_database,
+                'port' => '',
+                'username' => 'root',
+                'password' => '',
+                'database' => 'developer_evaluation_database',
                 'timezone' => 'UTC',
                 'cacheMetadata' => true,
                 'quoteIdentifiers' => false,
@@ -368,7 +369,7 @@ class CommonInterfaceComponent extends Component {
                        if($allAreblank == false  ){
 							$_SESSION['errorLog'][]= $value;
 							$_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Error';
-							$_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = 'Area id  not empty!!';
+							$_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = 'Area id is  empty!!';
 						}
 					
 
@@ -383,21 +384,60 @@ class CommonInterfaceComponent extends Component {
 						if(!array_key_exists($insertDataKeys['level'],$value)){
 							$level='';
 						}else{
-							$level=$value[$insertDataKeys['level']];
+							echo 'level--'.$level=$value[$insertDataKeys['level']];
 						}
+						echo 'block1';
+						pr($value);
 						$value[$insertDataKeys['level']] =  $this->Area->returnAreaLevel($level,$value[$insertDataKeys['parentnid']]);
 						$value[$insertDataKeys['parentnid']] = array_search($value[$insertDataKeys['parentnid']], $areaidswithparentid);
 						
-						$uniquestatus=false; // false means yet not added in array chkuniqueAreaids
-						$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']]; // will be needed for  update
-					   	
-						if($allAreblank == false){
+						
+						$conditions =[];
+						$fields =[];
+						$areadbdetails = '';
+						
+						$conditions =[_AREA_AREA_ID => $value[$insertDataKeys['areaid']]];
+			            $fields =[_AREA_AREA_ID];
+						$chkAreaId = $this->Area->getDataByParams($fields,$conditions);			           
+						if(!empty($chkAreaId))
+						$areadbdetails = current(current($chkAreaId));
+					
+						if($areadbdetails!=''){
+							$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']]; // will be needed for  update
+							if($allAreblank == false){
+								 $_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Done';
+							     $_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = '  ';	
+							}
+							
+						}else{
+							
+							$returnid ='';
+							
+							if(empty($value[$insertDataKeys['gid']])){
+								$value[$insertDataKeys['gid']]= $this->guid();
+							}
+							if(!array_key_exists($insertDataKeys['gid'],$value)){
+								$value[$insertDataKeys['gid']]= $this->guid();
+							}
+							if (!array_key_exists(_AREA_AREA_GLOBAL,$value)) {
+						   
+								$value[_AREA_AREA_GLOBAL] = '0';
+							}
+
+							$returnid = $this->Area->insertUpdateAreaData($value);
+                            if($returnid){
+								if($allAreblank == false){
 								 $_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Done';
 							     $_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = '';	
-						}else{						
-								$_SESSION['errorLog']['STATUS'][]=$errorLogArray[$row]['STATUS'] = 'Done';      // Error //Duplicate entry 222
-								$_SESSION['errorLog']['Description'][]=  $errorLogArray[$row]['Description'] = '';
-						}					
+								}
+							}else{						
+									$_SESSION['errorLog']['STATUS'][]=$errorLogArray[$row]['STATUS'] = 'Error ';      // BLANK ROW
+									$_SESSION['errorLog']['Description'][]=  $errorLogArray[$row]['Description'] = 'Insert error ';
+							}
+							
+						}	
+					
+					  		
 						
 						
 				}elseif (!empty($value[$insertDataKeys['parentnid']]) && ($value[$insertDataKeys['parentnid']]!='-1') && in_array($value[$insertDataKeys['parentnid']],$areaidswithparentid) == false) {
@@ -407,59 +447,6 @@ class CommonInterfaceComponent extends Component {
 
 							$_SESSION['errorLog'][] = $value;
 						}
-						$uniqueStatus = false;
-						$errcnt = 0;
-						if(!empty($LogAreaIds) ){
-								
-							$keylog = array_search($value[$insertDataKeys['areaid']],$LogAreaIds);
-							if(($keylog==$row) && (in_array($value[$insertDataKeys['areaid']],$LogAreaIds)==true)){
-								$uniqueStatus=false;
-							}else{
-								$uniqueStatus=true;
-							if(empty($keylog)){
-								$errcnt =1; // 	 //means areaid before parent id	
-							}elseif($keylog < $row){
-								$errcnt =2; // means areaid repeated  twice after parent id
-							}else{
-								$errcnt =1; // 	 //means areaid before parent id	 
-							}								 
-						  }
-						}else{
-								$errcnt =1; // means areaid before parent id	
-								$uniqueStatus=true;
-						}
-				
-					
-					if($uniqueStatus==true){
-							if($allAreblank == false){
-								if($errcnt==1){
-									$_SESSION['errorLog']['STATUS'][] = 'Error';
-									$_SESSION['errorLog']['Description'][] = 'Parent id not found ';
-								}  else{																	
-									$_SESSION['errorLog']['STATUS'][] = 'Done'; // Error 'Duplicate entry';
-									$_SESSION['errorLog']['Description'][] = '';	
-									//$_SESSION['errorLog']['Description'][] = 'Duplicate entry';
-								}
-							    	
-							}
-							unset($value);
-							unset($newinsertDataArr[$row]);
-				    }else{
-							if($allAreblank == false){
-								$_SESSION['errorLog']['STATUS'][]=$errorLogArray[$row]['STATUS'] = 'Done';
-								$_SESSION['errorLog']['Description'][]=  $errorLogArray[$row]['Description'] = '';
-							}						  
-					}
-				
-				}elseif ( empty($value[$insertDataKeys['parentnid']]) || ($value[$insertDataKeys['parentnid']] == '-1')) {
-		                        //case when parent id is empty 
-						if($allAreblank == false  ){
-						   $_SESSION['errorLog'][]= $errorLogArray[$row] = $value;
-						}
-					
-						$value[$insertDataKeys['parentnid']] = '-1';
-						$value[$insertDataKeys['level']]=1; // do hardcore level value 1 for parent area ids 
-						$value[$insertDataKeys['level']] = $this->Area->returnAreaLevel($value[$insertDataKeys['level']],$value[$insertDataKeys['parentnid']]);
 						
 						$conditions =[];
 						$fields =[];
@@ -467,89 +454,137 @@ class CommonInterfaceComponent extends Component {
 						
 						$conditions =[_AREA_AREA_ID => $value[$insertDataKeys['areaid']]];
 			            $fields =[_AREA_AREA_ID];
-						$chkAreaId = $this->Area->getDataByParams($fields,$conditions);
-			           
+						$chkAreaId = $this->Area->getDataByParams($fields,$conditions);			           
 						if(!empty($chkAreaId))
 						$areadbdetails = current(current($chkAreaId));
 					
-						if($areadbdetails!=''){
-							//case when parent nid is blank and also exists in database 
-							$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']]; // will be needed for  update 
+						$parentconditions =[];
+						$parentfields =[];
+						$parentareadbdetails = '';
+						
+						$parentconditions =[_AREA_AREA_ID => $value[$insertDataKeys['parentnid']]];
+			            $parentfields =[_AREA_AREA_NID];
+						$parentchkAreaId = $this->Area->getDataByParams($parentfields,$parentconditions);			           
 
-							if($allAreblank == false){
-								$_SESSION['errorLog']['STATUS'][] = 'Done';
-								$_SESSION['errorLog']['Description'][] = '';
-							}	
-						
+						if(!array_key_exists($insertDataKeys['level'],$value)){
+							$level='';
 						}else{
-							
-							//case when parent nid is blank and also do not exists in database 
-							$uniquestatus=false;
-							//////////// code for last ids
-							if(!empty($allAreaParents) && in_array($value[$insertDataKeys['areaid']],$allAreaParents)==true) {
-								$uniquestatus = true; // if value is  unset will not be added in array 
-								
-							}
-							if($uniquestatus ==false){
-									//
-								if(empty($allAreaParents)  ||  !in_array($value[$insertDataKeys['areaid']],$allAreaParents)){
-							 
-								$forParentAreaId[$value[$insertDataKeys['areaid']]]['parentiddetails']=$value;
-								foreach($compareAreaidParentId as $index=>$compareParentId){
-									if(($value[$insertDataKeys['areaid']]==$compareParentId[4]) && ($index>$row)){
-										$LogAreaIds[$index]=$compareParentId[0];
-										$combinedValue  = array_combine($insertDataKeys,$compareParentId);
-										$combinedValue[$insertDataKeys['level']] = $this->Area->returnAreaLevel($combinedValue[$insertDataKeys['level']],$combinedValue[$insertDataKeys['parentnid']],'NEW');								
-										if(empty($allAreaIdsAsSubParent) ||  !in_array($compareParentId[0],$allAreaIdsAsSubParent))
-										$forParentAreaId[$value[$insertDataKeys['areaid']]]['childiddetails'][]=$combinedValue;
-										$allAreaIdsAsSubParent[] = $compareParentId[0];
-									
-									
-									}
-								
-									if(($value[$insertDataKeys['areaid']]==$compareParentId[4])&& ($index<$row)){
-										$ignoreAreaIdsAsSubParent[$index]=$compareParentId[0]; //ignore area ids which not to be inserted 								
-									}
-									
-							    }
-							  }
-							  
-								$allAreaParents[]=$value[$insertDataKeys['areaid']]; // adding all parent ids 
-						
-								$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']]; // will be needed for  update 
-							  
-								if($allAreblank == false){
-									 $_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Done';
-									 $_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = '';	
-								  }
-									//
-							}else{
-							
-								if($allAreblank == false){
-									 $_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Done';  // 'Error';
-									 $_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = '';	//'Duplicate entry of parent id ';
-										//$_SESSION['errorLog']['STATUS'][]=$errorLogArray[$row]['STATUS'] = 'Error';
-										//$_SESSION['errorLog']['Description'][]=  $errorLogArray[$row]['Description'] = 'Duplicate entry of parent id ';
-								  }
-								unset($value);
-								unset($newinsertDataArr[$row]);
-							}
-							
-							
+							$level=$value[$insertDataKeys['level']];
 						}
+
+						$value[$insertDataKeys['level']] =  $this->Area->returnAreaLevel($level,$value[$insertDataKeys['parentnid']]);
 						
-					
+						//check parent id exists in db or not 
+						if(!empty($parentchkAreaId))
+						$parentareadbdetails = current(current($parentchkAreaId));					
+						
+						if($areadbdetails!=''){    //already exist area
+							$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']]; // will be needed for  update
+							if($allAreblank == false){
+								 $_SESSION['errorLog']['STATUS'][] = 'Done';
+							     $_SESSION['errorLog']['Description'][]  = '';	
+								}
+
+						}else{
+							if($parentareadbdetails!=''){
+								//if parent id found do insert 
+								$returnid ='';							
+								
+								$value[$insertDataKeys['parentnid']] = $parentareadbdetails;
+								
+								if (!array_key_exists(_AREA_AREA_GLOBAL,$value)) {							   
+									$value[_AREA_AREA_GLOBAL] = '0';
+								}
+								if(empty($value[$insertDataKeys['gid']])){
+									$value[$insertDataKeys['gid']]= $this->guid();
+								}
+								if(!array_key_exists($insertDataKeys['gid'],$value)){
+									$value[$insertDataKeys['gid']]= $this->guid();
+								}
+								$returnid = $this->Area->insertUpdateAreaData($value);
+								if($returnid){
+									if($allAreblank == false){
+									  $_SESSION['errorLog']['STATUS'][] = 'Done';
+									  $_SESSION['errorLog']['Description'][] =  '';	
+									}
+								}else{						
+									$_SESSION['errorLog']['STATUS'][]=$errorLogArray[$row]['STATUS'] = 'Error ';      // BLANK ROW
+									$_SESSION['errorLog']['Description'][]=  $errorLogArray[$row]['Description'] = 'Insert error ';
+								}
+							}else{
+								// error if parent id not found
+								if($allAreblank == false){
+								 $_SESSION['errorLog']['STATUS'][] =  'Error';
+							     $_SESSION['errorLog']['Description'][] =  'Parent id not found!!';	
+								}
+							}							
+							
+					      }				    
 				
-				}else {
+				}elseif ( empty($value[$insertDataKeys['parentnid']]) || ($value[$insertDataKeys['parentnid']] == '-1')) {
+		                        //case when parent id is empty 
 						if($allAreblank == false  ){
-							$_SESSION['errorLog'][]=$errorLogArray[$row] = $value;
+						   $_SESSION['errorLog'][]=  $value;
+						}
+					
+						$value[$insertDataKeys['parentnid']] = '-1';
+						$value[$insertDataKeys['level']]     = 1; // do hardcore level value 1 for parent area ids 						
+						
+						$conditions =[];
+						$fields =[];
+						$areadbdetails = '';
+						
+						$conditions =[_AREA_AREA_ID => $value[$insertDataKeys['areaid']]];
+			            $fields =[_AREA_AREA_ID];
+						$chkAreaId = $this->Area->getDataByParams($fields,$conditions);			           
+						if(!empty($chkAreaId))
+						$areadbdetails = current(current($chkAreaId));
+					
+						
+						
+						
+						if($areadbdetails!=''){
+							$insertDataAreaids[$row] = $value[$insertDataKeys['areaid']]; // will be needed for  update
+							if($allAreblank == false){
+								 $_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Done';
+							     $_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = '';	
+								}
+
+						}else{
+							$returnid ='';
+							
+							    if (!array_key_exists(_AREA_AREA_GLOBAL,$value)) {							   
+									$value[_AREA_AREA_GLOBAL] = '0';
+								}
+								if(empty($value[$insertDataKeys['gid']])){
+									$value[$insertDataKeys['gid']]= $this->guid();
+								}
+								if(!array_key_exists($insertDataKeys['gid'],$value)){
+									$value[$insertDataKeys['gid']]= $this->guid();
+								}
+							
+							$returnid = $this->Area->insertUpdateAreaData($value);
+                            if($returnid){
+								if($allAreblank == false){
+								 $_SESSION['errorLog']['STATUS'][] =  'Done';
+							     $_SESSION['errorLog']['Description'][] =  '';	
+								}
+							}else{						
+								$_SESSION['errorLog']['STATUS'][]= 'Error ';      // BLANK ROW
+								$_SESSION['errorLog']['Description'][]=  'Insert error ';
+							}
+							
+					      }	
+							
+							
+					}else {
+						if($allAreblank == false  ){
+							$_SESSION['errorLog'][]= $value;
 							$_SESSION['errorLog']['STATUS'][] = $errorLogArray[$row]['STATUS'] = 'Error';
 							$_SESSION['errorLog']['Description'][] = $errorLogArray[$row]['Description'] = 'Invalid Details ';
-
 						}
-					   
+						
 						unset($value); 
-
 						unset($newinsertDataArr[$row]);
                     }
 				
@@ -562,11 +597,10 @@ class CommonInterfaceComponent extends Component {
 
         }
         $newinsertDataArr = array_filter($newinsertDataArr);
-		$allParentChild = array_merge($allAreaIdsAsSubParent,$allAreaParents);
 
        
 		
-        return ['dataArray' => $newinsertDataArr, 'insertDataAreaids' => $insertDataAreaids, 'allParentChild' => $allParentChild,'ignoreAreaIdsAsSubParent'=>$ignoreAreaIdsAsSubParent, 'forParentAreaId'=>$forParentAreaId];
+        return ['dataArray' => $newinsertDataArr, 'insertDataAreaids' => $insertDataAreaids];
     }
 
     /**
@@ -720,11 +754,11 @@ class CommonInterfaceComponent extends Component {
 			
             $extraParam['nid'] = $params['nid'];
             $extraParam['component'] = $component;
-            $insertDataAreaIdsData = $this->updateColumnsFromAreaIds($insertDataAreaids, $dataArray, $insertDataKeys,$allParentChild,$ignoreAreaIdsAsSubParent,$forParentAreaId,$extraParam);
+            $insertDataAreaIdsData = $this->updateColumnsFromAreaIds($insertDataAreaids, $dataArray, $insertDataKeys,$extraParam);
             unset($insertDataAreaids);  //save Buffer
         }
         
-        $insertArray = array_merge(array_keys($insertArrayFromGids), array_keys($insertArrayFromNames), array_keys($insertDataAreaIdsData));        
+        $insertArray = array_merge(array_keys($insertArrayFromGids), array_keys($insertArrayFromNames));        
 
         //save Buffer
         unset($insertArrayFromGids);
@@ -734,6 +768,7 @@ class CommonInterfaceComponent extends Component {
         $insertArray = array_flip($insertArray);	
         $insertArray = array_intersect_key($dataArray, $insertArray);      
         unset($dataArray);  //save Buffer
+	
         //Check if New records
         if (!empty($insertArray)) {
             //Prepare Insert Data
@@ -1447,14 +1482,14 @@ class CommonInterfaceComponent extends Component {
     }
 
     /**
-     * updateColumnsFromName method
+     * updateColumnsFromAreaIds  method to update existing area ids 
      *
-     * @param array $names Names Array. {DEFAULT : empty}
+     * @param array $areaids area ids Array. {DEFAULT : empty}
      * @return void
      */
-    public function updateColumnsFromAreaIds($areaids = [], $dataArray, $insertDataKeys,$allParentChild,$ignoreAreaIdsAsSubParent,$forParentAreaId, $extra = null) {
-		
-		
+    public function updateColumnsFromAreaIds($areaids = [], $dataArray, $insertDataKeys, $extra = null) {
+		echo 'dataArray';
+		pr($dataArray);
         $component = 'Area';
         $fields = [$extra['nid'], $insertDataKeys['areaid']];
         $conditions = [$insertDataKeys['areaid'] . ' IN' => $areaids];
@@ -1465,60 +1500,17 @@ class CommonInterfaceComponent extends Component {
 		if (!empty($getDataByAreaid)) {
             foreach ($getDataByAreaid as $Nid => $areaId) {
                 $key = array_search($areaId, $areaids);
-                $updateData = $dataArray[$key]; // data which needs to be updated using area  nid                 		
+                $updateData = $dataArray[$key]; // data which needs to be updated using area  nid 
+				pr($updateData);				
                 $this->{$component}->updateDataByParams($updateData, [$extra['nid'] => $Nid]);
             }
         }
 		
         //Get Areaids that are not found in the database
 		$freshRecordsNames = array_diff($areaids, $getDataByAreaid);// records which needs to be inserted 
-		$freshRecordsNames = array_unique($freshRecordsNames);		 
-		$finalrecordsforinsert = array_diff($freshRecordsNames,$allParentChild);
+		$finalrecordsforinsert = array_unique($freshRecordsNames);		 
 		
-		if(!empty($forParentAreaId)){			
-			
-			foreach($forParentAreaId as $parentAreaId=>$AreaData){				  
-		   		  $parentNewid='';	
-				  $areaParentData='';
-					if(empty($AreaData['parentiddetails'][$insertDataKeys['gid']])){
-						$AreaData['parentiddetails'][$insertDataKeys['gid']]= $this->guid();
-					}
-					if(!array_key_exists($insertDataKeys['gid'],$AreaData['parentiddetails'])){
-						$AreaData['parentiddetails'][$insertDataKeys['gid']]= $this->guid();
-					}
-					if (!array_key_exists(_AREA_AREA_GLOBAL, $AreaData['parentiddetails'])) {
-                   
-						$AreaData['parentiddetails'][_AREA_AREA_GLOBAL] = '0';
-					}
-					
-				  $areaParentData  = 	$AreaData['parentiddetails'];				 
-				  $parentNewid = $this->{$component}->insertUpdateAreaData($areaParentData);
-				 
-				  if(isset($AreaData['childiddetails']) && count($AreaData['childiddetails'])>0){
-					array_walk($AreaData['childiddetails'],function(&$val, $key) use($parentNewid,$insertDataKeys) {
-						
-						$autoGenGuid = $this->guid();
-						if (!array_key_exists(_AREA_AREA_GLOBAL, $val)) {
-                   
-							$val[_AREA_AREA_GLOBAL] = '0';
-						}
-
-						if (!array_key_exists($insertDataKeys['gid'], $val)) {
-						   $val[$insertDataKeys['gid']] = $autoGenGuid;
-                         }
-						if(empty($val[$insertDataKeys['gid']])){
-						    $val[$insertDataKeys['gid']] = $autoGenGuid;                    
-						}
-						$val[$insertDataKeys['parentnid']]=$parentNewid;						
-						
-					});
-					
-					$bulkchildiddetails = $AreaData['childiddetails'];
-					$this->{$component}->insertBulkData($bulkchildiddetails, $insertDataKeys);
-				  }
-			}		
-			
-		}
+	
 		return  $finalrecordsforinsert;
 	}
 	
@@ -2381,14 +2373,7 @@ class CommonInterfaceComponent extends Component {
     }
 	
 	
-	/**
-     * function to getDEsearchData
-     *
-     * @access public
-     */
-    public function prepareNode($NId, $ID, $name, $childExists, $nodes = array(), $depth = 1) {
-        return array('nid' => $NId, 'id' => $ID, 'name' => $name, 'childExists' => $childExists, 'nodes' => $nodes, 'arrayDepth' => $depth);
-    }
+	
 	
 	
 }
