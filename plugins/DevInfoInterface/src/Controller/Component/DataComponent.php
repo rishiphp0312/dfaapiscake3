@@ -17,6 +17,11 @@ class DataComponent extends Component
     public $AreaLevelObj = NULL;
     public $DataObj      = NULL;
     public $TimeperiodObj      = NULL;
+    public $footnoteObj      = NULL;
+    public $Indicator      = NULL;
+    public $IndicatorUnitSubgroupObj      = NULL;
+    public $SourceObj      = NULL;
+	public $delm ='[-]'; 	
  
 	public function initialize(array $config)
     {
@@ -25,10 +30,152 @@ class DataComponent extends Component
         $this->DataObj = TableRegistry::get('DevInfoInterface.Data');
         $this->TimeperiodObj = TableRegistry::get('DevInfoInterface.TimePeriods');
         $this->AreaLevelObj = TableRegistry::get('DevInfoInterface.AreaLevel');
-		require_once(ROOT . DS . 'vendor' . DS . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
+        $this->Indicator = TableRegistry::get('DevInfoInterface.Indicator');
+        $this->IndicatorUnitSubgroupObj = TableRegistry::get('DevInfoInterface.IndicatorUnitSubgroup');
+        $this->FootnoteObj = TableRegistry::get('DevInfoInterface.Footnote');
+        $this->IndicatorClassificationsObj = TableRegistry::get('DevInfoInterface.IndicatorClassifications');
 
     }
+	
+	public function getIusDataCollection($iusArray) {
+		
+			//$iusArray=['LR_7PLUS'.$this->delm.'20C6CF95-37AA-C024-FE3B-895AFD42EEF8'.$this->delm.'AAC7855A-3921-4824-AF8C-C1B1985875B0'
+			//,'LR_7PLUS'.$this->delm.'20C6CF95-37AA-C024-FE3B-895AFD42EEF8'.$this->delm.'DC55AACC-8700-2026-64AF-DCC75F310A2B'
+			
+			//];
+			//$iusArray=['LR_7PLUS'.$this->delm.'20C6CF95-37AA-C024-FE3B-895AFD42EEF8'];
+			//pr($iusArray);
+			$tempDataAr = array(); // temproryly store data for all element name		
+
+			foreach($iusArray as $ius) {
+				
+				$iusAr = explode($this->delm, $ius);
+				
+				$iGid = $iusAr[0];
+				$uGid = $iusAr[1];
+				
+				if(count($iusAr)=='3'){
+					$sGid = $iusAr[2];	
+				}else{
+					$sGid = '';				
+				}
+				//$data = $this->IndicatorUnitSubgroupObj->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid,'SubgroupVals.Subgroup_Val_GId'=>$sGid])->contain(['Indicator','SubgroupVals','Unit'], true)->hydrate(false)->all()->toArray();
+				if($sGid!='')
+				$data = $this->IndicatorUnitSubgroupObj->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid,'SubgroupVals.Subgroup_Val_GId'=>$sGid])->contain(['Indicator','SubgroupVals','Unit'], true)->hydrate(false)->all()->toArray();
+				else
+				$data = $this->IndicatorUnitSubgroupObj->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid])->contain(['Indicator','SubgroupVals','Unit'], true)->hydrate(false)->all()->toArray();
+				
+				
+				//pr($data['indicator']['Indicator_NId']);die;
+				
+				foreach($data as  $valueIus){
+				
+				$tempDataAr['ind'][$valueIus['indicator']['Indicator_NId']][0] = $iGid;
+				$tempDataAr['ind'][$valueIus['indicator']['Indicator_NId']][1] = $valueIus['indicator']['Indicator_Name'];
+
+				$tempDataAr['unit'][$valueIus['unit']['Unit_NId']][0] = $uGid;
+				$tempDataAr['unit'][$valueIus['unit']['Unit_NId']][1] = $valueIus['unit']['Unit_Name'];
+
+				$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][0] = $sGid;
+				$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][1] = $valueIus['subgroup_val']['Subgroup_Val'];
+
+				$tempDataAr['iusnids'][] = $valueIus['IUSNId'];	
+				
+				}
+				
+				
+
+			}
+			return $tempDataAr;
+			    //pr($data);
+				//pr($tempDataAr);
+				//die;
+			
+			//$IndicatorUnitSubgroupObj = $this->IndicatorUnitSubgroupObj->
+			//$data = $this->IndicatorUnitSubgroupObj->find()->where(['Data.Indicator_NId' => 'LR_7PLUS','Data.IUSNId IN '=>[2599,2469],'Data.Area_NId'=>'19785'])->contain(['Indicator','SubgroupVals','Unit'], true)->hydrate(false)->all()->toArray();
+		}		
+		
+		
+		
+		
+		
     
+	
+	 /**
+     * getDEsearchData to get the details of search on basis of IUSNid,
+      @areanid
+      @TimeperiodNid
+      @$iusNid can be mutiple in form of array
+      returns data value with source
+     * @access public
+     */
+    public function getDEsearchData($fields = [], $conditions = [], $extra = []) {
+		 
+		 pr($fields);
+		 
+		 $iusNids = $this->getIusDataCollection($extra);
+		
+		 pr($iusNids['unit']);
+		 pr($iusNids['ind']);
+		 //die;
+		 //$tempDataAr['iusnids']
+		 $conditions[_MDATA_IUSNID .' IN '] =$iusNids['iusnids'];
+		 pr($conditions);
+		 pr($iusNids);
+		 
+         $timeperiodList = $this->TimeperiodObj->find('all')->combine(_TIMEPERIOD_TIMEPERIOD_NID,_TIMEPERIOD_TIMEPERIOD)->toArray();
+        
+		 $footnoteList = $this->FootnoteObj->find('all')->combine(_FOOTNOTE_NId,_FOOTNOTE_VAL)->toArray();
+		 $sourceList = $this->IndicatorClassificationsObj->find('all')->combine(_IC_IC_NID,_IC_IC_NAME)->toArray();
+		 echo 'timeperiod';
+		 pr($timeperiodList);
+		 echo 'footnote';
+		 pr($footnoteList);
+		 $iusnidData = array();
+		 
+		 // $data = $this->DataObj->find()->where(['Data.Indicator_NId' => '375','Data.IUSNId IN '=>[2599,2469],'Data.Area_NId'=>'19785'])->contain(['Indicator','SubgroupVals','Unit','Footnote'], true)->hydrate(false)->all()->toArray();
+	     $data = $this->DataObj->find()->where($conditions)->hydrate(false)->all()->toArray();
+		 echo  count($data);
+		
+		 foreach($data as $value){
+				
+				 $iusnidData[$value['IUSNId']]['dv']      = $value['Data_Value'];
+				 $iusnidData[$value['IUSNId']]['src']     = $sourceList[$value['Source_NId']];
+				 $iusnidData[$value['IUSNId']]['footnote']= $footnoteList[$value['FootNote_NId']];
+				 $iusnidData[$value['IUSNId']]['tp']      = $timeperiodList[$value['TimePeriod_NId']];
+				 $iusnidData[$value['IUSNId']]['iusnid']  = $value['IUSNId'];
+				 $iusnidData[$value['IUSNId']]['sGid']    = $iusNids['sg'][$value['Subgroup_Val_NId']][0];
+				 $iusnidData[$value['IUSNId']]['sName']    = $iusNids['sg'][$value['Subgroup_Val_NId']][1];
+		}
+		foreach(){
+			
+		}
+		pr($data);
+		pr($iusnidData);
+		pr($iusNids['sg']);
+		// echo  count($iusNids['sg']);
+		die;
+		 $iu =[]; //iu array
+
+                    //$conditions = [_MDATA_IUSNID . ' IN' => $iusNid,_MDATA_TIMEPERIODNID=>$timePeriodNid ,_MDATA_AREANID=>$areaNid];
+		 
+	
+/*	$data = $this->DataObj->find()->where(['Data.Indicator_NId' => '375','Data.IUSNId IN '=>[2599,2469],'Data.Area_NId'=>'19785'])->contain(['Indicator','SubgroupVals','Unit','Footnote'], true)->hydrate(false)->all()->toArray();
+		 foreach($data as $index=>$value){
+			 $iu[$value[_IUS_IUSNID]]['icname'] = $value['indicator'][_INDICATOR_INDICATOR_NAME];
+			 $iu[$value[_IUS_IUSNID]]['igid']   = $value['indicator'][_INDICATOR_INDICATOR_GID];
+			 $iu[$value[_IUS_IUSNID]]['uName']  = $value['unit'][_UNIT_UNIT_NAME];
+			 $iu[$value[_IUS_IUSNID]]['ugid']  = $value['unit'][_UNIT_UNIT_GID];
+			 pr($value);
+			 
+		 }
+*/		 
+		  pr($iu);die;
+		//$data = $this->DataObj->getDataByParams($fields,$conditions);
+        pr($data);
+		die;
+        //return array('nid' => $NId, 'id' => $ID, 'name' => $name, 'childExists' => $childExists, 'nodes' => $nodes, 'arrayDepth' => $depth);
+    }
 
     /**
     * getDataByIds method
@@ -81,32 +228,7 @@ class DataComponent extends Component
 		
 		$startRow = 2;
 		$width    = 20;
-		foreach ($areadData as $index => $value) {
-			
-			$newconditions =[_AREA_AREA_NID => $value[_AREA_PARENT_NId]];
-			$newfields =[_AREA_AREA_ID];
-        	$parentnid= $this->getDataByParams($newfields,$newconditions);			
-			if($value[_AREA_PARENT_NId]!='-1')   //case when not empty or -1
-			$parentnid= current($parentnid)[_AREA_AREA_ID];
-			else
-		    $parentnid= '';
 		
-			$objPHPExcel->getActiveSheet()->SetCellValue('A' . $startRow, (isset($value[_AREA_AREA_ID])) ? $value[_AREA_AREA_ID] : '' )->getColumnDimension('A')->setWidth($width);
-            $objPHPExcel->getActiveSheet()->SetCellValue('B' . $startRow, (isset($value[_AREA_AREA_NAME])) ? $value[_AREA_AREA_NAME] : '')->getColumnDimension('B')->setWidth($width);
-            $objPHPExcel->getActiveSheet()->SetCellValue('C' . $startRow, (isset($value[_AREA_AREA_LEVEL])) ? $value[_AREA_AREA_LEVEL] : '')->getColumnDimension('C')->setWidth($width);
-            $objPHPExcel->getActiveSheet()->SetCellValue('D' . $startRow, (isset($value[_AREA_AREA_GID])) ? $value[_AREA_AREA_GID] : '' )->getColumnDimension('D')->setWidth($width);
-            $objPHPExcel->getActiveSheet()->SetCellValue('E' . $startRow, (isset($parentnid)) ? $parentnid : '' )->getColumnDimension('E')->setWidth($width);
-			$startRow++;		
-			
-		}
-	
-	    $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-		header('Content-Type: application/vnd.ms-excel;');
-		header('Content-Disposition: attachment;filename='.$returnFilename);
-		header('Cache-Control: max-age=0');
-		$objWriter->save('php://output');
-		exit;
-
 
 	}
 	
@@ -439,6 +561,8 @@ class DataComponent extends Component
 				unset($areaConditions);
 				unset($data);
 	 }
+	 
+	 
 	 
 	 
 	 

@@ -37,6 +37,7 @@ class ServicesController extends AppController {
     //Loading Components
     public $RUserDatabasesObj;
     public $components = [ 'Auth', 'DevInfoInterface.CommonInterface', 'Common', 'ExcelReader', 'UserCommon', 'TransactionLogs'];
+	public $delm ='[-]'; 	
 
     public function initialize() {
         parent::initialize();
@@ -1729,10 +1730,20 @@ class ServicesController extends AppController {
 				
 				case 2404:
 				try {
-						//unlink(WWW_ROOT."uploads/test/TPL_Import_Area_1_2015-07-10.xlsx");die;
-                    $filename = $extra['filename'] ='C:\-- Projects --\D3A\dfa_devinfo_data_admin\webroot\data-import-formats\MDG5B Areas TPL.xls';
-                    $params[]['filename'] = $filename;
-                    $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'bulkUploadXlsOrCsvForArea', $params, $dbConnection);
+					//echo $this->delm;
+					$iusgidArray=['LR_7PLUS'.$this->delm.'20C6CF95-37AA-C024-FE3B-895AFD42EEF8'.$this->delm.'AAC7855A-3921-4824-AF8C-C1B1985875B0'
+			,'LR_7PLUS'.$this->delm.'20C6CF95-37AA-C024-FE3B-895AFD42EEF8'.$this->delm.'DC55AACC-8700-2026-64AF-DCC75F310A2B'
+						];
+					$areaNid = '18274';
+					$timePeriodNid = '2';
+					
+                    $conditions = [_MDATA_TIMEPERIODNID=>$timePeriodNid ,_MDATA_AREANID=>$areaNid];
+					$fields     = [_MDATA_NID,_INDICATOR_INDICATOR_NID,_INDICATOR_INDICATOR_NAME];
+                    $params['fields'] = $fields;
+                    $params['conditions'] = $conditions;
+                    $params['extra'] = $iusgidArray;
+					
+                    $returnData = $this->CommonInterface->serviceInterface('Data', 'getDEsearchData', $params, $dbConnection);
 					pr($returnData);
 					die;
 				

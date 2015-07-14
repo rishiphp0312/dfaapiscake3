@@ -11,7 +11,7 @@ class SubgroupValsSubgroupComponent extends Component
 {
     
     // The other component your component uses
-    public $components = [];
+    public $components = ['DevInfoInterface.CommonInterface'];
     public $SubgroupValsSubgroupObj = NULL;
 
     public function initialize(array $config)
@@ -171,11 +171,11 @@ class SubgroupValsSubgroupComponent extends Component
      * @return void
      */
     public function bulkInsert(array $pairs, array $pairsArray) {
-        
+
         $pairsArray = array_intersect_key($pairsArray, $pairs);
         
         //Check if records exists for subgroup_vals
-        $fields = [_SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_SUBGROUP_NID];
+        $fields = [_SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID, SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID, _SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_SUBGROUP_NID];
         //$conditions = ['(' . _SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID . ',' . SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID . ') IN (' . implode(',', $pairs) . ')'];
         $conditions = ['OR' => $pairsArray];
         $getSubGroupValsSubgroupNids = $this->getConcatedFields($fields, $conditions, 'list');

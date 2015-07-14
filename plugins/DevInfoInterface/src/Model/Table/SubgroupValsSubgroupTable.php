@@ -236,7 +236,7 @@ class SubgroupValsSubgroupTable extends Table {
 
         // Once we have a result set we can get all the rows
         $data = $results->toArray();
-
+        
         if(array_key_exists(2, $fields)){
             foreach($data as $key => &$value){
                 $value['concatinated'] = '(' . $value[_SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID] . ',' . $value[SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID] . ')';

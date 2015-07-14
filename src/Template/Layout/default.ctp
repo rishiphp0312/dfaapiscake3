@@ -17,6 +17,7 @@
             'app/shared/angular-ui-router.min','app/shared/ngDialog.min',
             'app/shared/ngFileUpload/ng-file-upload-shim','app/shared/ngFileUpload/ng-file-upload', 
             'app/shared/ngProgressBar/ng-progress-bar', 'app/shared/ngFileUploader/ng-file-uploader',
+            'app/shared/ngTreeView/ng-tree-view',
             'app/components/login/login.module', 'app/components/login/login.controller', 
             'app/components/database/database.module', 'app/components/database/database.controller', 'app/components/database/database.service',
             'app/components/databaseManagement/databaseManagement.module','app/components/databaseManagement/databaseManagement.controller','app/components/databaseManagement/databaseManagement.service',

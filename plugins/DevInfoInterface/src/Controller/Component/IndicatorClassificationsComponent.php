@@ -134,6 +134,7 @@ class IndicatorClassificationsComponent extends Component {
             $field[] = _IC_IC_PARENT_NID;
             $field[] = _IC_IC_GID;
             $field[] = _IC_IC_TYPE;
+            $field[] = _IC_IC_GLOBAL;
 
             array_walk($insertResults, function(&$val, $key) use ($field, $icTypes) {
                 $returnFields = [];
@@ -141,6 +142,7 @@ class IndicatorClassificationsComponent extends Component {
                 $returnFields[$field[1]] = '-1';
                 $returnFields[$field[2]] = $this->CommonInterface->guid();
                 $returnFields[$field[3]] = $icTypes[$key];
+                $returnFields[$field[4]] = 0;
                 $val = $returnFields;
             });
             $bulkInsertArray = $insertResults;
@@ -176,10 +178,15 @@ class IndicatorClassificationsComponent extends Component {
         }
     }
     
-    public function find($type, $options =[]) {
+    public function find($type, $options =[], $extra=null) {
         $query =  $this->IndicatorClassificationsObj->find($type, $options);
-        $results = $query->hydrate(false)->all();
-        $data = $results->toArray();
+        if(isset($extra['count'])) {
+            $data = $query->count();
+        }
+        else {
+            $results = $query->hydrate(false)->all();
+            $data = $results->toArray();
+        }        
         return $data;
          
     }

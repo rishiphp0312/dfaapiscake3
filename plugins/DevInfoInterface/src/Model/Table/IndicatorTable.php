@@ -184,6 +184,7 @@ class IndicatorTable extends Table
     {
         //Create New Entities (multiple entities for multiple rows/records)
         //$entities = $this->newEntities($insertDataArray);
+        $insertDataArray = array_intersect_key($insertDataArray, array_unique(array_map('serialize', $insertDataArray)));
         
         $query = $this->query();
         

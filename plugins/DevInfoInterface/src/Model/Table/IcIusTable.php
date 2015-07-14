@@ -304,20 +304,26 @@ class IcIusTable extends Table
             $type = 'all';
 
         $query = $this->find($type, $options);
-        $concat = $query->func()->concat([
+        /*$concat = $query->func()->concat([
                     '(',
                     _ICIUS_IC_NID => 'literal',
                     ',',
                     _ICIUS_IUSNID => 'literal',
                     ')'
                 ]);
-        $query->select(['concatinated' => $concat]);
+        $query->select(['concatinated' => $concat]);*/
         
         $results = $query->hydrate(false)->all();
 
         // Once we have a result set we can get all the rows
         $data = $results->toArray();
 
+        if(array_key_exists(2, $fields)){
+            foreach($data as $key => &$value){
+                $value['concatinated'] = '(' . $value[_ICIUS_IC_NID] . ',' . $value[_ICIUS_IUSNID] . ')';
+            }
+        }
+        
         return $data;
     }
 

@@ -17,6 +17,8 @@ class IndicatorUnitSubgroupComponent extends Component {
         'DevInfoInterface.SubgroupVals',
         'DevInfoInterface.CommonInterface'
         ];
+	
+    public $delm ='{-}'; 	
     public $IndicatorUnitSubgroupObj = NULL;
 
     public function initialize(array $config) {
@@ -207,16 +209,56 @@ class IndicatorUnitSubgroupComponent extends Component {
         $unitGidList = $this->Unit->getDataByParams($unitField, $unitCondition, 'all');
         $unitGidList = array_combine(array_column($unitGidList, _UNIT_UNIT_NID), $unitGidList);
         
+        //Get SubgroupVals Details From Nid
+        $subgroupValsField[0] = _SUBGROUP_VAL_SUBGROUP_VAL_NID;
+        $subgroupValsField[1] = _SUBGROUP_VAL_SUBGROUP_VAL_GID;
+        $subgroupValsField[2] = _SUBGROUP_VAL_SUBGROUP_VAL;
+        $subgroupValsCondition = [_SUBGROUP_VAL_SUBGROUP_VAL_NID . ' IN' => array_column($result, _SUBGROUP_VAL_SUBGROUP_VAL_NID)];
+        $subgroupValsGidList = $this->SubgroupVals->getDataByParams($subgroupValsField, $subgroupValsCondition, 'all');
+        $subgroupValsGidList = array_combine(array_column($subgroupValsGidList, _SUBGROUP_VAL_SUBGROUP_VAL_NID), $subgroupValsGidList);
+        
         $preparedData = [];
+        if($extra['onDemand'] == true){
+            $childExists = true;
+            $nodes = [];
+        }else{
+            $childExists = false;
+        }
         
         foreach($result as $key => $value){
-            $preparedData[] = [
-                'iGid' => $IndicatorGidList[$value[_INDICATOR_INDICATOR_NID]][_INDICATOR_INDICATOR_GID],
-                'uGid' => $unitGidList[$value[_UNIT_UNIT_NID]][_UNIT_UNIT_GID],
-                'iName' => $IndicatorGidList[$value[_INDICATOR_INDICATOR_NID]][_INDICATOR_INDICATOR_NAME],
-                'uName' => $unitGidList[$value[_UNIT_UNIT_NID]][_UNIT_UNIT_NAME]
-                
-            ];
+            if($extra['onDemand'] == true){
+                $preparedData[$value[_INDICATOR_INDICATOR_NID] . '_' . $value[_UNIT_UNIT_NID]] = [
+                    'iGid' => $IndicatorGidList[$value[_INDICATOR_INDICATOR_NID]][_INDICATOR_INDICATOR_GID],
+                    'uGid' => $unitGidList[$value[_UNIT_UNIT_NID]][_UNIT_UNIT_GID],
+                    'iName' => $IndicatorGidList[$value[_INDICATOR_INDICATOR_NID]][_INDICATOR_INDICATOR_NAME],
+                    'uName' => $unitGidList[$value[_UNIT_UNIT_NID]][_UNIT_UNIT_NAME],
+                    'childExists' => true,
+                    'nodes' => []
+                ];
+            }else{            
+                // Prepare Subgroup Node
+                $subGroupNode = [
+                        _IUS_IUSNID => $value[_IUS_IUSNID],
+                        'iusGid' => $value[_INDICATOR_INDICATOR_NID] . '{~}' . $value[_UNIT_UNIT_NID] . '{~}' . $subgroupValsGidList[$value[_SUBGROUP_VAL_SUBGROUP_VAL_NID]][_SUBGROUP_VAL_SUBGROUP_VAL_GID],
+                        'sName' => $subgroupValsGidList[$value[_SUBGROUP_VAL_SUBGROUP_VAL_NID]][_SUBGROUP_VAL_SUBGROUP_VAL],
+                        'childExists' => false,
+                        'nodes' => []
+                    ];
+
+                // Attach Subgroup to IU Node
+                if(array_key_exists($value[_INDICATOR_INDICATOR_NID] . '_' . $value[_UNIT_UNIT_NID], $preparedData)){
+                    $preparedData[$value[_INDICATOR_INDICATOR_NID] . '_' . $value[_UNIT_UNIT_NID]]['nodes'][] = $subGroupNode;
+                }else{
+                    $preparedData[$value[_INDICATOR_INDICATOR_NID] . '_' . $value[_UNIT_UNIT_NID]] = [
+                        'iGid' => $IndicatorGidList[$value[_INDICATOR_INDICATOR_NID]][_INDICATOR_INDICATOR_GID],
+                        'uGid' => $unitGidList[$value[_UNIT_UNIT_NID]][_UNIT_UNIT_GID],
+                        'iName' => $IndicatorGidList[$value[_INDICATOR_INDICATOR_NID]][_INDICATOR_INDICATOR_NAME],
+                        'uName' => $unitGidList[$value[_UNIT_UNIT_NID]][_UNIT_UNIT_NAME],
+                        'childExists' => true,
+                        'nodes' => [$subGroupNode]
+                    ];
+                }
+            }
         }
         
         return $preparedData;
@@ -246,9 +288,19 @@ class IndicatorUnitSubgroupComponent extends Component {
         $IusList = $this->getDataByParams($IusField, $IusCondition, 'list');
         
         //Get Subgroup Details From Nid
-        $subgroupField = ['sName' => _SUBGROUP_VAL_SUBGROUP_VAL, 'sGid' => _SUBGROUP_VAL_SUBGROUP_VAL_GID];
+        $subgroupField = [_SUBGROUP_VAL_SUBGROUP_VAL_NID, 'sName' => _SUBGROUP_VAL_SUBGROUP_VAL, 'sGid' => _SUBGROUP_VAL_SUBGROUP_VAL_GID];
         $subgroupCondition = [_SUBGROUP_VAL_SUBGROUP_VAL_NID . ' IN' => $IusList];
         $subgroupList = $this->SubgroupVals->getDataByParams($subgroupField, $subgroupCondition, 'all');
+        
+        foreach($subgroupList as $key => &$value){
+            $value = [
+                    _IUS_IUSNID => array_search($value[_SUBGROUP_VAL_SUBGROUP_VAL_NID], $IusList),
+                    'iusGid' => $conditions['iGid'] . '{~}' . $conditions['uGid'] . '{~}' . $value['sGid'],
+                    'sName' => $value['sName'],
+                    'childExists' => false,
+                    'nodes' => []
+                ];
+        }
         
         return $subgroupList;
     }
@@ -262,5 +314,59 @@ class IndicatorUnitSubgroupComponent extends Component {
     public function testCasesFromTable($params = []) {
         return $this->IndicatorUnitSubgroupObj->testCasesFromTable($params);
     }
+	
+	
+	/*
+	function to get ius nids on passed ius gids 
+	*/
+	public function getIusDataCollection($iusArray) {
+
+		
+
+		$tempDataAr = array(); // temproryly store data for all element name		
+
+		foreach($iusArray as $ius) {
+
+			$iusAr = explode($this->delm, $ius);
+			$iGid = $iusAr[0];
+			$uGid = $iusAr[1];
+			$sGid = $iusAr[2];
+			$conditions = array(
+				'conditions'=>array(
+					'Indicator.Indicator_GId'=>$iGid, 
+					'Unit.Unit_GId'=>$uGid, 
+					'SubgroupVal.Subgroup_Val_GId'=>$sGid
+				));
+			// --------------------- GET IUSNIds
+			 $options = [];
+
+        if (!empty($fields))
+            $options['fields'] = $fields;
+        if (!empty($conditions))
+            $options['conditions'] = $conditions;
+		//pr($options);die;
+        if ($type == 'list')
+            $this->setListTypeKeyValuePairs($fields);
+
+        $data = $this->find($type, $options);    
+			/*
+			$IUSNidDt = $IndicatorUnitSubgroup->find('first', , 
+				'fields'=>array('IndicatorUnitSubgroup.IUSNId', 'Indicator.Indicator_NId', 'Indicator.Indicator_Name', 'Unit.Unit_NId', 'Unit.Unit_Name', 'SubgroupVal.Subgroup_Val_NId', 'SubgroupVal.Subgroup_Val'));
+			*/
+			$tempDataAr['ind'][$IUSNidDt['Indicator']['Indicator_NId']][0] = $iGid;
+			$tempDataAr['ind'][$IUSNidDt['Indicator']['Indicator_NId']][1] = $IUSNidDt['Indicator']['Indicator_Name'];
+
+			$tempDataAr['unit'][$IUSNidDt['Unit']['Unit_NId']][0] = $uGid;
+			$tempDataAr['unit'][$IUSNidDt['Unit']['Unit_NId']][1] = $IUSNidDt['Unit']['Unit_Name'];
+
+			$tempDataAr['sg'][$IUSNidDt['SubgroupVal']['Subgroup_Val_NId']][0] = $sGid;
+			$tempDataAr['sg'][$IUSNidDt['SubgroupVal']['Subgroup_Val_NId']][1] = $IUSNidDt['SubgroupVal']['Subgroup_Val'];
+
+			$tempDataAr['iusnids'][] = $IUSNidDt['IndicatorUnitSubgroup']['IUSNId'];							
+		}
+
+		return $tempDataAr;
+
+	}
 
 }

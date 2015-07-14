@@ -167,6 +167,20 @@ return [
     define('_MTRANSACTIONLOGS_NEWVALUE', 'newvalue'),
     define('_MTRANSACTIONLOGS_STATUS', 'status'),
     define('_MTRANSACTIONLOGS_DESCRIPTION', 'description'),
+	
+	//Footnote table
+	
+	 define('_FOOTNOTE_NId', 'FootNote_NId'),
+	 define('_FOOTNOTE_VAL', 'FootNote'),
+	
+	
+	// data table
+    define('_MDATA_NID', 'Data_NId'),
+    define('_MDATA_IUSNID', 'IUSNId'),
+    define('_MDATA_TIMEPERIODNID', 'TimePeriod_NId'),
+    define('_MDATA_AREANID', 'Area_NId'),
+	
+	
     // Error Codes
     define('_DFAERR', 'DFAERR'), //  Error code prefix 
     define('_ERR100', _DFAERR . '100'), //   database not added 
@@ -188,14 +202,15 @@ return [
     define('_ERR117', _DFAERR . '117'), //   invalid activation key    service 1204
     define('_ERR118', _DFAERR . '118'), //   user not modified bcoz email already exists   service 1204
     define('_ERR119', _DFAERR . '119'), //   user is already added to this database 
+	
     // SUper Admin Role Id Hardcodes
     define('_SUPERADMINROLEID', '1'), // super admin id 
     define('_SUPERADMINNAME', 'Super Admin'), // super admin name 
     define('_SALTPREFIX1', 'abcd#####'), // used in  activation key 
     define('_SALTPREFIX2', 'abcd###*99*'), // used in   activation key 
     // Text messages 
-    define('_SUCCESS', 'success'), // success in response 
-    define('_FAILED', 'failed'), // failed in response 
+    define('_SUCCESS', 'Success'), // success in response 
+    define('_FAILED', 'Failed'), // failed in response 
     define('_STARTED', 'started'), // started in transaction 
     define('_YES', 'yes'), // Yes for json format 
     define('_NO', 'no'), // 
@@ -219,6 +234,7 @@ return [
     define('_TV_IUS', 'ius'), // subgroup list based on indicator, unit
     define('_TV_IC', 'ic'), // indicator classification list
     define('_TV_ICIND', 'icind'), // indicator classification and indicator belongs to that IC
+    define('_TV_ICIUS', 'icius'), // indicator classification and indicator belongs to that IC
 
     define('_TPL_Export_', 'TPL_Export_'),
     define('_LevelName', 'Level-'), // for area level name 
@@ -234,6 +250,15 @@ return [
 	//Module names
 	
 	define('_MODULE_NAME_AREA', 'area'),
+    	define('_AREA_LOGCOMMENT1', 'Area id is  empty!!'), //area id is empty 
+        define('_AREA_LOGCOMMENT2', 'Record not saved'), // error in insert  
+        define('_AREA_LOGCOMMENT3', 'Parent id not found!!'), // error Parent id not found
+        define('_AREA_LOGCOMMENT4', 'Invalid Details' ),// error Invalid details
+    
+    
+	
+	
+	
 	
 
 ]

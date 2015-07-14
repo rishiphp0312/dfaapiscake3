@@ -1,14 +1,14 @@
 <?php  
 namespace DevInfoInterface\Model\Table;
 
-use App\Model\Entity\Unit;
+use App\Model\Entity\Data;
 use Cake\ORM\Table;
 
 
 /**
- * Unit Model
+ * Data Model
  */
-class UnitTable extends Table
+class DataTable extends Table
 {
 
     /**
@@ -19,9 +19,48 @@ class UnitTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('UT_Unit_en');
-        $this->primaryKey(_UNIT_UNIT_NID);
+        $this->table('UT_Data');
+        $this->primaryKey(_MDATA_NID);
         $this->addBehavior('Timestamp');
+		$this->belongsTo('Indicator', [
+            'className' => 'DevInfoInterface.Indicator',
+            'foreignKey' => 'Indicator_NId',
+			'joinType' => 'INNER',
+        ]);
+		$this->belongsTo('Unit', [
+            'className' => 'DevInfoInterface.Unit',
+            'foreignKey' => 'Unit_NId',
+			'joinType' => 'INNER',
+        ]);
+			$this->belongsTo('SubgroupVals', [
+            'className' => 'DevInfoInterface.SubgroupVals',
+            'foreignKey' => 'Subgroup_Val_NId',
+			'joinType' => 'INNER',
+        ]);
+		$this->belongsTo('SubgroupVals', [
+            'className' => 'DevInfoInterface.SubgroupVals',
+            'foreignKey' => 'Subgroup_Val_NId',
+			'joinType' => 'INNER',
+        ]);
+		$this->belongsTo('Footnote', [
+            'className' => 'DevInfoInterface.Footnote',
+            'foreignKey' => 'FootNote_NId',
+			'joinType' => 'INNER',
+        ]);
+		
+		
+		/*
+		$this->addAssociations([
+		  'belongsTo' => [
+			'Indicator' => ['className' => 'DevInfoInterface.Indicator', 'foreignKey' => 'Indicator_NId',]
+		  ],
+      'belongsTo' => [
+			'Unit' => ['className' => 'DevInfoInterface.Unit', 'foreignKey' => 'Unit_NId',]
+		  ],
+      'belongsTo' => [
+			'SubgroupVals' => ['className' => 'DevInfoInterface.SubgroupVals', 'foreignKey' => 'Subgroup_Val_NId',]
+		  ],
+    ]);*/
     }
 
     /*
@@ -64,18 +103,8 @@ class UnitTable extends Table
         $options['conditions'] = [_UNIT_UNIT_NID . ' IN'=>$ids];
 
         if($type == 'list') $this->setListTypeKeyValuePairs($fields);
-
-        // Find all the rows.
-        // At this point the query has not run.
-        $query = $this->find($type, $options);
-        
-        // Calling execute will execute the query
-        // and return the result set.
-        $results = $query->all();
-
-        // Once we have a result set we can get all the rows
-        $data = $results->toArray();
-
+      //  $data = $this->find($type, $options)->all()->toArray();
+		$data = $this->find()->all()->toArray();
         return $data;
     }
 
@@ -94,21 +123,15 @@ class UnitTable extends Table
         if(!empty($fields))
             $options['fields'] = $fields;
         if(!empty($conditions))
-            $options['conditions'] = $conditions;
-
+            $options['conditions'] = $conditions;		 
+		
         if($type == 'list') $this->setListTypeKeyValuePairs($fields);
-
-        // Find all the rows.
-        // At this point the query has not run.
-        $query = $this->find($type, $options);
-
-        // Calling execute will execute the query
-        // and return the result set.
-        $results = $query->hydrate(false)->all();
-
-        // Once we have a result set we can get all the rows
-        $data = $results->toArray();
-
+       
+        $data = $this->find($type, $options)->hydrate(false)->all()->toArray();
+		 
+		//$data = $this->find()->all()->toArray();
+    
+		pr($options);
         return $data;
 
     }
@@ -123,7 +146,6 @@ class UnitTable extends Table
     public function deleteByIds($ids = null)
     {
         $result = $this->deleteAll([_UNIT_UNIT_NID . ' IN' => $ids]);
-
         return $result;
     }
 
@@ -137,7 +159,6 @@ class UnitTable extends Table
     public function deleteByParams(array $conditions)
     {
         $result = $this->deleteAll($conditions);
-
         return $result;
     }
 
@@ -150,13 +171,8 @@ class UnitTable extends Table
      */
     public function insertData($fieldsArray = [])
     {
-        //Create New Entity
         $Unit = $this->newEntity();
-
-        //Update New Entity Object with data
-        $Unit = $this->patchEntity($Unit, $fieldsArray);
-        
-        //Create new row and Save the Data
+        $Unit = $this->patchEntity($Unit, $fieldsArray);       
         if ($this->save($Unit)) {
             return 1;
         } else {
@@ -174,23 +190,13 @@ class UnitTable extends Table
      * @return void
      */
     public function insertBulkData($insertDataArray = [], $insertDataKeys = [])
-    {
-        //Create New Entities (multiple entities for multiple rows/records)
-        //$entities = $this->newEntities($insertDataArray);
-        
+    {   
         $insertDataArray = array_intersect_key($insertDataArray, array_unique(array_map('serialize', $insertDataArray)));
-        $query = $this->query();
-        
-        /*
-         * http://book.cakephp.org/3.0/en/orm/query-builder.html#inserting-data
-         * http://blog.cnizz.com/2014/10/29/inserting-multiple-rows-with-cakephp-3/
-         */
+        $query = $this->query(); 
         foreach($insertDataArray as $insertData){
             $query->insert($insertDataKeys)->values($insertData); // person array contains name and title
-        }
-        
+        }        
         return $query->execute();
-
     }
 
 
@@ -202,12 +208,9 @@ class UnitTable extends Table
      */
     public function insertOrUpdateBulkData($dataArray = [])
     {
-        //Create New Entities (multiple entities for multiple rows/records)
         $entities = $this->newEntities($dataArray);
-
         foreach ($entities as $entity) {
             if (!$entity->errors()) {
-                //Create new row and Save the Data
                 $this->save($entity);
             }
         }
@@ -217,37 +220,17 @@ class UnitTable extends Table
 
     /**
      * updateDataByParams method
-     *
      * @param array $fieldsArray Fields to update with their Data. {DEFAULT : empty}
      * @param array $conditions The WHERE conditions for the Query. {DEFAULT : empty}
      * @return void
      */
     public function updateDataByParams($fieldsArray = [], $conditions = [])
     {
-        /*
-        //Get Entities based on Coditions
-        $Unit = $this->get($conditions);
-        
-        //Update Entity Object with data
-        $Unit = $this->patchEntity($Unit, $fieldsArray);
-        
-        //Update the Data
-        if ($this->save($Unit)) {
-            return 1;
-        } else {
-            return 0;
-        }  */
-        //Initialize
-        $query = $this->query();
-        
-        //Set
-        $query->update()
-            ->set($fieldsArray)
-            ->where($conditions);
-        
-        //Execute
+       
+        $query = $this->query();        
+        $query->update()->set($fieldsArray)->where($conditions);
+      
         $query->execute();
-        //debug($query);exit;
     }
 
 

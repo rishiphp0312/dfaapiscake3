@@ -23,7 +23,28 @@ class IndicatorUnitSubgroupTable extends Table
         $this->primaryKey(_IUS_IUSNID);
         $this->displayField(_IUS_IUSNID); //used for find('list')
         $this->addBehavior('Timestamp');
+		
+		$this->belongsTo('Indicator', [
+            'className' => 'DevInfoInterface.Indicator',
+            'foreignKey' => 'Indicator_NId',
+			'joinType' => 'INNER',
+			//'conditions'=>array('Indicator_NId'),
+        ]);
+		$this->belongsTo('Unit', [
+            'className' => 'DevInfoInterface.Unit',
+            'foreignKey' => 'Unit_NId',
+			'joinType' => 'INNER',
+			//'conditions'=>array(),
+        ]);
+		$this->belongsTo('SubgroupVals', [
+            'className' => 'DevInfoInterface.SubgroupVals',
+            'foreignKey' => 'Subgroup_Val_NId',
+			'joinType' => 'INNER',
+			//'conditions'=>array(),
+        ]);
+	
     }
+	
 
     /*
      * @Cakephp3: defaultConnectionName method
@@ -361,17 +382,21 @@ class IndicatorUnitSubgroupTable extends Table
         
         $query = $this->find('all', $options);
         
-        $concat = $query->func()->concat([
+        /*$concat = $query->func()->concat([
             '(',
             _IUS_INDICATOR_NID => 'literal',
             ',',
             _IUS_UNIT_NID => 'literal',
             ')'
         ]);
-        $query->select(['concatinated' => $concat]);
+        $query->select(['concatinated' => $concat]);*/
         
         $results = $query->hydrate(false)->all();
         $data = $results->toArray();
+        
+        foreach($data as $key => &$value){
+            $value['concatinated'] = '(' . $value[_IUS_INDICATOR_NID] . ',' . $value[_IUS_UNIT_NID] . ')';
+        }
         
         return $data;
     }

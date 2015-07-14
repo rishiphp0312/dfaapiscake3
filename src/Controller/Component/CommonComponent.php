@@ -19,7 +19,7 @@ class CommonComponent extends Component {
     public $dbcon = '';
     public $Users = '';
     public $Roles = '';
-    public $components = ['Auth'];
+    public $components = ['Auth', 'DevInfoInterface.CommonInterface'];
 
     public function initialize(array $config) {
         parent::initialize($config);
@@ -308,11 +308,12 @@ class CommonComponent extends Component {
                 if (move_uploaded_file($fileDetails['tmp_name'], $dest)) :
                     if(isset($extra['createLog']) && $extra['createLog'] == true){
                         $pathinfo = pathinfo($fileDetails['name']);
-                        $copyDest = _LOGS_PATH . DS . md5(time()). '.' . $pathinfo['extension'];
+                        $authUserId = $this->Auth->user('id');
+                        $copyDest = _LOGS_PATH . DS . _IMPORTERRORLOG_FILE . $extra['module'] . '_' . $authUserId . '_' . date('Y-m-d-h-i-s', time()) . '.' . $pathinfo['extension'];
                         if (!@copy($dest, $copyDest)){
                             return ['error' => 'File upload failed.'];
                         }
-                        define('_LOGPATH', $copyDest);
+                        define('_LOG_FILEPATH', $copyDest);
                     }
                     $filePaths[] = $dest;   // Upload Successful
                 
@@ -356,6 +357,147 @@ class CommonComponent extends Component {
     public function getRoleDetails($roleId) {
 
         return $this->Roles->getRoleByID($roleId);
+    }
+
+
+
+    /*
+      function to json data for tree view
+    */
+    public function getTreeViewJSON($type=_TV_AREA, $dbId=null, $parentId=-1, $onDemand=true) {
+        $returndData = [];
+        
+        if(!empty($dbId)) {
+            $dbConnection = $this->getDbConnectionDetails($dbId);
+
+            switch(strtolower($type)) {
+                case _TV_AREA:
+                    // Get Area Tree Data
+                    $returndData = $this->CommonInterface->serviceInterface('CommonInterface', 'getParentChild', [$type, $parentId, $onDemand], $dbConnection);
+                break;
+                case _TV_IU:
+                    // get Subgroup Tree data
+                    if($parentId != '-1'){
+                        $parentIds = explode('{~}', $parentId);
+                        $fields = [_IUS_SUBGROUP_VAL_NID];
+                        $params['fields'] = $fields;
+                        $params['conditions'] = ['iGid' => $parentIds[0], 'uGid' => $parentIds[1]];
+                        $params['extra'] = ['type' => 'all', 'unique' => true];
+                        $returndData = $this->CommonInterface->serviceInterface('IndicatorUnitSubgroup', 'getAllSubgroupsFromIUGids', $params, $dbConnection);
+                    }// get IU Tree data
+                    else{
+                        $fields = [_IUS_IUSNID, _IUS_INDICATOR_NID, _IUS_UNIT_NID, _IUS_SUBGROUP_VAL_NID];
+                        $params = ['fields' => $fields, 'conditions' => [], 'extra' => ['type' => 'all', 'unique' => false, 'onDemand' => $onDemand]];
+                        $returndData = $this->CommonInterface->serviceInterface('IndicatorUnitSubgroup', 'getAllIU', $params, $dbConnection);
+                    }
+                break;
+                case _TV_IUS:
+                    // coming soon
+                break;
+                case _TV_IC:
+                    // coming soon
+                    // Get Area Tree Data
+                    $returndData = $this->CommonInterface->serviceInterface('CommonInterface', 'getParentChild', ['IndicatorClassifications', $parentId, $onDemand], $dbConnection);
+                break;
+                case _TV_ICIND:
+                    // coming soon
+                break;
+                case _TV_ICIUS:
+                    // coming soon
+                break;
+            }
+
+        }
+
+        return $this->convertDataToTVArray($type, $returndData, $onDemand, $dbId);
+
+    }
+
+    /*
+      function to convert array data into tree view array
+    */
+    public function convertDataToTVArray($type, $dataArray, $onDemand, $dbId) {
+        $returnArray = array();
+
+        $i=0;
+        foreach($dataArray as $dt) {
+
+            $caseData = $this->convertDataToTVArrayCase($type, $dt);
+
+            if(isset($caseData['returnData'])) {
+                $caseData['returnData']['dbId'] = $dbId;
+                $caseData['returnData']['type'] = $type;
+                $caseData['returnData']['onDemand'] = $onDemand;    
+            }            
+
+            $returnArray[$i]['id'] = $caseData['rowid'];
+            $returnArray[$i]['fields'] = $caseData['fields'];
+            $returnArray[$i]['returnData'] = $caseData['returnData'];
+            $returnArray[$i]['isChildAvailable'] = $dt['childExists'];
+            if(count($dt['nodes']) > 0 ) {
+                $returnArray[$i]['nodes'] = $this->convertDataToTVArray($type, $dt['nodes'], $onDemand, $dbId);            
+            }
+            else {
+                $returnArray[$i]['nodes'] = $dt['nodes'];                
+            }           
+        
+            $i++;
+        }
+
+        return $returnArray;
+    }
+
+    /*
+      function to get case wise data
+    */
+    function convertDataToTVArrayCase($type, $data) { 
+        $retData = $fields = $returnData = array();
+        $rowid = '';
+        
+        switch(strtolower($type)) {
+            case _TV_AREA:
+                $rowid = $data['id'];
+                $fields = array('aname'=>$data['name']);
+                $returnData = array('pnid' => $data['nid'], 'pid' => $data['id']);
+            break;
+            case _TV_IU:
+                // Subgroup List
+                if(array_key_exists(_IUS_IUSNID, $data)){
+                    $rowid = $data['iusGid'];
+                    $fields = array('sName'=>$data['sName']);
+                    $returnData = array('iusGid' => $data['iusGid'], _IUS_IUSNID => $data[_IUS_IUSNID]);
+                }// IU List
+                else{
+                    $rowid = $data['iGid'] . '{~}' . $data['uGid'];
+                    $fields = array('iName'=>$data['iName'], 'uName'=>$data['uName']);
+                    //$returnData = array('pnid' => $data['iGid'] . '{~}' . $data['uGid'], 'iGid' => $data['iGid'], 'uGid' => $data['uGid']);
+                    $returnData = array('pnid' => $data['iGid'] . '{~}' . $data['uGid']);
+                }                
+            break;
+            case _TV_IU_S:
+                $rowid = $data['sGid'];
+                $fields = array('sName'=>$data['sName']);
+                $returnData = array('sGid' => $data['sGid'], _IUS_IUSNID => $data[_IUS_IUSNID]);
+            break;
+            case _TV_IUS:
+                // coming soon
+            break;
+            case _TV_IC:
+                $rowid = $data['id'];
+                $fields = array('icname'=>$data['name']);
+                $returnData = array('pnid' => $data['nid'], 'pid' => $data['id']);
+            break;
+            case _TV_ICIND:
+                // coming soon
+            break;
+            case _TV_ICIUS:
+                // coming soon
+            break;
+        }
+
+        $retData = array('rowid' => $rowid, 'fields' => $fields, 'returnData' => $returnData);
+
+        return $retData;
     }
 
 }

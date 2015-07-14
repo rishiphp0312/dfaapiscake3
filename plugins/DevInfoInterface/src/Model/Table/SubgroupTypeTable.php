@@ -96,6 +96,8 @@ class SubgroupTypeTable extends Table {
             $query = $this->find($type, $options);
         }
 
+        $query->order([_SUBGROUPTYPE_SUBGROUP_TYPE_ORDER => 'ASC']);
+        
         $results = $query->hydrate(false)->all();
 
         // Once we have a result set we can get all the rows
