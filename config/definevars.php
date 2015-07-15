@@ -167,20 +167,25 @@ return [
     define('_MTRANSACTIONLOGS_NEWVALUE', 'newvalue'),
     define('_MTRANSACTIONLOGS_STATUS', 'status'),
     define('_MTRANSACTIONLOGS_DESCRIPTION', 'description'),
-	
-	//Footnote table
-	
-	 define('_FOOTNOTE_NId', 'FootNote_NId'),
-	 define('_FOOTNOTE_VAL', 'FootNote'),
-	
-	
-	// data table
+    //Footnote table
+    define('_FOOTNOTE_NId', 'FootNote_NId'),
+    define('_FOOTNOTE_VAL', 'FootNote'),
+    // data table
     define('_MDATA_NID', 'Data_NId'),
     define('_MDATA_IUSNID', 'IUSNId'),
     define('_MDATA_TIMEPERIODNID', 'TimePeriod_NId'),
     define('_MDATA_AREANID', 'Area_NId'),
-	
-	
+    // m_ius_validations table
+    define('_MIUSVALIDATION_ID', 'id'),
+    define('_MIUSVALIDATION_DB_ID', 'db_id'),
+    define('_MIUSVALIDATION_INDICATOR_GID', 'indicator_gid'),
+    define('_MIUSVALIDATION_UNIT_GID', 'unit_gid'),
+    define('_MIUSVALIDATION_SUBGROUP_GID', 'subgroup_gid'),
+    define('_MIUSVALIDATION_IS_TEXTUAL', 'is_textual'),
+    define('_MIUSVALIDATION_MIN_VALUE', 'min_value'),
+    define('_MIUSVALIDATION_MAX_VALUE', 'max_value'),
+    define('_MIUSVALIDATION_CREATEDBY', 'createdby'),
+    define('_MIUSVALIDATION_MODIFIEDBY', 'modifiedby'),
     // Error Codes
     define('_DFAERR', 'DFAERR'), //  Error code prefix 
     define('_ERR100', _DFAERR . '100'), //   database not added 
@@ -202,7 +207,6 @@ return [
     define('_ERR117', _DFAERR . '117'), //   invalid activation key    service 1204
     define('_ERR118', _DFAERR . '118'), //   user not modified bcoz email already exists   service 1204
     define('_ERR119', _DFAERR . '119'), //   user is already added to this database 
-	
     // SUper Admin Role Id Hardcodes
     define('_SUPERADMINROLEID', '1'), // super admin id 
     define('_SUPERADMINNAME', 'Super Admin'), // super admin name 
@@ -218,8 +222,8 @@ return [
     define('_ACTIVE', '1'), // User status inactive  
     define('_IMPORTERRORLOG_FILE', 'TPL_Import_'), // User status inactive  
     define('_OK', 'OK'),
-    define('_STATUS', 'STATUS'),                   // Done or Error in import log of area and ICIUS
-    define('_DESCRIPTION', 'Description'),         // Error description in  import log of area and ICIUS
+    define('_STATUS', 'STATUS'), // Done or Error in import log of area and ICIUS
+    define('_DESCRIPTION', 'Description'), // Error description in  import log of area and ICIUS
     define('_ICIUS', 'icius'),
     define('_AREA', 'area'),
     define('_ICIUSEXPORT', 'iciusExport'),
@@ -227,7 +231,6 @@ return [
     define('_CHUNKS_PATH', WWW_ROOT . 'uploads' . DS . 'chunks'),
     define('_LOGS_PATH', WWW_ROOT . 'uploads' . DS . 'logs'),
     define('_XLS_PATH', WWW_ROOT . 'uploads' . DS . 'xls'),
-
     define('_TV_AREA', 'area'), // _TV_AREA -> Tree View Area
     define('_TV_IU', 'iu'), // indicator unit
     define('_TV_IU_S', 's'), // subgroup vals
@@ -235,31 +238,28 @@ return [
     define('_TV_IC', 'ic'), // indicator classification list
     define('_TV_ICIND', 'icind'), // indicator classification and indicator belongs to that IC
     define('_TV_ICIUS', 'icius'), // indicator classification and indicator belongs to that IC
-
     define('_TPL_Export_', 'TPL_Export_'),
     define('_LevelName', 'Level-'), // for area level name 
-	
-	
-	// insertdatakeys indexes for area 
-	define('_INSERTKEYS_AREAID', 'areaid'),
-    define('_INSERTKEYS_NAME',  'name'),
-    define('_INSERTKEYS_LEVEL',  'level'),
-    define('_INSERTKEYS_GID',  'gid'),
-    define('_INSERTKEYS_PARENTNID',  'parentnid'),
-	
-	//Module names
-	
-	define('_MODULE_NAME_AREA', 'area'),
-    	define('_AREA_LOGCOMMENT1', 'Area id is  empty!!'), //area id is empty 
-        define('_AREA_LOGCOMMENT2', 'Record not saved'), // error in insert  
-        define('_AREA_LOGCOMMENT3', 'Parent id not found!!'), // error Parent id not found
-        define('_AREA_LOGCOMMENT4', 'Invalid Details' ),// error Invalid details
-    
-    
-	
-	
-	
-	
-
-]
+    // insertdatakeys indexes for area 
+    define('_INSERTKEYS_AREAID', 'areaid'),
+    define('_INSERTKEYS_NAME', 'name'),
+    define('_INSERTKEYS_LEVEL', 'level'),
+    define('_INSERTKEYS_GID', 'gid'),
+    define('_INSERTKEYS_PARENTNID', 'parentnid'),
+    //Module names
+    define('_MODULE_NAME_AREA', 'area'),
+    //Area Error log comments names
+    define('_AREA_LOGCOMMENT1', 'Area id is  empty!!'), //area id is empty 
+    define('_AREA_LOGCOMMENT2', 'Record not saved'), // error in insert  
+    define('_AREA_LOGCOMMENT3', 'Parent id not found!!'), // error Parent id not found
+    define('_AREA_LOGCOMMENT4', 'Invalid Details'), // error Invalid details
+    //Module names
+    //Error msgs
+    define('_INDICATOR_IS_EMPTY', 'Indicator is Empty'),
+    define('_UNIT_IS_EMPTY', 'Unit is Empty'),
+    define('_SUBGROUP_IS_EMPTY', 'Subgroup is Empty'),
+    // Delemeters
+    define('_DELEM1', '{~}'),
+    define('_DELEM2', '[~]'),
+        ]
 ?>
