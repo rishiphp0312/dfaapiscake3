@@ -12,7 +12,7 @@ class DataComponent extends Component
 {
     
     // The other component your component uses
-    public $components   = ['Auth','DevInfoInterface.IndicatorClassifications','DevInfoInterface.IcIus','DevInfoInterface.Timeperiod'];
+    public $components   = ['Auth','DevInfoInterface.IndicatorClassifications','DevInfoInterface.IcIus','DevInfoInterface.Timeperiod','DevInfoInterface.IndicatorUnitSubgroup'];
     public $AreaObj      = NULL;
     public $AreaLevelObj = NULL;
     public $DataObj      = NULL;
@@ -47,7 +47,6 @@ class DataComponent extends Component
 			foreach($iusArray as $ius) {
 				
 				$iusAr = explode($this->delm, $ius);
-				
 				$iGid = $iusAr[0];
 				$uGid = $iusAr[1];
 				
@@ -56,28 +55,37 @@ class DataComponent extends Component
 				}else{
 					$sGid = '';				
 				}
-				//$data = $this->IndicatorUnitSubgroupObj->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid,'SubgroupVals.Subgroup_Val_GId'=>$sGid])->contain(['Indicator','SubgroupVals','Unit'], true)->hydrate(false)->all()->toArray();
 				
+				//
+				$data = $this->IndicatorUnitSubgroup->getIusNidsDetails($iGid,$uGid,$sGid);
 				//$this->IndicatorClassifications->getIusdetails($fields1, $conditions1, 'all'); 
-				if($sGid!='')
+				/*if($sGid!='')
 				$data = $this->IndicatorUnitSubgroupObj->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid,'SubgroupVals.Subgroup_Val_GId'=>$sGid])->contain(['Indicator','SubgroupVals','Unit'], true)->hydrate(false)->all()->toArray();
 				else
-				$data = $this->IndicatorUnitSubgroupObj->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid])->contain(['Indicator','SubgroupVals','Unit'], true)->hydrate(false)->all()->toArray();
+				$data = $this->IndicatorUnitSubgroupObj->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid])->contain(['Indicator','Unit','SubgroupVals'], true)->hydrate(false)->all()->toArray();
+				*/
 				
+							//	pr($data);
+
 				foreach($data as  $valueIus){
 				
+				//die;
+
 				$tempDataAr['ind'][$valueIus['indicator']['Indicator_NId']][0] = $iGid;
 				$tempDataAr['ind'][$valueIus['indicator']['Indicator_NId']][1] = $valueIus['indicator']['Indicator_Name'];
 
 				$tempDataAr['unit'][$valueIus['unit']['Unit_NId']][0] = $uGid;
 				$tempDataAr['unit'][$valueIus['unit']['Unit_NId']][1] = $valueIus['unit']['Unit_Name'];
+				
 				if($sGid!=''){
-				$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][0] = $sGid;
-				$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][1] = $valueIus['subgroup_val']['Subgroup_Val'];
+					
+					$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][0] = $sGid;
+					$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][1] = $valueIus['subgroup_val']['Subgroup_Val'];
 	
 				}else{
-				$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][0] = $valueIus['subgroup_val']['Subgroup_Val_GId'];
-				$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][1] = $valueIus['subgroup_val']['Subgroup_Val'];
+					
+					$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][0] = $valueIus['subgroup_val']['Subgroup_Val_GId'];
+					$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][1] = $valueIus['subgroup_val']['Subgroup_Val'];
 					
 				}
 				
@@ -108,10 +116,10 @@ class DataComponent extends Component
     public function getDEsearchData($fields = [], $conditions = [], $extra = []) {
 		 
 		 $iusnidData =[];
-		 
+		 //die;
 		 $iusNids = $this->getIusDataCollection($extra);
 		 $returnediusNids= $iusNids['iusnids']; //iusnids 
-		 pr($returnediusNids);
+		 pr($iusNids);die;
 		 //$returnediusNids= [2398,2660,23930];		
 		 
 		 // getting all classifications 

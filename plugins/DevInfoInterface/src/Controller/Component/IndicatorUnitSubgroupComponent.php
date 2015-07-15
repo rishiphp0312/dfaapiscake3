@@ -380,6 +380,12 @@ class IndicatorUnitSubgroupComponent extends Component {
     }
 	
 	
+	public function getIusNidsDetails($iGid,$uGid,$sGid) {
+
+		return $data = $this->IndicatorUnitSubgroupObj->getIusNidsDetails($iGid,$uGid,$sGid);
+
+
+	}
 	/*
 	function to get ius nids on passed ius gids 
 	*/
