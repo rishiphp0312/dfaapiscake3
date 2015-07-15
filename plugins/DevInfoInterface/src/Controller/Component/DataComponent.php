@@ -21,6 +21,7 @@ class DataComponent extends Component
     public $Indicator      = NULL;
     public $IndicatorUnitSubgroupObj      = NULL;
     public $SourceObj      = NULL;
+    public $IcIusObj      = NULL;
 	public $delm ='[-]'; 	
  
 	public function initialize(array $config)
@@ -34,19 +35,15 @@ class DataComponent extends Component
         $this->IndicatorUnitSubgroupObj = TableRegistry::get('DevInfoInterface.IndicatorUnitSubgroup');
         $this->FootnoteObj = TableRegistry::get('DevInfoInterface.Footnote');
         $this->IndicatorClassificationsObj = TableRegistry::get('DevInfoInterface.IndicatorClassifications');
+		$this->IcIusObj = TableRegistry::get('DevInfoInterface.IcIus');
 
     }
 	
-	public function getIusDataCollection($iusArray) {
-		
-			//$iusArray=['LR_7PLUS'.$this->delm.'20C6CF95-37AA-C024-FE3B-895AFD42EEF8'.$this->delm.'AAC7855A-3921-4824-AF8C-C1B1985875B0'
-			//,'LR_7PLUS'.$this->delm.'20C6CF95-37AA-C024-FE3B-895AFD42EEF8'.$this->delm.'DC55AACC-8700-2026-64AF-DCC75F310A2B'
+	public function getIusDataCollection($iusArray) {    
 			
-			//];
-			//$iusArray=['LR_7PLUS'.$this->delm.'20C6CF95-37AA-C024-FE3B-895AFD42EEF8'];
-			//pr($iusArray);
+		
 			$tempDataAr = array(); // temproryly store data for all element name		
-
+		
 			foreach($iusArray as $ius) {
 				
 				$iusAr = explode($this->delm, $ius);
@@ -65,9 +62,6 @@ class DataComponent extends Component
 				else
 				$data = $this->IndicatorUnitSubgroupObj->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid])->contain(['Indicator','SubgroupVals','Unit'], true)->hydrate(false)->all()->toArray();
 				
-				
-				//pr($data['indicator']['Indicator_NId']);die;
-				
 				foreach($data as  $valueIus){
 				
 				$tempDataAr['ind'][$valueIus['indicator']['Indicator_NId']][0] = $iGid;
@@ -75,24 +69,22 @@ class DataComponent extends Component
 
 				$tempDataAr['unit'][$valueIus['unit']['Unit_NId']][0] = $uGid;
 				$tempDataAr['unit'][$valueIus['unit']['Unit_NId']][1] = $valueIus['unit']['Unit_Name'];
-
+				if($sGid!=''){
 				$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][0] = $sGid;
 				$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][1] = $valueIus['subgroup_val']['Subgroup_Val'];
-
+	
+				}else{
+				$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][0] = $valueIus['subgroup_val']['Subgroup_Val_GId'];
+				$tempDataAr['sg'][$valueIus['subgroup_val']['Subgroup_Val_NId']][1] = $valueIus['subgroup_val']['Subgroup_Val'];
+					
+				}
+				
 				$tempDataAr['iusnids'][] = $valueIus['IUSNId'];	
 				
 				}
-				
-				
 
 			}
 			return $tempDataAr;
-			    //pr($data);
-				//pr($tempDataAr);
-				//die;
-			
-			//$IndicatorUnitSubgroupObj = $this->IndicatorUnitSubgroupObj->
-			//$data = $this->IndicatorUnitSubgroupObj->find()->where(['Data.Indicator_NId' => 'LR_7PLUS','Data.IUSNId IN '=>[2599,2469],'Data.Area_NId'=>'19785'])->contain(['Indicator','SubgroupVals','Unit'], true)->hydrate(false)->all()->toArray();
 		}		
 		
 		
@@ -109,73 +101,141 @@ class DataComponent extends Component
       returns data value with source
      * @access public
      */
+	 
+	 
     public function getDEsearchData($fields = [], $conditions = [], $extra = []) {
 		 
-		 pr($fields);
+		 $iusnidData =[];
 		 
 		 $iusNids = $this->getIusDataCollection($extra);
+		 $returnediusNids= $iusNids['iusnids']; //iusnids 
+		  pr($returnediusNids);
+
+		 //$returnediusNids= [2398,2660,23930];
 		
-		 pr($iusNids['unit']);
-		 pr($iusNids['ind']);
-		 //die;
-		 //$tempDataAr['iusnids']
-		 $conditions[_MDATA_IUSNID .' IN '] =$iusNids['iusnids'];
-		 pr($conditions);
-		 pr($iusNids);
+		 $conditions[_MDATA_IUSNID .' IN '] =$returnediusNids;	 
+		
+		
+		 // getting all classifications 
+		 $sourceList = $this->IndicatorClassificationsObj->find('all')->hydrate(false)->all()->toArray();
+		 //echo 'source list';
+			//pr($sourceList);		
+		// structuring classification for name and gid
+		 $classificationArray = array();
+		 foreach($sourceList as $index=>$value){
+			$classificationArray[$value['IC_NId']]['IC_GId']=$value['IC_GId'];
+			$classificationArray[$value['IC_NId']]['IC_Name']=$value['IC_Name'];
+			$classificationArray[$value['IC_NId']]['IC_Type']=$value['IC_Type'];
+		 }
 		 
-         $timeperiodList = $this->TimeperiodObj->find('all')->combine(_TIMEPERIOD_TIMEPERIOD_NID,_TIMEPERIOD_TIMEPERIOD)->toArray();
-        
-		 $footnoteList = $this->FootnoteObj->find('all')->combine(_FOOTNOTE_NId,_FOOTNOTE_VAL)->toArray();
-		 $sourceList = $this->IndicatorClassificationsObj->find('all')->combine(_IC_IC_NID,_IC_IC_NAME)->toArray();
-		 echo 'timeperiod';
-		 pr($timeperiodList);
-		 echo 'footnote';
-		 pr($footnoteList);
-		 $iusnidData = array();
-		 
+		 // getting all timperiod list  
+        $timeperiodList = $this->TimeperiodObj->find('all')->combine(_TIMEPERIOD_TIMEPERIOD_NID,_TIMEPERIOD_TIMEPERIOD)->toArray();
+       	 
+		 // getting all footnote list  
+  	    $footnoteList = $this->FootnoteObj->find('all')->combine(_FOOTNOTE_NId,_FOOTNOTE_VAL)->toArray();			
+			
+		
 		 // $data = $this->DataObj->find()->where(['Data.Indicator_NId' => '375','Data.IUSNId IN '=>[2599,2469],'Data.Area_NId'=>'19785'])->contain(['Indicator','SubgroupVals','Unit','Footnote'], true)->hydrate(false)->all()->toArray();
 	     $data = $this->DataObj->find()->where($conditions)->hydrate(false)->all()->toArray();
-		 echo  count($data);
-		
-		 foreach($data as $value){
-				
-				 $iusnidData[$value['IUSNId']]['dv']      = $value['Data_Value'];
-				 $iusnidData[$value['IUSNId']]['src']     = $sourceList[$value['Source_NId']];
-				 $iusnidData[$value['IUSNId']]['footnote']= $footnoteList[$value['FootNote_NId']];
-				 $iusnidData[$value['IUSNId']]['tp']      = $timeperiodList[$value['TimePeriod_NId']];
-				 $iusnidData[$value['IUSNId']]['iusnid']  = $value['IUSNId'];
-				 $iusnidData[$value['IUSNId']]['sGid']    = $iusNids['sg'][$value['Subgroup_Val_NId']][0];
-				 $iusnidData[$value['IUSNId']]['sName']    = $iusNids['sg'][$value['Subgroup_Val_NId']][1];
-		}
-		foreach(){
-			
-		}
-		pr($data);
-		pr($iusnidData);
-		pr($iusNids['sg']);
-		// echo  count($iusNids['sg']);
-		die;
-		 $iu =[]; //iu array
-
-                    //$conditions = [_MDATA_IUSNID . ' IN' => $iusNid,_MDATA_TIMEPERIODNID=>$timePeriodNid ,_MDATA_AREANID=>$areaNid];
 		 
+		 $alldataIusnids =[]; // store all iusnids from data 
+		 
+		 $iusnidData =[];
+		 
+		 foreach($data as $index => $value){
+			 echo 'source=='.$value['Source_NId'];
+			 echo '<br>';
+				 $IUNId = 'IU_'.$value['IUNId'];
+				 $iusnidData[$IUNId][$index]['dv']        = $value['Data_Value'];
+				 $iusnidData[$IUNId][$index]['src']       = $classificationArray[$value['Source_NId']]['IC_Name'];
+				 $iusnidData[$IUNId][$index]['footnote']  = $footnoteList[$value['FootNote_NId']];
+				 $iusnidData[$IUNId][$index]['tp']        = $timeperiodList[$value['TimePeriod_NId']];
+				 
+				 $iusnidData[$IUNId][$index]['sGid']      = $iusNids['sg'][$value['Subgroup_Val_NId']][0]; //gid 
+				 $iusnidData[$IUNId][$index]['sName']     = $iusNids['sg'][$value['Subgroup_Val_NId']][1]; // name 
+				 
+				 $iusnidData[$IUNId][$index]['iusnid']    = $value['IUSNId'];
+				 $alldataIusnids[]                        = $value['IUSNId'];
+				 $alldataIndicators[$value['IUSNId']]     = $value['Indicator_NId']; // storing ind index w.r.t iusnids
+				 $alldataUnits[$value['IUSNId']]          = $value['Unit_NId']; // storing unit index w.r.t iusnids
+				 
+				/*
+  				 $iusnidData[$value['IUNId']][$value['IUSNId']]['dv']      = $value['Data_Value'];
+				 $iusnidData[$value['IUNId']][$value['IUSNId']]['src']     = $sourceList[$value['Source_NId']];
+				 $iusnidData[$value['IUNId']][$value['IUSNId']]['footnote']= $footnoteList[$value['FootNote_NId']];
+				 $iusnidData[$value['IUNId']][$value['IUSNId']]['tp']      = $timeperiodList[$value['TimePeriod_NId']];
+				 
+				 $iusnidData[$value['IUNId']][$value['IUSNId']]['sGid']    = $iusNids['sg'][$value['Subgroup_Val_NId']][0];
+				 $iusnidData[$value['IUNId']][$value['IUSNId']]['sName']   = $iusNids['sg'][$value['Subgroup_Val_NId']][1];
+				 
+				 $iusnidData[$value['IUSNId']]['iusnid']  = $value['IUSNId'];
+				 $alldataIusnids[]                        = $value['IUSNId'];
+				 $alldataIndicators[$value['IUSNId']]     = $value['Indicator_NId'];
+				 $alldataUnits[$value['IUSNId']]          = $value['Unit_NId'];
+				 */
+				 
+		}
+		
+		
+		 $finalArray =[];		
+		 
+		 pr($returnediusNids);
+		
+		 foreach($returnediusNids as $index=> $iusnidvalue){
+			 // first classification
+			 $icData  = $this->IcIusObj->find()->where([_ICIUS_IUSNID.' IN '=> $iusnidvalue])->hydrate(false)->first();
+			 $icnid   = $icData['IC_NId']; 
+			 $prepareIU = 'IU_'.$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue];// using IU index for array 
+
+			 $finalArray[$icnid]['icName'] = $classificationArray[$icnid]['IC_Name'];
+			 $finalArray[$icnid]['iGid']   = $classificationArray[$icnid]['IC_GId'];
+			 $finalArray[$icnid]['iu'][$prepareIU]['iname']   = $iusNids['ind'][$alldataIndicators[$iusnidvalue]][1];//name 
+			 $finalArray[$icnid]['iu'][$prepareIU]['iGid']    = $iusNids['ind'][$alldataIndicators[$iusnidvalue]][0];
+		     $finalArray[$icnid]['iu'][$prepareIU]['uGid']    = $iusNids['unit'][$alldataUnits[$iusnidvalue]][0];
+			 $finalArray[$icnid]['iu'][$prepareIU]['uName']   = $iusNids['unit'][$alldataUnits[$iusnidvalue]][1];
+			 
+			 if(in_array($iusnidvalue,$alldataIusnids)==true){
+								//pr($iusnidData[$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue]]);die;
+				 $finalArray[$icnid]['iu'][$prepareIU]['subgrps'] = $iusnidData[$prepareIU];
+
+			 }else{
+				
+				  
+				  
+			 }
 	
-/*	$data = $this->DataObj->find()->where(['Data.Indicator_NId' => '375','Data.IUSNId IN '=>[2599,2469],'Data.Area_NId'=>'19785'])->contain(['Indicator','SubgroupVals','Unit','Footnote'], true)->hydrate(false)->all()->toArray();
-		 foreach($data as $index=>$value){
-			 $iu[$value[_IUS_IUSNID]]['icname'] = $value['indicator'][_INDICATOR_INDICATOR_NAME];
-			 $iu[$value[_IUS_IUSNID]]['igid']   = $value['indicator'][_INDICATOR_INDICATOR_GID];
-			 $iu[$value[_IUS_IUSNID]]['uName']  = $value['unit'][_UNIT_UNIT_NAME];
-			 $iu[$value[_IUS_IUSNID]]['ugid']  = $value['unit'][_UNIT_UNIT_GID];
-			 pr($value);
+			 /*
+			 $icData  = $this->IcIusObj->find()->where([_ICIUS_IUSNID.' IN '=> $iusnidvalue])->hydrate(false)->first();
+			 $icnid = $icData['IC_NId'];	
+			 $finalArray[$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue]]['icName'] = $classificationArray[$icnid]['IC_Name'];
+			 $finalArray[$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue]]['iGid']   = $classificationArray[$icnid]['IC_GId'];
+			 $finalArray[$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue]]['iu']['iname']   = $iusNids['ind'][$alldataIndicators[$iusnidvalue]][1];//name 
+			 $finalArray[$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue]]['iu']['iGid']    = $iusNids['ind'][$alldataIndicators[$iusnidvalue]][0];
+		     $finalArray[$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue]]['iu']['uGid']    = $iusNids['unit'][$alldataUnits[$iusnidvalue]][0];
+			 $finalArray[$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue]]['iu']['uName']   = $iusNids['unit'][$alldataUnits[$iusnidvalue]][1];
+			 //$sbgrp = $finalArray[$index]['iu']['subgrps'];
+			 if(in_array($iusnidvalue,$alldataIusnids)==true){
+								//pr($iusnidData[$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue]]);die;
+				 $finalArray[$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue]]['iu']['subgrps'] = $iusnidData[$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue]];
+
+			 }else{
+				
+				  
+				  
+			 }
+			 */
 			 
 		 }
-*/		 
-		  pr($iu);die;
-		//$data = $this->DataObj->getDataByParams($fields,$conditions);
-        pr($data);
-		die;
-        //return array('nid' => $NId, 'id' => $ID, 'name' => $name, 'childExists' => $childExists, 'nodes' => $nodes, 'arrayDepth' => $depth);
-    }
+	
+		
+		
+		 pr($finalArray);
+		 die('finalArray');
+		 
+		
+		
+		 
+	  }
 
     /**
     * getDataByIds method

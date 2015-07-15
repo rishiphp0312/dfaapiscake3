@@ -284,7 +284,7 @@ class IndicatorUnitSubgroupComponent extends Component {
         
         //Get Unit Details From Gid
         $IusField = [_IUS_IUSNID, _IUS_SUBGROUP_VAL_NID];
-        $IusCondition = [_INDICATOR_INDICATOR_NID => $IndicatorGidList[0][_INDICATOR_INDICATOR_NID] , _UNIT_UNIT_NID => $unitGidList[0][_UNIT_UNIT_NID]];
+        $IusCondition = [_IUS_INDICATOR_NID => $IndicatorGidList[0][_INDICATOR_INDICATOR_NID] , _IUS_UNIT_NID => $unitGidList[0][_UNIT_UNIT_NID]];
         $IusList = $this->getDataByParams($IusField, $IusCondition, 'list');
         
         //Get Subgroup Details From Nid
@@ -303,6 +303,70 @@ class IndicatorUnitSubgroupComponent extends Component {
         }
         
         return $subgroupList;
+    }
+    
+
+    /**
+     * getAllSubgroupsFromIUGids method
+     *
+     * @param array $fieldsArray Fields to insert with their Data. {DEFAULT : empty}
+     * @return void
+     */
+    public function getIusNameAndGids($conditions = [], $extra = []) {
+        
+        //Get Indicator Details From Gid
+        $IndicatorField = [_INDICATOR_INDICATOR_NID, _INDICATOR_INDICATOR_NAME];
+        $IndicatorCondition = [_INDICATOR_INDICATOR_GID => $conditions['iGid']];
+        $IndicatorGidList = $this->Indicator->getDataByParams($IndicatorField, $IndicatorCondition, 'all');
+        
+        if(!isset($IndicatorGidList[0])) return ['error' => _INDICATOR_IS_EMPTY];
+        
+        //Get Unit Details From Gid
+        $unitField = [_UNIT_UNIT_NID, _UNIT_UNIT_NAME];
+        $unitCondition = [_UNIT_UNIT_GID => $conditions['uGid']];
+        $unitGidList = $this->Unit->getDataByParams($unitField, $unitCondition, 'all');
+        
+        if(!isset($unitGidList[0])) return ['error' => _UNIT_IS_EMPTY];
+        
+        if(isset($conditions['sGid']) && !empty($conditions['sGid'])){
+            //Get Subgroup Details From GId
+            $subgroupField = [_SUBGROUP_VAL_SUBGROUP_VAL_NID, 'sName' => _SUBGROUP_VAL_SUBGROUP_VAL, 'sGid' => _SUBGROUP_VAL_SUBGROUP_VAL_GID];
+            $subgroupCondition = [_SUBGROUP_VAL_SUBGROUP_VAL_GID => $conditions['sGid']];
+            $subgroupList = $this->SubgroupVals->getDataByParams($subgroupField, $subgroupCondition, 'all');
+            
+        }else{
+            //Get Unit Details From Gid
+            $IusField = [_IUS_IUSNID, _IUS_SUBGROUP_VAL_NID, _IUS_ISDEFAULTSUBGROUP];
+            $IusCondition = [_IUS_INDICATOR_NID => $IndicatorGidList[0][_INDICATOR_INDICATOR_NID] , _IUS_UNIT_NID => $unitGidList[0][_UNIT_UNIT_NID]];
+            $IusResult = $this->getDataByParams($IusField, $IusCondition, 'all');
+            $IusList = array_column($IusResult, _IUS_ISDEFAULTSUBGROUP);
+            
+            if(array_search(true, $IusList)){
+                $sNid = $IusResult[array_search(true, $IusList)][_IUS_SUBGROUP_VAL_NID];
+            }else{
+                $sNid = $IusResult[array_search(false, $IusList)][_IUS_SUBGROUP_VAL_NID];
+            }
+            
+            //Get Subgroup Details From Nid
+            $subgroupField = [_SUBGROUP_VAL_SUBGROUP_VAL_NID, 'sName' => _SUBGROUP_VAL_SUBGROUP_VAL, 'sGid' => _SUBGROUP_VAL_SUBGROUP_VAL_GID];
+            $subgroupCondition = [_SUBGROUP_VAL_SUBGROUP_VAL_NID => $sNid];
+            $subgroupList = $this->SubgroupVals->getDataByParams($subgroupField, $subgroupCondition, 'all');
+        }
+
+        if(!empty($subgroupList)){
+            $return = [
+                'iGid' => $conditions['iGid'],
+                'iName' => $IndicatorGidList[0][_INDICATOR_INDICATOR_NAME],
+                'uGid' => $conditions['uGid'],
+                'uName' => $unitGidList[0][_UNIT_UNIT_NAME],
+                'sGid' => $subgroupList[0]['sGid'],
+                'sName' => $subgroupList[0]['sName'],
+                'iusGid' => $conditions['iGid'] . '{~}' . $conditions['uGid'] . '{~}' . $subgroupList[0]['sGid'],
+            ];
+        }else{
+            return ['error' => _SUBGROUP_IS_EMPTY];
+        }
+        return $return;
     }
 
     /**

@@ -76,7 +76,7 @@ class AreasTable extends Table {
         if ($type == 'list')
             $this->setListTypeKeyValuePairs($fields);
 
-        $data = $this->find($type, $options);    
+        $data = $this->find($type, $options)->hydrate(false)->all()->toArray();
     
         return $data;
     }

@@ -70,7 +70,6 @@ class CommonInterfaceComponent extends Component {
         $db_password = $dbConnection['db_password'];
 
         $config = [
-
             'className' => 'Cake\Database\Connection',
             'persistent' => false,
             'host' => $dbConnection['db_host'],
@@ -80,11 +79,8 @@ class CommonInterfaceComponent extends Component {
             'database' => $db_database,
             'timezone' => 'UTC',
             'cacheMetadata' => true,
-            'quoteIdentifiers' => false,
+            'quoteIdentifiers' => true,
         ];
-
-
-
 
         if (strtolower($db_source) == 'mysql') {
             $config['encoding'] = 'utf8';
@@ -92,8 +88,6 @@ class CommonInterfaceComponent extends Component {
         } else {
             $config['driver'] = 'Cake\Database\Driver\Sqlserver';
         }
-
-
 
         ConnectionManager::config('devInfoConnection', $config);
 
@@ -194,11 +188,12 @@ class CommonInterfaceComponent extends Component {
         //The following line should do the same like App::import() in the older version of cakePHP
         require_once(ROOT . DS . 'vendor' . DS . 'PHPExcel' . DS . 'PHPExcel' . DS . 'IOFactory.php');
         $objPHPExcel = \PHPExcel_IOFactory::load($filename);
+        unlink($filename); // Delete The uplaoded file
         return $objPHPExcel;
     }
 
     /**
-     * divideXlsOrCsvInChunks method    
+     * divideXlsOrCsvInChunkFiles method    
      * @param array $filename File to load. {DEFAULT : null}
      * @param array $extra Extra Parameters to use. {DEFAULT : null}
      * @return void
@@ -279,17 +274,6 @@ class CommonInterfaceComponent extends Component {
     }
 
     /**
-     * getParentnidLevel method
-     * @param $parentNid parentnid in excel 
-      returns arealevel
-     */
-    public function getParentnidLevel($parentNid) {
-        $fields = [_AREA_AREA_LEVEL];
-        $conditions[_AREA_AREA_ID] = $parentNid;
-        return $this->Area->getDataByParams($fields, $conditions);
-    }
-
-    /**
      * divideAreaids method
      *
      * @param array $filename File to load. {DEFAULT : null}
@@ -306,6 +290,7 @@ class CommonInterfaceComponent extends Component {
         $limitedRows = [];
         $compareAreaidDParentId = [];
         $allAreaParents = [];
+        $parentchkAreaId = [];
         //$compareAreaidDParentId =[];
 
         foreach ($insertDataArr as $index => $valueArray) {
@@ -348,6 +333,7 @@ class CommonInterfaceComponent extends Component {
         $conditions = array();
         $conditions = [_AREA_AREA_ID . ' IN ' => $insertDataAreaParentids];
         $areaidswithparentid = $this->Area->getDataByParams($fields, $conditions, 'list'); //getting database exists parentnids 
+        //pr( $areaidswithparentid);die;
         if (isset($newinsertDataArr) && !empty($newinsertDataArr)) {
             $finalareaids = [];
             $chkuniqueAreaids = [];
@@ -369,14 +355,15 @@ class CommonInterfaceComponent extends Component {
                     if ($allAreblank == false) {
                         $_SESSION['errorLog'][] = $value;
                         $_SESSION['errorLog'][_STATUS][] = _FAILED;
-                        $_SESSION['errorLog'][_DESCRIPTION][] = _AREA_LOGCOMMENT1;//area id empty 
+                        $_SESSION['errorLog'][_DESCRIPTION][] = _AREA_LOGCOMMENT1; //area id empty 
                     }
 
 
                     unset($value);
                     unset($newinsertDataArr[$row]);
                 } else if (isset($value[$insertDataKeys['areaid']]) && !empty($value[$insertDataKeys['areaid']])) {
-                    if (!empty($value[$insertDataKeys['parentnid']]) && $value[$insertDataKeys['parentnid']] != '-1' && in_array($value[$insertDataKeys['parentnid']], $areaidswithparentid) == true) {
+                    //pr($areaidswithparentid);
+                    if (array_key_exists($insertDataKeys['parentnid'], $value) && !empty($value[$insertDataKeys['parentnid']]) && $value[$insertDataKeys['parentnid']] != '-1' && in_array($value[$insertDataKeys['parentnid']], $areaidswithparentid) == true) {
                         //case when parent id is not empty and exists in database also 
                         if ($allAreblank == false) {
                             $_SESSION['errorLog'][] = $errorLogArray[$row] = $value;
@@ -443,7 +430,8 @@ class CommonInterfaceComponent extends Component {
 
                         $conditions = [];
                         $fields = [];
-                        $areadbdetails = '';
+                        $chkAreaId = [];
+                        $areadbdetails = [];
 
                         $conditions = [_AREA_AREA_ID => $value[$insertDataKeys['areaid']]];
                         $fields = [_AREA_AREA_ID];
@@ -453,6 +441,7 @@ class CommonInterfaceComponent extends Component {
 
                         $parentconditions = [];
                         $parentfields = [];
+                        $parentchkAreaId = [];
                         $parentareadbdetails = '';
 
                         $parentconditions = [_AREA_AREA_ID => $value[$insertDataKeys['parentnid']]];
@@ -659,7 +648,7 @@ class CommonInterfaceComponent extends Component {
         extract($extraParam);
 
         $extra = [];
-        $extra['limitRows'] = 20; // Number of rows in each file chunks
+        $extra['limitRows'] = 1000; // Number of rows in each file chunks
         $extra['startRows'] = 1; // Row from where the data reading starts
         $divideXlsOrCsvInChunks = $this->divideXlsOrCsvInChunkFiles($objPHPExcel, $extra);
 
@@ -671,7 +660,7 @@ class CommonInterfaceComponent extends Component {
             $params['nid'] = _UNIT_UNIT_NID;
         } else if ($component == 'Icius') {  //Bulk upload - ICIUS
             return $this->bulkUploadIcius($divideXlsOrCsvInChunks, $extra);
-        } 
+        }
 
         $params['insertDataKeys'] = $insertDataKeys;
         $params['updateGid'] = TRUE;
@@ -751,9 +740,7 @@ class CommonInterfaceComponent extends Component {
             array_walk($insertArray, function(&$val, $key) use($params, $insertDataKeys) {
                 //auto-generate GUID if not set
 
-                if (!array_key_exists(_AREA_AREA_GLOBAL, $val)) {
-                    $val[_AREA_AREA_GLOBAL] = '0';
-                }
+
                 if (!array_key_exists($insertDataKeys['gid'], $val)) {
                     $autoGenGuid = $this->guid();
                     $val[$insertDataKeys['gid']] = $autoGenGuid;
@@ -830,7 +817,6 @@ class CommonInterfaceComponent extends Component {
         $startRows = (isset($extra['startRows'])) ? $extra['startRows'] : 1;
 
         foreach ($divideXlsOrCsvInChunks as $filename) {
-
             $objPHPExcel = $this->readXlsOrCsv($filename);
 
             foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
@@ -840,6 +826,7 @@ class CommonInterfaceComponent extends Component {
                 $highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumn);
 
                 if ($highestRow == 1) {
+                    $this->unlinkFiles($divideXlsOrCsvInChunks);
                     return ['error' => 'The file is empty'];
                 }
 
@@ -848,8 +835,6 @@ class CommonInterfaceComponent extends Component {
                 $insertDataArrRows = [];
                 $insertDataArrCols = [];
                 $unsettedKeys = [];
-
-                $insertFieldsArr = [];
                 $subgroupTypeFields = [];
                 $levelArray = [];
                 $indicatorArray = [];
@@ -883,28 +868,30 @@ class CommonInterfaceComponent extends Component {
                                 $subgroupTypeFields[$col][$row] = $val;
                             }
                         } else {  //-- Data Strats from row 2 --//
-                            if (!isset($indicatorFieldKey)) {
-                                $indicatorFieldKey = array_search(strtolower('Indicator'), array_map('strtolower', $insertFieldsArr));
-                            }
-                            if (!isset($indicatorGidFieldKey)) {
-                                $indicatorGidFieldKey = array_search(strtolower('IndicatorGid'), array_map('strtolower', $insertFieldsArr));
-                            }
-                            if (!isset($unitFieldKey)) {
-                                $unitFieldKey = array_search(strtolower('Unit'), array_map('strtolower', $insertFieldsArr));
-                            }
-                            if (!isset($unitGidFieldKey)) {
-                                $unitGidFieldKey = array_search(strtolower('UnitGid'), array_map('strtolower', $insertFieldsArr));
-                            }
-                            if (!isset($subgroupValFieldKey)) {
-                                $subgroupValFieldKey = array_search(strtolower('Subgroup'), array_map('strtolower', $insertFieldsArr));
-                                if (gettype($subgroupValFieldKey) == 'integer') {
-                                    $subgroupTypeFieldKey = $subgroupValFieldKey + 1;
+                            if ($row == 2) {
+                                if (!isset($indicatorFieldKey)) {
+                                    $indicatorFieldKey = array_search(strtolower('Indicator'), array_map('strtolower', $insertFieldsArr));
                                 }
-                            }
-                            if (!isset($subgroupValGidFieldKey)) {
-                                $subgroupValGidFieldKey = array_search(strtolower('SubgroupGid'), array_map('strtolower', $insertFieldsArr));
-                                if (gettype($subgroupValGidFieldKey) == 'integer') {
-                                    $subgroupTypeFieldKey = $subgroupValGidFieldKey + 1;
+                                if (!isset($indicatorGidFieldKey)) {
+                                    $indicatorGidFieldKey = array_search(strtolower('IndicatorGid'), array_map('strtolower', $insertFieldsArr));
+                                }
+                                if (!isset($unitFieldKey)) {
+                                    $unitFieldKey = array_search(strtolower('Unit'), array_map('strtolower', $insertFieldsArr));
+                                }
+                                if (!isset($unitGidFieldKey)) {
+                                    $unitGidFieldKey = array_search(strtolower('UnitGid'), array_map('strtolower', $insertFieldsArr));
+                                }
+                                if (!isset($subgroupValFieldKey)) {
+                                    $subgroupValFieldKey = array_search(strtolower('Subgroup'), array_map('strtolower', $insertFieldsArr));
+                                    if (gettype($subgroupValFieldKey) == 'integer') {
+                                        $subgroupTypeFieldKey = $subgroupValFieldKey + 1;
+                                    }
+                                }
+                                if (!isset($subgroupValGidFieldKey)) {
+                                    $subgroupValGidFieldKey = array_search(strtolower('SubgroupGid'), array_map('strtolower', $insertFieldsArr));
+                                    if (gettype($subgroupValGidFieldKey) == 'integer') {
+                                        $subgroupTypeFieldKey = $subgroupValGidFieldKey + 1;
+                                    }
                                 }
                             }
 
@@ -961,6 +948,7 @@ class CommonInterfaceComponent extends Component {
                         $validFormat = $this->importFormatCheck('icius');
                         $formatDiff = array_diff($validFormat, array_map('strtolower', $insertFieldsArr));
                         if (!empty($formatDiff)) {
+                            $this->unlinkFiles($divideXlsOrCsvInChunks);
                             return ['error' => 'Invalid Columns Format'];
                         }
                     }
@@ -1126,9 +1114,10 @@ class CommonInterfaceComponent extends Component {
                                     //$return[count($val)] = $valueOriginal[$index];
                                     $subGroupValsConditionsWithRowIndex[$index][] = '("' . $valueOriginal[$index] . '",' . $subgroupType . ')';
                                     $subGroupValsConditions[] = '("' . $valueOriginal[$index] . '",' . $subgroupType . ')';
-                                    $subGroupValsConditionsArrayFields[_SUBGROUP_SUBGROUP_NAME] = $valueOriginal[$index];
-                                    $subGroupValsConditionsArrayFields[_SUBGROUP_SUBGROUP_TYPE] = $subgroupType;
-                                    $subGroupValsConditionsArray[] = $subGroupValsConditionsArrayFields;
+                                    $subGroupValsConditionsArray[] = [
+                                        _SUBGROUP_SUBGROUP_NAME => $valueOriginal[$index],
+                                        _SUBGROUP_SUBGROUP_TYPE => $subgroupType
+                                    ];
                                     $subGroupValsConditions = array_unique($subGroupValsConditions);
                                     $val = $return;
                                 }
@@ -1161,7 +1150,6 @@ class CommonInterfaceComponent extends Component {
 
                         //Last Dimension Column
                         if ($key == (array_keys($subGroupTypeList)[count(array_keys($subGroupTypeList)) - 1])) {
-
 
                             if (empty($subGroupValsConditionsArrayFiltered))
                                 continue;
@@ -1241,25 +1229,16 @@ class CommonInterfaceComponent extends Component {
             if (!empty($iusCombinations)) {
 
                 $columnKeys = [_IUS_IUSNID, _IUS_INDICATOR_NID, _IUS_UNIT_NID, _IUS_SUBGROUP_VAL_NID, _IUS_SUBGROUP_NIDS];
-                /* $conditions = ['('
-                  . _IUS_INDICATOR_NID
-                  . ',' . _IUS_UNIT_NID
-                  . ',' . _IUS_SUBGROUP_VAL_NID
-                  . ',' . _IUS_SUBGROUP_NIDS
-                  . ') IN ('
-                  . implode(',', $iusCombinationsCond)
-                  . ')']; */
-
                 $conditions = ['OR' => $iusCombinations];
-
                 $getExistingRecords = $this->IndicatorUnitSubgroup->getConcatedIus($columnKeys, $conditions, 'list');
 
+                //Some records already exists, don't add them
                 if (!empty($getExistingRecords)) {
                     $iusCombinations = array_diff_key($iusCombinations, array_intersect($iusCombinationsCond, $getExistingRecords));
                 }
-//debug($iusCombinations);exit;
+
+                // Insert New IUS records
                 if (!empty($iusCombinations)) {
-                    // Insert New IUS records
                     $insertDataKeys = [_IUS_INDICATOR_NID, _IUS_UNIT_NID, _IUS_SUBGROUP_VAL_NID, _IUS_SUBGROUP_NIDS];
                     $this->IndicatorUnitSubgroup->insertBulkData($iusCombinations, $insertDataKeys);
                 }
@@ -1277,15 +1256,12 @@ class CommonInterfaceComponent extends Component {
             $allChunksRowsArr[] = array_keys($insertDataArrRows);
 
             // ---- ICIUS successfully added - chunk
+
+            $this->unlinkFiles($filename);
         }// Chunk Loop
-
+        // ---- ICIUS successfully added - whole file   
+        // Generate Import Log file
         return $this->createImportLog($allChunksRowsArr, $unsettedKeysAllChunksArr);
-
-        // ---- ICIUS successfully added - whole file
-        //debug($unsettedKeys);
-        //debug('ICIUS Successfully added');
-        //exit;
-        //return true;
     }
 
     /**
@@ -1430,12 +1406,13 @@ class CommonInterfaceComponent extends Component {
      */
     public function bulkUploadXlsOrCsvForIndicator($params = null) {
         extract($params);
+        $objPHPExcel = $this->readXlsOrCsv($filename);
 
         $insertDataKeys = ['name' => _INDICATOR_INDICATOR_NAME, 'gid' => _INDICATOR_INDICATOR_GID, 'highIsGood' => _INDICATOR_HIGHISGOOD];
         $extra['limitRows'] = 1000; // Number of rows in each file chunks
         $extra['startRows'] = 2; // Row from where the data reading starts
 
-        $divideXlsOrCsvInChunks = $this->divideXlsOrCsvInChunks($filename, $extra);
+        $divideXlsOrCsvInChunks = $this->divideXlsOrCsvInChunkFiles($objPHPExcel, $extra);
 
         foreach ($divideXlsOrCsvInChunks as $filename) {
 
@@ -1683,73 +1660,6 @@ class CommonInterfaceComponent extends Component {
     }
 
     /**
-     * divideXlsOrCsvInChunks method
-     *
-     * @param array $filename File to load. {DEFAULT : null}
-     * @param array $extra Extra Parameters to use. {DEFAULT : null}
-     * @return void
-     */
-    public function divideXlsOrCsvInChunks($filename = null, $extra = null) {
-
-        //The following line should do the same like App::import() in the older version of cakePHP 
-        $objPHPExcel = $this->readXlsOrCsv($filename);
-        $startRows = (isset($extra['startRows'])) ? $extra['startRows'] : 1;
-        $filesArray = [];
-
-        foreach ($objPHPExcel->getWorksheetIterator() as $worksheet) {
-            $worksheetTitle = $worksheet->getTitle();
-            $highestRow = $worksheet->getHighestRow(); // e.g. 10
-            $highestColumn = $worksheet->getHighestColumn(); // e.g. 'F'
-            $highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumn);
-
-            if ($extra['limitRows'] !== null) {
-                $limitRows = $extra['limitRows'];
-
-                $sheetCount = 1;
-                if ($highestRow > ($limitRows + ($startRows - 1))) {
-                    $sheetCount = ceil($highestRow - ($startRows - 1) / $limitRows);
-                }
-            } else {
-                $limitRows = 0;
-            }
-
-            $PHPExcel = new \PHPExcel();
-            $sheet = 1;
-
-            for ($row = $startRows; $row <= $highestRow; ++$row) {
-
-                $endrows = $limitRows + ($startRows - 1);
-                $character = 'A';
-
-                for ($col = 0; $col < $highestColumnIndex; ++$col) {
-                    $cell = $worksheet->getCellByColumnAndRow($col, $row);
-                    $val = $cell->getValue();
-                    $dataType = \PHPExcel_Cell_DataType::dataTypeForValue($val);
-
-                    $currentRow = $row - (($sheet - 1) * $limitRows);
-
-                    $PHPExcel->getActiveSheet()->SetCellValue($character . $currentRow, $val);
-                    $character++;
-                }
-
-                if (($row == $endrows) || ($row == $highestRow)) {
-                    //echo '<pre>'; print_r($PHPExcel);
-                    $PHPExcel->setActiveSheetIndex(0);
-                    $objWriter = new \PHPExcel_Writer_Excel2007($PHPExcel);
-                    $sheetPath = WWW_ROOT . 'uploads' . DS . time() . $sheet . '.xls';
-                    $objWriter->save($sheetPath);
-                    $filesArray[] = $sheetPath;
-                    $PHPExcel = new \PHPExcel();
-                    $startRows += $limitRows;
-                    $sheet++;
-                }
-            }
-        }
-
-        return $filesArray;
-    }
-
-    /**
      * bulkUploadXlsOrCsvForArea method
      * @param array $filename File to load. {DEFAULT : null}
      * @param array $extra Extra Parameters to use. {DEFAULT : null}
@@ -1797,7 +1707,6 @@ class CommonInterfaceComponent extends Component {
 
 
         $divideXlsOrCsvInChunks = $this->divideXlsOrCsvInChunkFiles($objPHPExcel, $extra); // split  the file in chunks 
-
         $firstRow = ['A' => 'AreaId', 'B' => 'AreaName', 'C' => 'AreaLevel', 'D' => 'AreaGId', 'E' => 'Parent AreaId', 'F' => 'Status', 'G' => 'Description'];
         //$areaErrorLog = $this->createErrorLog($firstRow, 'Area');   //returns error log file 
         $this->resetLogdata();
@@ -1805,7 +1714,6 @@ class CommonInterfaceComponent extends Component {
         foreach ($divideXlsOrCsvInChunks as $filename) {
 
             $loadDataFromXlsOrCsv = $this->prepareDataFromXlsOrCsv($filename, $insertDataKeys, $extra);
-
             array_walk($loadDataFromXlsOrCsv['dataArray'], function(&$val, $key) use($insertDataKeys) {
                 if (!array_key_exists($insertDataKeys['gid'], $val)) {
                     $val[$insertDataKeys['gid']] = $this->guid();
@@ -1817,7 +1725,7 @@ class CommonInterfaceComponent extends Component {
             $params['updateGid'] = TRUE;
 
             $this->nameGidLogic($loadDataFromXlsOrCsv, $component, $params);
-            unlink($filename);
+            @unlink($filename);
         }
 
         // $this->appendErrorLogData(WWW_ROOT.$areaErrorLog,$_SESSION['errorLog']); //
@@ -2274,7 +2182,7 @@ class CommonInterfaceComponent extends Component {
         $objWriter = new \PHPExcel_Writer_Excel2007($objPHPExcel);
         $saveFile = _LOGS_PATH . DS . _IMPORTERRORLOG_FILE . _MODULE_NAME_AREA . '_' . $authUserId . '_' . date('Y-m-d-H-i-s') . '.xls';
         //$returnFilename = WWW_ROOT.'uploads'.DS.'logs'.DS._IMPORTERRORLOG_FILE . _MODULE_NAME_AREA . '_' . $authUserId . '_' .time().'.xls';
-		$returnFilename = _IMPORTERRORLOG_FILE . _MODULE_NAME_AREA . '_' . $authUserId . '_' . date('Y-m-d-H-i-s') . '.xls';
+        $returnFilename = _IMPORTERRORLOG_FILE . _MODULE_NAME_AREA . '_' . $authUserId . '_' . date('Y-m-d-H-i-s') . '.xls';
         $objWriter->save($saveFile);
         return $returnFilename;
         // $objWriter->save($filename);
@@ -2289,6 +2197,7 @@ class CommonInterfaceComponent extends Component {
         $conditions = array();
         if ($component == 'IndicatorClassifications') {
             $conditions[_IC_IC_PARENT_NID] = $parentNID;
+            //$conditions[_IC_IC_TYPE] = 'SC';
             $order = array(_IC_IC_NAME => 'ASC');
         } else if ($component == 'Area') {
             $conditions[_AREA_PARENT_NId] = $parentNID;
@@ -2375,6 +2284,22 @@ class CommonInterfaceComponent extends Component {
      */
     public function prepareNode($NId, $ID, $name, $childExists, $nodes = array(), $depth = 1) {
         return array('nid' => $NId, 'id' => $ID, 'name' => $name, 'childExists' => $childExists, 'nodes' => $nodes, 'arrayDepth' => $depth);
+    }
+
+    /**
+     * function to Delete Files from the disk
+     *
+     * @param array $filepaths files to be deleted
+     * @access public
+     */
+    public function unlinkFiles($filepaths = null) {
+        if (is_array($filepaths)) {
+            foreach ($filepaths as $filepath) {
+                @unlink($filepath);
+            }
+        } else {
+            @unlink($filepaths);
+        }
     }
 
 }

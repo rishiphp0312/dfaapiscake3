@@ -19,7 +19,7 @@ class CommonComponent extends Component {
     public $dbcon = '';
     public $Users = '';
     public $Roles = '';
-    public $components = ['Auth', 'DevInfoInterface.CommonInterface'];
+    public $components = ['Auth', 'MIusValidations', 'DevInfoInterface.CommonInterface'];
 
     public function initialize(array $config) {
         parent::initialize($config);
@@ -374,6 +374,7 @@ class CommonComponent extends Component {
                 case _TV_AREA:
                     // Get Area Tree Data
                     $returndData = $this->CommonInterface->serviceInterface('CommonInterface', 'getParentChild', [$type, $parentId, $onDemand], $dbConnection);
+
                 break;
                 case _TV_IU:
                     // get Subgroup Tree data
@@ -408,8 +409,10 @@ class CommonComponent extends Component {
             }
 
         }
-
-        return $this->convertDataToTVArray($type, $returndData, $onDemand, $dbId);
+        
+        $data = $this->convertDataToTVArray($type, $returndData, $onDemand, $dbId);
+        //pr($data); exit;
+        return $data;
 
     }
 
@@ -418,12 +421,12 @@ class CommonComponent extends Component {
     */
     public function convertDataToTVArray($type, $dataArray, $onDemand, $dbId) {
         $returnArray = array();
-
+        //pr($dataArray);
         $i=0;
         foreach($dataArray as $dt) {
 
             $caseData = $this->convertDataToTVArrayCase($type, $dt);
-
+            
             if(isset($caseData['returnData'])) {
                 $caseData['returnData']['dbId'] = $dbId;
                 $caseData['returnData']['type'] = $type;
@@ -435,7 +438,7 @@ class CommonComponent extends Component {
             $returnArray[$i]['returnData'] = $caseData['returnData'];
             $returnArray[$i]['isChildAvailable'] = $dt['childExists'];
             if(count($dt['nodes']) > 0 ) {
-                $returnArray[$i]['nodes'] = $this->convertDataToTVArray($type, $dt['nodes'], $onDemand, $dbId);            
+                $returnArray[$i]['nodes'] = $this->convertDataToTVArray($type, $dt['nodes'], $onDemand, $dbId, $i);            
             }
             else {
                 $returnArray[$i]['nodes'] = $dt['nodes'];                
@@ -443,7 +446,7 @@ class CommonComponent extends Component {
         
             $i++;
         }
-
+        
         return $returnArray;
     }
 
@@ -495,9 +498,130 @@ class CommonComponent extends Component {
             break;
         }
 
-        $retData = array('rowid' => $rowid, 'fields' => $fields, 'returnData' => $returnData);
+        return array('rowid' => $rowid, 'fields' => $fields, 'returnData' => $returnData);
+    }
 
-        return $retData;
+
+    /*
+      function to add/update IUS validations
+    */
+    function addUpdateIUSValidations($dbId, $iusGids = [], $extra=[]) { 
+        
+        $status = false;
+
+        foreach($iusGids as $iusGid){
+            $iusGidsExploded = explode(_DELEM1, $iusGid);
+            $subgroupGid[] = isset($iusGidsExploded[2]) ? $iusGidsExploded[2] : '' ;
+            
+            if(empty($subgroupGid[0])) {
+               // find all subgroup gids from the database and fill the array 
+               $subgroupGid = $this->getAllSubGrpsFromIU($dbId, $iusGidsExploded[0], $iusGidsExploded[1], 'sGid');
+            }
+            //pr($subgroupGid);
+            foreach($subgroupGid as $sGid) { 
+                if(!empty($sGid)) {
+                    // insert/update into database
+                    $extra['first'] = true;
+                    $fields = [_MIUSVALIDATION_ID];
+                    $conditions = [
+                        _MIUSVALIDATION_DB_ID => $dbId,
+                        _MIUSVALIDATION_INDICATOR_GID => $iusGidsExploded[0],
+                        _MIUSVALIDATION_UNIT_GID => $iusGidsExploded[1],
+                        _MIUSVALIDATION_SUBGROUP_GID => $sGid
+                    ];
+                    $validationExist = $this->MIusValidations->getRecords($fields, $conditions, 'all', $extra);
+                    
+                    // Update Case
+                    if(!empty($validationExist)){
+                        $conditions = [_MIUSVALIDATION_ID => $validationExist[_MIUSVALIDATION_ID]];
+                        $updateArray = [
+                            _MIUSVALIDATION_IS_TEXTUAL => (isset($extra['isTextual'])) ? $extra['isTextual'] : 0,
+                            _MIUSVALIDATION_MIN_VALUE => (isset($extra['minimumValue'])) ? $extra['minimumValue'] : null,
+                            _MIUSVALIDATION_MAX_VALUE => (isset($extra['maximumValue'])) ? $extra['maximumValue']: null,
+                            _MIUSVALIDATION_MODIFIEDBY => $this->Auth->user('id')
+                        ];
+                        $this->MIusValidations->updateRecord($updateArray, $conditions);
+                        $status = true;
+                    }
+                    //Insert Case
+                    else {
+                        $MIusValidationsInsert[] = [
+                            _MIUSVALIDATION_DB_ID => $dbId,
+                            _MIUSVALIDATION_INDICATOR_GID => $iusGidsExploded[0],
+                            _MIUSVALIDATION_UNIT_GID => $iusGidsExploded[1],
+                            _MIUSVALIDATION_SUBGROUP_GID => $sGid,
+                            _MIUSVALIDATION_IS_TEXTUAL => (isset($extra['isTextual'])) ? $extra['isTextual'] : 0,
+                            _MIUSVALIDATION_MIN_VALUE => (isset($extra['minimumValue'])) ? $extra['minimumValue'] : null,
+                            _MIUSVALIDATION_MAX_VALUE => (isset($extra['maximumValue'])) ? $extra['maximumValue']: null,
+                            _MIUSVALIDATION_CREATEDBY => $this->Auth->user('id')
+                        ];
+                        $insertDataKeys = [
+                            _MIUSVALIDATION_DB_ID,
+                            _MIUSVALIDATION_INDICATOR_GID,
+                            _MIUSVALIDATION_UNIT_GID,
+                            _MIUSVALIDATION_SUBGROUP_GID,
+                            _MIUSVALIDATION_IS_TEXTUAL,
+                            _MIUSVALIDATION_MIN_VALUE,
+                            _MIUSVALIDATION_MAX_VALUE,
+                            _MIUSVALIDATION_CREATEDBY,
+                            _MIUSVALIDATION_MODIFIEDBY
+                        ];
+                        $this->MIusValidations->insertBulkData($MIusValidationsInsert, $insertDataKeys);
+                        $status = true;
+                    }
+                }
+
+            }
+
+        }
+
+        return $status;
+    }
+
+
+    /*
+      function to add/update IUS validations
+    */
+    function getAllSubGrpsFromIU($dbId, $iGid=null, $uGid=null, $flags='sGid') { 
+        
+        $returnData = [];
+
+        if(!empty($iGid) && !empty($uGid)) {
+            $dbConnection = $this->getDbConnectionDetails($dbId);
+
+            $params = [];
+            $params['fields'] = [_IUS_SUBGROUP_VAL_NID];    
+            $params['conditions'] = ['iGid' => $iGid, 'uGid' => $uGid];
+            $params['extra'] = ['type' => 'all', 'unique' => true];
+            $data = $this->CommonInterface->serviceInterface('IndicatorUnitSubgroup', 'getAllSubgroupsFromIUGids', $params, $dbConnection);
+            if($data) {
+                $i=0;
+                foreach($data as $iusGid) {
+                    $key = $i;
+                    if($flags == 'sGid') {
+                        $sGrp = explode(_DELEM1, $iusGid['iusGid']);
+                        $value = $sGrp[2];    
+                    }
+                    else if($flags == 'IUSGid') {
+                        $value = $iusGid['iusGid'];
+                    }
+                    else if($flags == 'IUSNId') {
+                        $value = $iusGid['IUSNId'];
+                    }
+                    else if($flags == 'sgrpDetail') {
+                        $sGrp = explode(_DELEM1, $iusGid['iusGid']);
+                        $key = $sGrp[2];
+                        $value = $iusGid['sName'];
+                    }
+                    
+                    if(isset($key) && !empty($value)) {
+                        $returnData[$key] = $value;
+                    }
+                    $i++;
+                }
+            }
+        }       
+        return $returnData;
     }
 
 }

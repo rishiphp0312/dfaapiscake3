@@ -22,6 +22,8 @@ class DataTable extends Table
         $this->table('UT_Data');
         $this->primaryKey(_MDATA_NID);
         $this->addBehavior('Timestamp');
+			
+		/*
 		$this->belongsTo('Indicator', [
             'className' => 'DevInfoInterface.Indicator',
             'foreignKey' => 'Indicator_NId',
@@ -48,8 +50,7 @@ class DataTable extends Table
 			'joinType' => 'INNER',
         ]);
 		
-		
-		/*
+	
 		$this->addAssociations([
 		  'belongsTo' => [
 			'Indicator' => ['className' => 'DevInfoInterface.Indicator', 'foreignKey' => 'Indicator_NId',]
@@ -131,36 +132,15 @@ class DataTable extends Table
 		 
 		//$data = $this->find()->all()->toArray();
     
-		pr($options);
+	
         return $data;
 
     }
 
 
-    /**
-     * deleteByIds method
-     *
-     * @param array $ids Fields to fetch. {DEFAULT : null}
-     * @return void
-     */
-    public function deleteByIds($ids = null)
-    {
-        $result = $this->deleteAll([_UNIT_UNIT_NID . ' IN' => $ids]);
-        return $result;
-    }
-
+    
         
-    /**
-     * deleteByParams method
-     *
-     * @param array $conditions Fields to fetch. {DEFAULT : empty}
-     * @return void
-     */
-    public function deleteByParams(array $conditions)
-    {
-        $result = $this->deleteAll($conditions);
-        return $result;
-    }
+   
 
 
     /**
@@ -182,40 +162,9 @@ class DataTable extends Table
     }
 
 
-    /**
-     * insertBulkData method
-     *
-     * @param array $insertDataArray Data to insert. {DEFAULT : empty}
-     * @param array $insertDataKeys Columns to insert. {DEFAULT : empty}
-     * @return void
-     */
-    public function insertBulkData($insertDataArray = [], $insertDataKeys = [])
-    {   
-        $insertDataArray = array_intersect_key($insertDataArray, array_unique(array_map('serialize', $insertDataArray)));
-        $query = $this->query(); 
-        foreach($insertDataArray as $insertData){
-            $query->insert($insertDataKeys)->values($insertData); // person array contains name and title
-        }        
-        return $query->execute();
-    }
 
 
-    /**
-     * insertBulkData method
-     *
-     * @param array $dataArray Data rows to insert. {DEFAULT : empty}
-     * @return void
-     */
-    public function insertOrUpdateBulkData($dataArray = [])
-    {
-        $entities = $this->newEntities($dataArray);
-        foreach ($entities as $entity) {
-            if (!$entity->errors()) {
-                $this->save($entity);
-            }
-        }
-        
-    }
+    
 
 
     /**

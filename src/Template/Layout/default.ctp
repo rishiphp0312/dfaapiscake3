@@ -9,6 +9,7 @@
         <title>DevInfo Database Administrative Tool</title>
         <script>
             var _WEBSITE_URL = '<?php echo _WEBSITE_URL; ?>';
+            var _SCREENHEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
         </script>
         <?php echo $this->Html->meta('icon') ?>
         <?php echo $this->Html->css(['reset','styleguide','style','responsive','font-awesome.min','ngDialog']) ?>
