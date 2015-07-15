@@ -12,7 +12,7 @@ class DataComponent extends Component
 {
     
     // The other component your component uses
-    public $components   = ['Auth'];
+    public $components   = ['Auth','DevInfoInterface.IndicatorClassifications','DevInfoInterface.IcIus','DevInfoInterface.Timeperiod'];
     public $AreaObj      = NULL;
     public $AreaLevelObj = NULL;
     public $DataObj      = NULL;
@@ -57,6 +57,8 @@ class DataComponent extends Component
 					$sGid = '';				
 				}
 				//$data = $this->IndicatorUnitSubgroupObj->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid,'SubgroupVals.Subgroup_Val_GId'=>$sGid])->contain(['Indicator','SubgroupVals','Unit'], true)->hydrate(false)->all()->toArray();
+				
+				//$this->IndicatorClassifications->getIusdetails($fields1, $conditions1, 'all'); 
 				if($sGid!='')
 				$data = $this->IndicatorUnitSubgroupObj->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid,'SubgroupVals.Subgroup_Val_GId'=>$sGid])->contain(['Indicator','SubgroupVals','Unit'], true)->hydrate(false)->all()->toArray();
 				else
@@ -109,15 +111,15 @@ class DataComponent extends Component
 		 
 		 $iusNids = $this->getIusDataCollection($extra);
 		 $returnediusNids= $iusNids['iusnids']; //iusnids 
-		  pr($returnediusNids);
-
-		 //$returnediusNids= [2398,2660,23930];
-		
-		 $conditions[_MDATA_IUSNID .' IN '] =$returnediusNids;	 
-		
-		
+		 pr($returnediusNids);
+		 //$returnediusNids= [2398,2660,23930];		
+		 
 		 // getting all classifications 
-		 $sourceList = $this->IndicatorClassificationsObj->find('all')->hydrate(false)->all()->toArray();
+		 $fields1=[_IC_IC_NAME,_IC_IC_GID,_IC_IC_NID,_IC_IC_TYPE];
+		 $conditions1=[];
+		 $sourceList = $this->IndicatorClassifications->getDataByParams($fields1, $conditions1, 'all'); 
+		
+		 // 
 		 //echo 'source list';
 			//pr($sourceList);		
 		// structuring classification for name and gid
@@ -127,22 +129,29 @@ class DataComponent extends Component
 			$classificationArray[$value['IC_NId']]['IC_Name']=$value['IC_Name'];
 			$classificationArray[$value['IC_NId']]['IC_Type']=$value['IC_Type'];
 		 }
-		 
-		 // getting all timperiod list  
-        $timeperiodList = $this->TimeperiodObj->find('all')->combine(_TIMEPERIOD_TIMEPERIOD_NID,_TIMEPERIOD_TIMEPERIOD)->toArray();
-       	 
+		
+		
+		 // getting all timperiod list 
+		$fields2=[_TIMEPERIOD_TIMEPERIOD_NID,_TIMEPERIOD_TIMEPERIOD];
+		$conditions2=[];		 
+        $timeperiodList = $this->Timeperiod->getDataByParams($fields2, $conditions2, 'list');
+		
+       
 		 // getting all footnote list  
   	    $footnoteList = $this->FootnoteObj->find('all')->combine(_FOOTNOTE_NId,_FOOTNOTE_VAL)->toArray();			
 			
+		$conditions[_MDATA_IUSNID .' IN '] =$returnediusNids;	
 		
-		 // $data = $this->DataObj->find()->where(['Data.Indicator_NId' => '375','Data.IUSNId IN '=>[2599,2469],'Data.Area_NId'=>'19785'])->contain(['Indicator','SubgroupVals','Unit','Footnote'], true)->hydrate(false)->all()->toArray();
-	     $data = $this->DataObj->find()->where($conditions)->hydrate(false)->all()->toArray();
+		// $data = $this->DataObj->find()->where(['Data.Indicator_NId' => '375','Data.IUSNId IN '=>[2599,2469],'Data.Area_NId'=>'19785'])->contain(['Indicator','SubgroupVals','Unit','Footnote'], true)->hydrate(false)->all()->toArray();
+	    
+		$fields=[];
+		$data = $this->DataObj->getDataByParams($fields, $conditions, 'all');
+		
+		$alldataIusnids =[]; // store all iusnids from data 
 		 
-		 $alldataIusnids =[]; // store all iusnids from data 
+		$iusnidData =[];
 		 
-		 $iusnidData =[];
-		 
-		 foreach($data as $index => $value){
+		foreach($data as $index => $value){
 			 echo 'source=='.$value['Source_NId'];
 			 echo '<br>';
 				 $IUNId = 'IU_'.$value['IUNId'];
@@ -183,8 +192,13 @@ class DataComponent extends Component
 		
 		 foreach($returnediusNids as $index=> $iusnidvalue){
 			 // first classification
-			 $icData  = $this->IcIusObj->find()->where([_ICIUS_IUSNID.' IN '=> $iusnidvalue])->hydrate(false)->first();
-			 $icnid   = $icData['IC_NId']; 
+			 $conditions4 = [_ICIUS_IUSNID.' IN '=> $iusnidvalue];
+			 $fields4 = [];
+			 //$icData  = $this->IcIusObj->find()->where([_ICIUS_IUSNID.' IN '=> $iusnidvalue])->hydrate(false)->first();
+			 $icData  = $this->IcIus->getDataByParams($fields4, $conditions4, 'all');
+			 
+			 $icnid   = $icData[0]['IC_NId']; 
+			
 			 $prepareIU = 'IU_'.$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue];// using IU index for array 
 
 			 $finalArray[$icnid]['icName'] = $classificationArray[$icnid]['IC_Name'];
@@ -195,9 +209,7 @@ class DataComponent extends Component
 			 $finalArray[$icnid]['iu'][$prepareIU]['uName']   = $iusNids['unit'][$alldataUnits[$iusnidvalue]][1];
 			 
 			 if(in_array($iusnidvalue,$alldataIusnids)==true){
-								//pr($iusnidData[$alldataIndicators[$iusnidvalue].'_'.$alldataUnits[$iusnidvalue]]);die;
 				 $finalArray[$icnid]['iu'][$prepareIU]['subgrps'] = $iusnidData[$prepareIU];
-
 			 }else{
 				
 				  
