@@ -171,26 +171,41 @@ class SubgroupValsSubgroupComponent extends Component
      * @return void
      */
     public function bulkInsert(array $pairs, array $pairsArray) {
+        
+        $concatedFields = [];
+        $pairsArray = array_intersect_key($pairsArray, $pairs); // unique pairsArray
+        
+        // Split Big array into chunks (MSSQL Can't handle more than 2100 params)
+        $chunkSize = 900;
+        $pairsArrayChunked = array_chunk($pairsArray, $chunkSize);
+        $pairsChunked = array_chunk($pairs, $chunkSize);
+        
+        //Unset unwanted arrays
+        unset($pairs); unset($pairsArray);
+        
+        foreach($pairsArrayChunked as $key => $pairsArray){
+        
+            //Check if records exists for subgroup_vals
+            $fields = [_SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID, SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID, _SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_SUBGROUP_NID];
+            //$conditions = ['(' . _SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID . ',' . SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID . ') IN (' . implode(',', $pairs) . ')'];
+            $conditions = ['OR' => $pairsArray];
+            $getSubGroupValsSubgroupNids = $this->getConcatedFields($fields, $conditions, 'list');
 
-        $pairsArray = array_intersect_key($pairsArray, $pairs);
-        
-        //Check if records exists for subgroup_vals
-        $fields = [_SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID, SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID, _SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_SUBGROUP_NID];
-        //$conditions = ['(' . _SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID . ',' . SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID . ') IN (' . implode(',', $pairs) . ')'];
-        $conditions = ['OR' => $pairsArray];
-        $getSubGroupValsSubgroupNids = $this->getConcatedFields($fields, $conditions, 'list');
-        
-        $alreadyExistingRec = array_intersect($getSubGroupValsSubgroupNids, $pairs);
-        $newRec = array_diff($pairs, $getSubGroupValsSubgroupNids);
+            $alreadyExistingRec = array_intersect($getSubGroupValsSubgroupNids, $pairsChunked[$key]);
+            $newRec = array_diff($pairsChunked[$key], $getSubGroupValsSubgroupNids);
 
-        $pairsArray = array_intersect_key($pairsArray, $newRec);
-        
-        $insertDataKeys = [_SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID, SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID];
-        $insertDataArray = $pairsArray;
-        $this->insertBulkData($insertDataArray, $insertDataKeys);
-        
-        return $this->getConcatedFields($fields, $conditions, 'list');
-        
-        
+            $pairsArray = array_intersect_key($pairsArray, $newRec);
+            
+            if(!empty($pairsArray)){
+                $insertDataKeys = [_SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID, SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID];
+                $insertDataArray = $pairsArray;
+                $this->insertBulkData($insertDataArray, $insertDataKeys);
+            }
+
+            $concatedFields = array_replace($concatedFields, $this->getConcatedFields($fields, $conditions, 'list'));
+        }
+
+        return $concatedFields;
+        //return $this->getConcatedFields($fields, $conditions, 'list');        
     }
 }

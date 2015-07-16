@@ -412,16 +412,6 @@ class IndicatorUnitSubgroupTable extends Table
     {
         return $this->autoGenerateNIdFromTable();
     }
-	
-	
-	public function getIusNidsDetails($iGid='',$uGid='',$sGid=''){
-		if($sGid!='')				
-		return $this->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid,'SubgroupVals.Subgroup_Val_GId'=>$sGid])->contain(['Indicator','Unit','SubgroupVals'], true)->hydrate(false)->all()->toArray();
-	    else
-		return $this->find()->where(['Indicator.Indicator_GId' => $iGid,'Unit.Unit_GId'=>$uGid])->contain(['Indicator','Unit','SubgroupVals'], true)->hydrate(false)->all()->toArray();
-
-			
-	}
 
 
 }

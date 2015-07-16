@@ -148,29 +148,7 @@ class IndicatorUnitSubgroupComponent extends Component {
      */
     public function getConcatedIus(array $fields, array $conditions, $type = null)
     {
-        // MSSQL Compatibilty - MSSQL can't support more than 2100 params - 900 to be safe
-        $chunkSize = 900;
-        
-        if(isset($conditions['OR']) && count($conditions['OR'], true) > $chunkSize){
-            
-            $result = [];
-            
-            // count for single index
-            $orSingleParamCount = count(reset($conditions['OR']));
-            $splitChunkSize = floor(count($conditions['OR'])/$orSingleParamCount);
-            
-            // MSSQL Compatibilty - MSSQL can't support more than 2100 params
-            $orConditionsChunked = array_chunk($conditions['OR'], $splitChunkSize);
-            
-            foreach($orConditionsChunked as $orCond){
-                $conditions['OR'] = $orCond;
-                $getConcatedIus = $this->IndicatorUnitSubgroupObj->getConcatedIus($fields, $conditions, 'all');
-                $result = array_merge($result, $getConcatedIus);
-            }
-        }else{
-            $result = $this->IndicatorUnitSubgroupObj->getConcatedIus($fields, $conditions, 'all');
-        }
-        
+        $result = $this->IndicatorUnitSubgroupObj->getConcatedIus($fields, $conditions, 'all');
         if($type == 'list'){            
             if(!empty($result)){
                 $result = array_column($result, 'concatinated', _IUS_IUSNID);
@@ -402,12 +380,6 @@ class IndicatorUnitSubgroupComponent extends Component {
     }
 	
 	
-	public function getIusNidsDetails($iGid,$uGid,$sGid) {
-
-		return $data = $this->IndicatorUnitSubgroupObj->getIusNidsDetails($iGid,$uGid,$sGid);
-
-
-	}
 	/*
 	function to get ius nids on passed ius gids 
 	*/

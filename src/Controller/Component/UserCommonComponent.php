@@ -5,6 +5,7 @@ use Cake\ORM\TableRegistry;
 use Cake\Datasource\ConnectionManager;
 use Cake\Database\Statement\PDOStatement;
 use Cake\Core\Configure;
+use Cake\Network\Email\Email;
 
 /**
  * Common period Component
@@ -30,23 +31,18 @@ class UserCommonComponent extends Component {
         $this->Roles = TableRegistry::get('MRoles');
         $this->RUserDatabases = TableRegistry::get('RUserDatabases');
         $this->RUserDatabasesRoles = TableRegistry::get('RUserDatabasesRoles');
-		 $this->Auth->allow();
-        
-     
-      
+		$this->Auth->allow();
     }
 
 	
    /*
       function to check whether user has relation with db or not 
-    */
+   */
 	
 	public function checkUserDbRelation($userId=null,$dbId=null){
 		
 		return $this->RUserDatabases->checkUserDbRelation($userId,$dbId);
 	}
- 
- 
     
 	/*
       function to update the  password while activating request 
@@ -63,6 +59,7 @@ class UserCommonComponent extends Component {
    
  
     public  function getDataByParams($conditions=[],$fields=[]){
+
 		return  $details = $this->Users->getDataByParams($conditions,$fields);
 	}
    
@@ -74,6 +71,15 @@ class UserCommonComponent extends Component {
 
         return $listAllRoles = $this->Roles->listAllRoles();
     }
+    
+    /*
+      get userDatabase ID
+    */
+    public function findUserDatabases($userId,$dbId){
+
+        return $getidsRUD = $this->RUserDatabases->findUserDatabases($userId,$dbId);
+    }
+    
 	
     /*
 	Function to get the roles on basis of passed db id and user id
@@ -149,14 +155,11 @@ class UserCommonComponent extends Component {
 	/*
       function to check the duplicate email
      * 
-     */  
+    */  
 	public function checkEmailExists($email=null,$userId=null)
     {
 		 return $getDetailsByEmail = $this->Users->checkEmailExists($email,$userId);
-	}
-	
-	
-	
+	}	
 	
 	/*
      * deleteUserRoles
@@ -164,7 +167,7 @@ class UserCommonComponent extends Component {
      * $type E  is for status deleting existing roles which are not found in posted data 
 	 * $type F  is for case when existing roles are found in posted data
        $getIdsRUD is the user_database_id 	 
-     */  
+    */  
 	
 	public function deleteUserRoles($roledIds=[],$getIdsRUD=[],$type=null)
     {
@@ -293,7 +296,7 @@ class UserCommonComponent extends Component {
      * 
      * function to return the autocomplete details 
      *
-     */
+    */
 	 
 	public function getAutoCompleteDetails(){
 		 return $this->Users->getAutoCompleteDetails();
@@ -309,7 +312,133 @@ class UserCommonComponent extends Component {
 		
 		return $this->Roles->returnRoleId($roleValue);
     }
-    
 
+
+    /*
+      function for sending activation link
+      @params $userId , $email
+    */
+    public function sendActivationLink($userId, $email, $name) {
+
+        $encodedstring = base64_encode(_SALTPREFIX1 . '-' . $userId . '-' . _SALTPREFIX2);
+        $website_base_url = _WEBSITE_URL . "#/UserActivation/$encodedstring";
+        $subject = 'DFA Data Admin Activation';
+        $message = "<div>Dear " . ucfirst($name) . ",<br/>
+			Please 	<a href='" . $website_base_url . "'>Click here  </a> to activate and setup your password.<br/><br/>
+			Thank you.<br/>
+			Regards,<br/>
+			DFA Database Admin
+			</div> ";
+
+	    $fromEmail = 'vpdwivedi@dataforall.com';
+        $this->sendEmail($email, $fromEmail, $subject, $message, 'smtp');	
+	}
+
+
+    /*
+     function for sending notification on adding user to db 
+    */
+    public function sendDbAddNotify($email, $name) {
+
+      
+        $subject = 'DFA Data Admin Database notification';
+        $message = "<div>Dear " . ucfirst($name) . ",<br/>
+                    You have been successfully added to new database .<br/><br/>
+                    Thank you.<br/>
+                    Regards,<br/>
+                    DFA Database Admin
+                    </div> ";
+        $fromEmail = 'vpdwivedi@dataforall.com';
+        $this->sendEmail($email, $fromEmail, $subject, $message, 'smtp');
+    }
+
+
+    /*
+      function for send email
+    */
+    public function sendEmail($toEmail, $fromEmail, $subject = null, $message = null, $type = 'smtp') {
+        $return = false;
+        try {
+            if (!empty($toEmail) && !empty($fromEmail)) {
+                ($type == 'smtp') ? $type = 'defaultsmtp' : $type = 'default';
+                $emailClass = new Email($type);
+                $result = $emailClass->emailFormat('html')->from([$fromEmail => $subject])->to($toEmail)->subject($subject)->send($message);
+                if ($result) {
+                    $return = true;
+                }
+            }
+        } catch (Exception $e) {
+            $return = $e;
+        }
+
+        return $return;
+    }
+
+
+    /*
+    function to send re-activation link to user
+    */
+    public function resetPassword($userId=null) {
+
+        $return = array('status'=>true, 'error'=>'');
+
+        if(!empty($userId)) {
+            // get User details
+            $userData = $this->getUserDetails($userId);
+
+            if($userData) {
+                // update user status field as 0 (in-active)
+                $fieldsArray = [
+                    _USER_ID => $userId,
+                    _USER_STATUS => 0,
+                    _USER_MODIFIEDBY => $this->Auth->User('id')
+                ];
+                $conditions = [
+                    _USER_ID => $userId
+                ];
+                $this->Users->updateDataByParams($fieldsArray, $conditions);
+
+                // Send mail to activate the account and setup the password
+                $this->sendActivationLink($userId, $userData['email'], $userData['name']);
+            }
+        }
+
+        return $return;
+    }
+
+
+    /*
+      function to get User details
+    */	
+	public function getUserDetails($userId=null){
+        
+        $data = [];
+        if(!empty($userId)) {
+            $fieldsArray = [
+                _USER_ID,
+                _USER_NAME,
+                _USER_EMAIL,
+                _USER_STATUS
+            ];
+            $conditionArray = [
+                _USER_ID => $userId
+            ];
+
+            $dt = $this->getDataByParams($fieldsArray, $conditionArray);
+            if(isset($dt[0])) $data = $dt[0];
+        }
+        return $data;
+
+	}
+    
+    /*
+     * 
+     * function to return the role id on basis of passed role value
+     * @roleValue is  passed as roles  like 'ADMIN' or 'DATAENTRY'
+    */
+    public function getDbRolesDetails($fields = [], $conditions = [], $type = 'all', $extra = []){
+        return $this->RUserDatabasesRoles->getDetails($fields, $conditions, $type, $extra);
+    }
+    
 
 }

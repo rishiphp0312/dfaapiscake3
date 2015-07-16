@@ -147,8 +147,7 @@ class CommonInterfaceComponent extends Component {
         $insertDataGids = [];
         foreach ($insertDataArr as $row => &$value) {
             $value = array_combine($insertDataKeys, $value);
-            $value = array_filter($value);
-
+            //$value = array_filter($value);
             //We don't need this row if the name field is empty
             if (!isset($value[$insertDataKeys['name']])) {
                 unset($value);
@@ -643,10 +642,9 @@ class CommonInterfaceComponent extends Component {
      * 	or MissingViewException in debug mode.
      */
     public function bulkUploadXlsOrCsv($filename = null, $component = null, $extraParam = []) {
-
+        
         $objPHPExcel = $this->readXlsOrCsv($filename);
         extract($extraParam);
-
         $extra = [];
         $extra['limitRows'] = 1000; // Number of rows in each file chunks
         $extra['startRows'] = 1; // Row from where the data reading starts
@@ -660,8 +658,9 @@ class CommonInterfaceComponent extends Component {
             $params['nid'] = _UNIT_UNIT_NID;
         } else if ($component == 'Icius') {  //Bulk upload - ICIUS
             return $this->bulkUploadIcius($divideXlsOrCsvInChunks, $extra);
+        } else if ($component == 'Area') {  //Bulk upload - ICIUS
+            return $this->bulkUploadXlsOrCsvForArea($divideXlsOrCsvInChunks, $extra,$objPHPExcel);
         }
-
         $params['insertDataKeys'] = $insertDataKeys;
         $params['updateGid'] = TRUE;
 
@@ -690,34 +689,30 @@ class CommonInterfaceComponent extends Component {
         extract($loadDataFromXlsOrCsv);
         $insertArrayFromGids = [];
         $insertArrayFromNames = [];
-        //pr($loadDataFromXlsOrCsv);
         $insertDataAreaIdsData = [];
         $extraParam['updateGid'] = isset($params['updateGid']) ? $params['updateGid'] : false;
         $insertDataKeys = $params['insertDataKeys'];
         $extraParam['logFileName'] = isset($params['logFileName']) ? $params['logFileName'] : false;
 
-        //Update records based on Indicator GID
-        if ($extraParam['updateGid'] == true) {
-            if (!empty($insertDataGids)) {
-                $extraParam['nid'] = $params['nid'];
-                $extraParam['component'] = $component;
-                $insertArrayFromGids = $this->updateColumnsFromGid($insertDataGids, $dataArray, $insertDataKeys, $extraParam);
-                unset($insertDataGids); //save Buffer
-            }
+        //Update records based on GID
+        if (!empty($insertDataGids)) {
+            $extraParam['nid'] = $params['nid'];
+            $extraParam['component'] = $component;
+            $insertArrayFromGids = $this->updateColumnsFromGid($insertDataGids, $dataArray, $insertDataKeys, $extraParam);
+            unset($insertDataGids); //save Buffer
         }
 
-        //Update records based on Indicator Name
+        //Update records based on Name
         if (!empty($insertDataNames)) {
             $extraParam['nid'] = $params['nid'];
             $extraParam['component'] = $component;
             $insertArrayFromNames = $this->updateColumnsFromName($insertDataNames, $dataArray, $insertDataKeys, $extraParam);
+            $insertArrayFromNames = array_unique($insertArrayFromNames);
             unset($insertDataNames);    //save Buffer
         }
 
         //Update records based on Area ids
-
         if (!empty($insertDataAreaids)) {
-
             $extraParam['nid'] = $params['nid'];
             $extraParam['component'] = $component;
             $insertDataAreaIdsData = $this->updateColumnsFromAreaIds($insertDataAreaids, $dataArray, $insertDataKeys, $extraParam);
@@ -740,8 +735,7 @@ class CommonInterfaceComponent extends Component {
             array_walk($insertArray, function(&$val, $key) use($params, $insertDataKeys) {
                 //auto-generate GUID if not set
 
-
-                if (!array_key_exists($insertDataKeys['gid'], $val)) {
+                if (array_key_exists('gid', $insertDataKeys) && (!array_key_exists($insertDataKeys['gid'], $val) || $val[$insertDataKeys['gid']] == '')) {
                     $autoGenGuid = $this->guid();
                     $val[$insertDataKeys['gid']] = $autoGenGuid;
                 }
@@ -1665,14 +1659,14 @@ class CommonInterfaceComponent extends Component {
      * @param array $extra Extra Parameters to use. {DEFAULT : null}
      * @return void
      */
-    public function bulkUploadXlsOrCsvForArea($filename = [], $extra = null) {
-
+    public function bulkUploadXlsOrCsvForArea($fileChunksArray = [], $extra = null,$xlsObject=null) {
+        $component = 'Area';    
         $insertFieldsArr = [];
         $insertDataArrRows = [];
         $insertDataArrCols = [];
         $extra['limitRows'] = 200; // Number of rows in each area chunks file 
         $extra['startRows'] = 1; // Row from where the data reading starts
-        $extra['callfunction'] = 'Area';
+        $extra['callfunction'] = $component;
 
         $insertDataKeys = [_INSERTKEYS_AREAID => _AREA_AREA_ID,
             _INSERTKEYS_NAME => _AREA_AREA_NAME,
@@ -1680,38 +1674,35 @@ class CommonInterfaceComponent extends Component {
             _INSERTKEYS_GID => _AREA_AREA_GID,
             _INSERTKEYS_PARENTNID => _AREA_PARENT_NId,
         ];
+            // start file validation
+        
+            $xlsObject->setActiveSheetIndex(0);
+            $startRow = 1; //first row 
+            $highestColumn = $xlsObject->getActiveSheet()->getHighestColumn(); // e.g. 'F'
+            $highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumn);
 
-        $objPHPExcel = $this->readXlsOrCsv($filename['filename']);
-        $objPHPExcel->setActiveSheetIndex(0);
-        $startRow = 1; //first row 
-        $highestColumn = $objPHPExcel->getActiveSheet()->getHighestColumn(); // e.g. 'F'
-        $highestColumnIndex = \PHPExcel_Cell::columnIndexFromString($highestColumn);
-
-        // code for validation of uploaded  file 
-        $highestRow = $objPHPExcel->getActiveSheet()->getHighestRow(); // e.g. 10   			
-        if ($highestRow == 1) {
-            return ['error' => 'The file is empty'];
-        }
-        $titlearray = [];  // for titles of sheet
-        for ($col = 0; $col < $highestColumnIndex; ++$col) {
-            $cell = $objPHPExcel->getActiveSheet()->getCellByColumnAndRow($col, $startRow);
-            $titlearray[] = $val = $cell->getValue();
-        }
-        $validFormat = $this->importFormatCheck(_MODULE_NAME_AREA);  //Check file Columns format
-        $formatDiff = array_diff($validFormat, array_map('strtolower', $titlearray));
-        if (!empty($formatDiff)) {
-            return ['error' => 'Invalid Columns Format'];
-        }
-
+            // code for validation of uploaded  file 
+            $highestRow = $xlsObject->getActiveSheet()->getHighestRow(); // e.g. 10   			
+            if ($highestRow == 1) {
+                return ['error' => 'The file is empty'];
+            }
+            $titlearray = [];  // for titles of sheet
+            for ($col = 0; $col < $highestColumnIndex; ++$col) {
+                $cell = $xlsObject->getActiveSheet()->getCellByColumnAndRow($col, $startRow);
+                $titlearray[] = $val = $cell->getValue();
+            }
+            $validFormat = $this->importFormatCheck(_MODULE_NAME_AREA);  //Check file Columns format
+            $formatDiff = array_diff($validFormat, array_map('strtolower', $titlearray));
+            if (!empty($formatDiff)) {
+                return ['error' => 'Invalid Columns Format'];
+            }
         // end of file validation 	
-
-
-        $divideXlsOrCsvInChunks = $this->divideXlsOrCsvInChunkFiles($objPHPExcel, $extra); // split  the file in chunks 
+        // $divideXlsOrCsvInChunks = $this->divideXlsOrCsvInChunkFiles($objPHPExcel, $extra); // split  the file in chunks 
         $firstRow = ['A' => 'AreaId', 'B' => 'AreaName', 'C' => 'AreaLevel', 'D' => 'AreaGId', 'E' => 'Parent AreaId', 'F' => 'Status', 'G' => 'Description'];
         //$areaErrorLog = $this->createErrorLog($firstRow, 'Area');   //returns error log file 
         $this->resetLogdata();
-
-        foreach ($divideXlsOrCsvInChunks as $filename) {
+        
+        foreach ($fileChunksArray as $filename) {
 
             $loadDataFromXlsOrCsv = $this->prepareDataFromXlsOrCsv($filename, $insertDataKeys, $extra);
             array_walk($loadDataFromXlsOrCsv['dataArray'], function(&$val, $key) use($insertDataKeys) {
@@ -1719,13 +1710,13 @@ class CommonInterfaceComponent extends Component {
                     $val[$insertDataKeys['gid']] = $this->guid();
                 }
             });
-            $component = 'Area';
+           
             $params['nid'] = _AREA_AREA_NID;
             $params['insertDataKeys'] = $insertDataKeys;
             $params['updateGid'] = TRUE;
 
             $this->nameGidLogic($loadDataFromXlsOrCsv, $component, $params);
-            @unlink($filename);
+            //@unlink($filename);
         }
 
         // $this->appendErrorLogData(WWW_ROOT.$areaErrorLog,$_SESSION['errorLog']); //
@@ -1795,7 +1786,7 @@ class CommonInterfaceComponent extends Component {
 
         //$PHPExcel = new \PHPExcel();
         $sheet = 1;
-        $chunkParams = $this->session->consume('ChunkParams');
+        $chunkParams = $this->session->consume('ChunkParams'); //Read and destroy session with consume
         //$startRows = $chunkParams['startRows'];
         $limitRows = $chunkParams['limitRows'];
         $highestRow = $chunkParams['highestRow'];
@@ -2184,7 +2175,7 @@ class CommonInterfaceComponent extends Component {
         //$returnFilename = WWW_ROOT.'uploads'.DS.'logs'.DS._IMPORTERRORLOG_FILE . _MODULE_NAME_AREA . '_' . $authUserId . '_' .time().'.xls';
         $returnFilename = _IMPORTERRORLOG_FILE . _MODULE_NAME_AREA . '_' . $authUserId . '_' . date('Y-m-d-H-i-s') . '.xls';
         $objWriter->save($saveFile);
-        return $returnFilename;
+        return $saveFile;
         // $objWriter->save($filename);
     }
 
@@ -2300,6 +2291,19 @@ class CommonInterfaceComponent extends Component {
         } else {
             @unlink($filepaths);
         }
+    }
+
+    /**
+     * getDEsearchData to get the details of search on basis of IUSNid,
+      @areanid
+      @TimeperiodNid
+      @$iusGid can be mutiple in form of array
+      returns data value with source
+     * @access public
+     */
+    public function getDEsearchData($fields = [], $conditions = [], $extra = []) {
+       
+        return $this->Data->getDEsearchData($fields, $conditions, $extra);
     }
 
 }

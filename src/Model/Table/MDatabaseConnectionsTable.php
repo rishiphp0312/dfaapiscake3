@@ -201,6 +201,7 @@ class MDatabaseConnectionsTable extends Table {
                 $data[$index][_USER_EMAIL]         = $valueUsers[_USER_EMAIL];
                 $data[$index][_USER_NAME]          = $valueUsers[_USER_NAME];
                 $data[$index][_USER_ID]            = $valueUsers[_USER_ID];         
+                $data[$index][_USER_STATUS]            = $valueUsers[_USER_STATUS];         
                 $data[$index]['lastLoggedIn']  = strtotime($valueUsers[_USER_LASTLOGGEDIN]);
                // $data[$index]['roles']  = ['Admin'];
                 $data[$index]['access']['area']  = 0;

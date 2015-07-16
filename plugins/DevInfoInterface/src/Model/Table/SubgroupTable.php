@@ -244,9 +244,7 @@ class SubgroupTable extends Table {
      * @return void
      */
     public function insertBulkData($insertDataArray = [], $insertDataKeys = []) {
-        //Create New Entities (multiple entities for multiple rows/records)
-        //$entities = $this->newEntities($insertDataArray);
-
+        
         $query = $this->query();
 
         /*

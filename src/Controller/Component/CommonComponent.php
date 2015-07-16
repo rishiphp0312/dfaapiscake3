@@ -7,7 +7,7 @@ use Cake\ORM\TableRegistry;
 use Cake\Datasource\ConnectionManager;
 use Cake\Database\Statement\PDOStatement;
 use Cake\Core\Configure;
-use Cake\Network\Email\Email;
+//use Cake\Network\Email\Email;
 
 /**
  * Common period Component
@@ -220,44 +220,6 @@ class CommonComponent extends Component {
         return $status;
     }
 
-    /*
-     function for sending notification on adding user to db 
-    */
-    public function sendDbAddNotify($email, $name) {
-
-      
-        $subject = 'DFA Data Admin Database notification';
-        $message = "<div>Dear " . ucfirst($name) . ",<br/>
-                    You have been successfully added to new database .<br/><br/>
-                    Thank you.<br/>
-                    Regards,<br/>
-                    DFA Database Admin
-                    </div> ";
-        $fromEmail = 'vpdwivedi@dataforall.com';
-        $this->sendEmail($email, $fromEmail, $subject, $message, 'smtp');
-    }
-    /*
-      function for sending activation link
-      @params $userId , $email
-     */
-
-    public function sendActivationLink($userId, $email, $name) {
-
-        $encodedstring = base64_encode(_SALTPREFIX1 . '-' . $userId . '-' . _SALTPREFIX2);
-        $website_base_url = _WEBSITE_URL . "#/UserActivation/$encodedstring";
-        $subject = 'DFA Data Admin Activation';
-        $message = "<div>Dear " . ucfirst($name) . ",<br/>
-			Please 	<a href='" . $website_base_url . "'>Click here  </a> to activate and setup your password.<br/><br/>
-			Thank you.<br/>
-			Regards,<br/>
-			DFA Database Admin
-			</div> ";
-
-			$fromEmail = 'vpdwivedi@dataforall.com';
-                        $this->sendEmail($email, $fromEmail, $subject, $message, 'smtp');	
-		
-									
-	}
         
     /*
      * Get mime Types List
@@ -329,28 +291,6 @@ class CommonComponent extends Component {
     }
 
     /*
-      function for send email
-     */
-
-    public function sendEmail($toEmail, $fromEmail, $subject = null, $message = null, $type = 'smtp') {
-        $return = false;
-        try {
-            if (!empty($toEmail) && !empty($fromEmail)) {
-                ($type == 'smtp') ? $type = 'defaultsmtp' : $type = 'default';
-                $emailClass = new Email($type);
-                $result = $emailClass->emailFormat('html')->from([$fromEmail => $subject])->to($toEmail)->subject($subject)->send($message);
-                if ($result) {
-                    $return = true;
-                }
-            }
-        } catch (Exception $e) {
-            $return = $e;
-        }
-
-        return $return;
-    }
-
-    /*
       function to get role details
      */
 
@@ -358,8 +298,6 @@ class CommonComponent extends Component {
 
         return $this->Roles->getRoleByID($roleId);
     }
-
-
 
     /*
       function to json data for tree view
@@ -379,7 +317,7 @@ class CommonComponent extends Component {
                 case _TV_IU:
                     // get Subgroup Tree data
                     if($parentId != '-1'){
-                        $parentIds = explode('{~}', $parentId);
+                        $parentIds = explode(_DELEM1, $parentId);
                         $fields = [_IUS_SUBGROUP_VAL_NID];
                         $params['fields'] = $fields;
                         $params['conditions'] = ['iGid' => $parentIds[0], 'uGid' => $parentIds[1]];
@@ -396,12 +334,11 @@ class CommonComponent extends Component {
                     // coming soon
                 break;
                 case _TV_IC:
-                    // coming soon
-                    // Get Area Tree Data
                     $returndData = $this->CommonInterface->serviceInterface('CommonInterface', 'getParentChild', ['IndicatorClassifications', $parentId, $onDemand], $dbConnection);
                 break;
                 case _TV_ICIND:
-                    // coming soon
+                       $returndData = $this->CommonInterface->serviceInterface('CommonInterface', 'getParentChild', ['IndicatorClassifications', $parentId, $onDemand], $dbConnection);
+           
                 break;
                 case _TV_ICIUS:
                     // coming soon
@@ -471,10 +408,10 @@ class CommonComponent extends Component {
                     $returnData = array('iusGid' => $data['iusGid'], _IUS_IUSNID => $data[_IUS_IUSNID]);
                 }// IU List
                 else{
-                    $rowid = $data['iGid'] . '{~}' . $data['uGid'];
+                    $rowid = $data['iGid'] . _DELEM1 . $data['uGid'];
                     $fields = array('iName'=>$data['iName'], 'uName'=>$data['uName']);
                     //$returnData = array('pnid' => $data['iGid'] . '{~}' . $data['uGid'], 'iGid' => $data['iGid'], 'uGid' => $data['uGid']);
-                    $returnData = array('pnid' => $data['iGid'] . '{~}' . $data['uGid']);
+                    $returnData = array('pnid' => $data['iGid'] . _DELEM1 . $data['uGid']);
                 }                
             break;
             case _TV_IU_S:
@@ -535,7 +472,7 @@ class CommonComponent extends Component {
                     if(!empty($validationExist)){
                         $conditions = [_MIUSVALIDATION_ID => $validationExist[_MIUSVALIDATION_ID]];
                         $updateArray = [
-                            _MIUSVALIDATION_IS_TEXTUAL => (isset($extra['isTextual'])) ? $extra['isTextual'] : 0,
+                            _MIUSVALIDATION_IS_TEXTUAL => ($extra['isTextual']===true || $extra['isTextual']=='true') ? 1 : 0,
                             _MIUSVALIDATION_MIN_VALUE => (isset($extra['minimumValue'])) ? $extra['minimumValue'] : null,
                             _MIUSVALIDATION_MAX_VALUE => (isset($extra['maximumValue'])) ? $extra['maximumValue']: null,
                             _MIUSVALIDATION_MODIFIEDBY => $this->Auth->user('id')
@@ -550,7 +487,7 @@ class CommonComponent extends Component {
                             _MIUSVALIDATION_INDICATOR_GID => $iusGidsExploded[0],
                             _MIUSVALIDATION_UNIT_GID => $iusGidsExploded[1],
                             _MIUSVALIDATION_SUBGROUP_GID => $sGid,
-                            _MIUSVALIDATION_IS_TEXTUAL => (isset($extra['isTextual'])) ? $extra['isTextual'] : 0,
+                            _MIUSVALIDATION_IS_TEXTUAL => ($extra['isTextual']===true || $extra['isTextual']=='true') ? 1 : 0,
                             _MIUSVALIDATION_MIN_VALUE => (isset($extra['minimumValue'])) ? $extra['minimumValue'] : null,
                             _MIUSVALIDATION_MAX_VALUE => (isset($extra['maximumValue'])) ? $extra['maximumValue']: null,
                             _MIUSVALIDATION_CREATEDBY => $this->Auth->user('id')

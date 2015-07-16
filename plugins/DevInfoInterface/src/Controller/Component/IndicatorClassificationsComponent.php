@@ -178,7 +178,15 @@ class IndicatorClassificationsComponent extends Component {
         }
     }
     
-    public function find($type, $options =[], $extra=null) {
+    /*
+     * find method
+     * 
+     * @param string $type Query type. {DEFAULT : all}
+     * @param array $options Query options. {DEFAULT : empty}
+     * @param array $extra any extra params. {DEFAULT : empty}
+     * @return void
+     */
+    public function find($type, $options = [], $extra = null) {
         $query =  $this->IndicatorClassificationsObj->find($type, $options);
         if(isset($extra['count'])) {
             $data = $query->count();
@@ -189,6 +197,20 @@ class IndicatorClassificationsComponent extends Component {
         }        
         return $data;
          
+    }
+    
+    /**
+     * getConcatedFields method
+     * @param array $conditions The WHERE conditions for the Query. {DEFAULT : empty}
+     * @param array $fields The Fields to SELECT from the Query. {DEFAULT : empty}
+     * @return void
+     */
+    public function getSourceList($fields = [], $conditions = [], $type = 'all')
+    {
+        // IC_TYPE condition is fixed - add others to it
+        $conditions = array_merge($conditions, [_IC_IC_TYPE => 'SR']);
+        $result = $this->getDataByParams($fields, $conditions, $type);
+        return $result;
     }
 
     /**

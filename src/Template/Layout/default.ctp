@@ -25,6 +25,7 @@
             'app/components/userManagement/userManagement.module','app/components/userManagement/userManagement.controller','app/components/userManagement/userManagement.service',
             'app/components/iusManagement/iusManagement.module','app/components/iusManagement/iusManagement.controller','app/components/iusManagement/iusManagement.service',
             'app/components/importExportManagement/templateImportExport.module','app/components/importExportManagement/templateImportExport.controller','app/components/importExportManagement/templateImportExport.service',
+            'app/components/dataEntry/dataEntry.module','app/components/dataEntry/dataEntry.controller','app/components/dataEntry/dataEntry.service',
             'app/appConfig','app/app','app/components/core/core.controller','app/components/core/core.service','app/components/core/core.constant','app/components/core/core.config'])
         ?>
     </head>

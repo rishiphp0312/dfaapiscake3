@@ -97,14 +97,38 @@ class RUserDatabasesRolesTable extends Table
     }
 
     
-    
-     /**
-     * find ids  for specific findUserRolesDatabases  method
-     * @param  $user_id the  user_id with respect to the rows of users in  r_user_databases 
+    /**
+     * find ids  for specific users  method
+     * @param  $ids the  ids in array for rows will be deleted 
     
      * @return void
      */
     
+    public function getDetails(array $fields, array $conditions, $type = 'all', $extra = [])
+    {
+        $options = [];
+
+        if(!empty($fields))
+            $options['fields'] = $fields;
+        if(!empty($conditions))
+            $options['conditions'] = $conditions;
+        
+        if($type == 'list') $this->setListTypeKeyValuePairs($fields);
+
+        // Find all the rows.
+        // At this point the query has not run.
+        $query = $this->find($type, $options);
+
+        // Calling execute will execute the query
+        // and return the result set.
+        $results = $query->hydrate(false)->all();
+
+        // Once we have a result set we can get all the rows
+        $data = $results->toArray();
+
+        return $data;
+
+    }
 
 
 }
