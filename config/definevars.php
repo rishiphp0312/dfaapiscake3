@@ -141,6 +141,7 @@ return [
     // R_users_databases_roles table
     define('_RUSERDBROLE_ID', 'id'),
     define('_RUSERDBROLE_ACCESS', 'area_access'),
+    define('_RUSERDBROLE_INDICATOR_ACCESS', 'indicator_access'),
     define('_RUSERDBROLE_ROLE_ID', 'role_id'),
     define('_RUSERDBROLE_USER_DB_ID', 'user_database_id'),
     define('_RUSERDBROLE_CREATED', 'created'),
@@ -175,6 +176,16 @@ return [
     define('_MDATA_IUSNID', 'IUSNId'),
     define('_MDATA_TIMEPERIODNID', 'TimePeriod_NId'),
     define('_MDATA_AREANID', 'Area_NId'),
+    define('_MDATA_IUNID', 'IUNId'),
+    define('_MDATA_SOURCENID', 'Source_NId'),
+    define('_MDATA_DATAVALUE', 'Data_Value'),
+    define('_MDATA_FOOTNOTENID', 'FootNote_NId'),
+    define('_MDATA_INDICATORNID', 'Indicator_NId'),
+    define('_MDATA_UNITNID', 'Unit_NId'),
+     define('_MDATA_SUBGRPNID', 'Subgroup_Val_NId'),
+    
+    
+    
     // m_ius_validations table
     define('_MIUSVALIDATION_ID', 'id'),
     define('_MIUSVALIDATION_DB_ID', 'db_id'),
@@ -186,6 +197,18 @@ return [
     define('_MIUSVALIDATION_MAX_VALUE', 'max_value'),
     define('_MIUSVALIDATION_CREATEDBY', 'createdby'),
     define('_MIUSVALIDATION_MODIFIEDBY', 'modifiedby'),
+    // r_access_areas table
+    define('_RACCESSAREAS_ID', 'id'),
+    define('_RACCESSAREAS_USER_DATABASE_ROLE_ID', 'user_database_role_id'),
+    define('_RACCESSAREAS_USER_DATABASE_ID', 'user_database_id'),
+    define('_RACCESSAREAS_AREA_ID', 'area_id'),
+    define('_RACCESSAREAS_AREA_NAME', 'area_name'),   
+    // r_access_indicators table
+    define('_RACCESSINDICATOR_ID', 'id'),
+    define('_RACCESSINDICATOR_USER_DATABASE_ROLE_ID', 'user_database_role_id'),
+    define('_RACCESSINDICATOR_USER_DATABASE_ID', 'user_database_id'),
+    define('_RACCESSINDICATOR_INDICATOR_GID', 'indicator_gid'),
+    define('_RACCESSINDICATOR_INDICATOR_NAME', 'indicator_name'),   
     // Error Codes
     define('_DFAERR', 'DFAERR'), //  Error code prefix 
     define('_ERR100', _DFAERR . '100'), //   database not added 
@@ -258,6 +281,8 @@ return [
     define('_INDICATOR_IS_EMPTY', 'Indicator is Empty'),
     define('_UNIT_IS_EMPTY', 'Unit is Empty'),
     define('_SUBGROUP_IS_EMPTY', 'Subgroup is Empty'),
+    
+    define('_IMPORT_LOG', 'importLog'),
     // Delemeters
     define('_DELEM1', '{~}'),
     define('_DELEM2', '[~]'),
