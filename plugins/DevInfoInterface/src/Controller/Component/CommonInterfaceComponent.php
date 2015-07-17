@@ -79,7 +79,7 @@ class CommonInterfaceComponent extends Component {
             'database' => $db_database,
             'timezone' => 'UTC',
             'cacheMetadata' => true,
-            'quoteIdentifiers' => true,
+            'quoteIdentifiers' => false,
         ];
 
         if (strtolower($db_source) == 'mysql') {
@@ -1082,6 +1082,8 @@ class CommonInterfaceComponent extends Component {
                     $subgroupValSubgroupArr = [];
                     $value = array_unique(array_filter($value));
 
+                    if(empty($value)) continue;
+                    
                     if ($key == $indicatorFieldKey) {   //--- INDICATOR ---//
                         $indicatorRecWithNids = $this->saveAndGetIndicatorRecWithNids($indicatorArray);
                     } else if ($key == $unitFieldKey) { //--- UNIT ---//
@@ -1099,7 +1101,6 @@ class CommonInterfaceComponent extends Component {
                             $subGroupTypeList = $getSubGroupTypeNidAndNameReturn['subGroupTypeList'];
                         }
                         $subgroupType = array_search($subGroupTypeList[$key], $getSubGroupTypeNidAndName);
-
                         if (isset($allSubgroups)) {
                             array_walk($allSubgroups, function(&$val, $index) use ($valueOriginal, $key, $subgroupType, &$subGroupValsConditions, &$subGroupValsConditionsWithRowIndex, &$subGroupValsConditionsArray) {
                                 if (!empty($valueOriginal[$index])) {
@@ -1183,7 +1184,6 @@ class CommonInterfaceComponent extends Component {
                             $subGroupNidGroupedBySubgroupValNids = $this->SubgroupValsSubgroup->getDataByParams($fields, $conditions, 'all', $extra);
                             $subGroupNidGroupedBySubgroupValNids = array_column($subGroupNidGroupedBySubgroupValNids, SUBGROUP_VALS_SUBGROUP_SUBGROUP_NID . '_CONCATED', _SUBGROUP_VALS_SUBGROUP_SUBGROUP_VAL_NID);
 
-                            //debug($subGroupNidGroupedBySubgroupValNids); 
                         }
                     }
                 }
@@ -1375,6 +1375,7 @@ class CommonInterfaceComponent extends Component {
             $subGroupTypeList[$key] = $subGroupTypeListVal[0];
         });
 
+        $subGroupTypeList = array_filter($subGroupTypeList);
         $divideNameAndGids = $this->divideNameAndGids($insertDataKeys, $subgroupTypeFields);
 
         $params['nid'] = _SUBGROUPTYPE_SUBGROUP_TYPE_NID;
@@ -1857,7 +1858,7 @@ class CommonInterfaceComponent extends Component {
 
         //IC Records
         $icFields = [_IC_IC_NID, _IC_IC_PARENT_NID, _IC_IC_NAME, _IC_IC_TYPE];
-        $icConditions = []; //[_IC_IC_NID . ' IN' => array_unique($icNids)];
+        $icConditions = [_IC_IC_TYPE . ' <>' => 'SR']; //[_IC_IC_NID . ' IN' => array_unique($icNids)];
         $icRecords = $this->IndicatorClassifications->getDataByParams($icFields, $icConditions);
 
         //IC_NIDS - Independent

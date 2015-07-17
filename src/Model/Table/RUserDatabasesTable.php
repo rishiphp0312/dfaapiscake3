@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Model\Table;
 
 use App\Model\Entity\RUserDatabase;
@@ -8,7 +9,7 @@ use Cake\ORM\Table;
  * RUserDatabasesTable Model
  *
  */
-class  RUserDatabasesTable extends Table {
+class RUserDatabasesTable extends Table {
 
     /**
      * Initialize method     *
@@ -19,28 +20,22 @@ class  RUserDatabasesTable extends Table {
         $this->table('r_user_databases');
         $this->primaryKey('id');
         $this->addBehavior('Timestamp');
-        
-        /* 
+
+        /*
          * $this->belongsTo('MDatabaseConnections',[
-            //'targetForeignKey' => 'db_id',
-            'foreignKey' => 'db_id']);
-         $this->belongsTo('Users',[
-            //'targetForeignKey' => 'db_id',
-            'foreignKey' => 'user_id']);
+          //'targetForeignKey' => 'db_id',
+          'foreignKey' => 'db_id']);
+          $this->belongsTo('Users',[
+          //'targetForeignKey' => 'db_id',
+          'foreignKey' => 'user_id']);
          * 
          */
-         $this->belongsToMany('MRoles', 
-        [
-            'targetForeignKey' => 'role_id',
-            'foreignKey' => 'user_database_id',
+        $this->belongsToMany('MRoles', [
+            'targetForeignKey' => _RUSERDBROLE_ROLE_ID,
+            'foreignKey' => _RUSERDBROLE_USER_DB_ID,
             'joinTable' => 'r_user_database_roles',
         ]);
-         
-         
     }
-    
-
-   
 
     /**
      * insertData method
@@ -60,17 +55,15 @@ class  RUserDatabasesTable extends Table {
             return 0;
         }
     }
-    
-    
+
     /*
-     * Function to add new user association with the database 
+     * Function to add the  database relation with user
+     * @$fieldsArray posted data
      */
+
     public function addUserDatabases($fieldsArray = []) {
-        //Create New Entity
         $databaseDetails = $this->newEntity();
-        //Update New Entity Object with data
         $databaseDetails = $this->patchEntity($databaseDetails, $fieldsArray);
-        //Create new row and Save the Data
         if ($this->save($databaseDetails)) {
             return $databaseDetails->id;
         } else {
@@ -78,57 +71,52 @@ class  RUserDatabasesTable extends Table {
         }
     }
 
-
-    
     /**
-     * deleteDatabase method
-   
+     * deleteUserDatabase method
+      delete the databases association with user
+     * $ids is RUD ids in  array to delete 
      * @return void
      */
     public function deleteUserDatabase($ids = []) {
 
-        $result = $this->deleteAll([_RUSERDB_ID . ' IN' => $ids]); //_RUSERDBROLE_ID
+        $result = $this->deleteAll([_RUSERDB_ID . ' IN' => $ids]);
 
         return $result;
     }
-    
-    
-    
+
     /**
-     * find ids  for specific users  method
-     * @param  $user_id the  user_id with respect to the rows of users in  r_user_databases 
-    
-     * @return void
+     * getUserDatabaseId 
+     * 
+     * @param  $userId the  with respect to the rows of users in  r_user_databases   
+     * @$dbId is database id  
+     * @return the RUD  id of table of  specific dbid of specific user
      */
-    
-    public function findUserDatabases($userId = [],$dbId=null) {
-        $returnIds=[];
+    public function getUserDatabaseId($userId = [], $dbId = null) {
+        $returnIds = [];
         if (!empty($fields))
-        $options['fields'] = array(_RUSERDB_ID);
-        $options['conditions'] = [_RUSERDB_USER_ID . ' IN' => $userId,_RUSERDB_DB_ID=>$dbId];
-        $data = $this->find('all',$options)->hydrate(false)->all()->toArray();         
-        if(isset($data)){
-            foreach($data as $index => $valueId){               
-             $returnIds[]=$valueId[_RUSERDBROLE_ID];
+            $options['fields'] = array(_RUSERDB_ID);
+        $options['conditions'] = [_RUSERDB_USER_ID . ' IN' => $userId, _RUSERDB_DB_ID => $dbId];
+        $data = $this->find('all', $options)->hydrate(false)->all()->toArray();
+        if (isset($data)) {
+            foreach ($data as $index => $valueId) {
+                $returnIds[] = $valueId[_RUSERDBROLE_ID];
             }
-        }    
+        }
 
         return $returnIds;
     }
-	
-	/*
-	
-	check user is already added to db or not 
-	
-	*/
-	
-	public function checkUserDbRelation($userId,$dbId){
-        
-		$count = $this->find()->where(['user_id'=>$userId,'db_id'=>$dbId])->hydrate(false)->count();
-        
+
+    /*
+     *  check whether user is already added to database  or not 
+     *  @userId is the user id 
+     *  @dbId is the database id 
+     */
+
+    public function checkUserDbRelation($userId, $dbId) {
+
+        $count = $this->find()->where([_RUSERDB_USER_ID => $userId, _RUSERDB_DB_ID => $dbId])->hydrate(false)->count();
+
         return $count;
     }
-	
-	
 
 }

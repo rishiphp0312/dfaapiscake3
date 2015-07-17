@@ -20,58 +20,53 @@ class MDatabaseConnectionsTable extends Table {
         $this->table('m_database_connections');
         $this->primaryKey('ID');
         $this->addBehavior('Timestamp');
-        
-        $this->belongsToMany('Users', 
-        [
+
+        $this->belongsToMany('Users', [
             'targetForeignKey' => 'user_id',
             'foreignKey' => 'db_id',
             'joinTable' => 'r_user_databases',
-            //   'through' => 'RUserDatabases',
         ]);
-          
     }
-	
-	public function getDbConnectionDetails($ID = null) {
+
+    public function getDbConnectionDetails($ID = null) {
         $result = false;
-        $db_jsondetails   = '';
+        $db_jsondetails = '';
         $options = [];
         if (isset($ID) && !empty($ID)) {
-            $options['conditions'] = array(_DATABASE_CONNECTION_DEVINFO_DB_ID=> $ID, 'archived' => 0);
-            //$options['fields'] => array('devinfo_db_connection') ;
-        }
-        if ($ID != '') {
-            $MDatabaseConnections = $this->find('all', $options);                   
-            $result = $MDatabaseConnections->hydrate(false)->first();             
-            if (!empty($result)) {
-                 $db_jsondetails = $result[_DATABASE_CONNECTION_DEVINFO_DB_CONN];   
-            }
-        }
-        return $db_jsondetails;
-    }
-   /*
-    * getDbNameByID function 
-    * get db details on basis of Id 
-    * 
-    */
-    public function getDbNameByID($ID = null) {
-        $result = false;
-        $data   = [];
-        $options = [];
-        if (isset($ID) && !empty($ID)) {
-            $options['conditions'] = array(_DATABASE_CONNECTION_DEVINFO_DB_ID=> $ID, 'archived' => 0);
+            $options['conditions'] = array(_DATABASE_CONNECTION_DEVINFO_DB_ID => $ID, 'archived' => 0);
             //$options['fields'] => array('devinfo_db_connection') ;
         }
         if ($ID != '') {
             $MDatabaseConnections = $this->find('all', $options);
-                   
             $result = $MDatabaseConnections->hydrate(false)->first();
-             
             if (!empty($result)) {
-                 $db_jsondetails = $result[_DATABASE_CONNECTION_DEVINFO_DB_CONN];
-                $jsonresult = json_decode($db_jsondetails,true);
+                $db_jsondetails = $result[_DATABASE_CONNECTION_DEVINFO_DB_CONN];
+            }
+        }
+        return $db_jsondetails;
+    }
+
+    /*
+     * getDbNameByID function 
+     * get db details on basis of Id 
+     * 
+     */
+
+    public function getDbNameByID($ID = null) {
+        $result = false;
+        $data = [];
+        $options = [];
+        if (isset($ID) && !empty($ID)) {
+            $options['conditions'] = array(_DATABASE_CONNECTION_DEVINFO_DB_ID => $ID, 'archived' => 0);
+        }
+        if ($ID != '') {
+            $MDatabaseConnections = $this->find('all', $options);
+            $result = $MDatabaseConnections->hydrate(false)->first();
+            if (!empty($result)) {
+                $db_jsondetails = $result[_DATABASE_CONNECTION_DEVINFO_DB_CONN];
+                $jsonresult = json_decode($db_jsondetails, true);
                 $data['id'] = $result[_DATABASE_CONNECTION_DEVINFO_DB_ID];
                 $data['dbName'] = $jsonresult['db_connection_name'];
-                             
             }
         }
         return $data;
@@ -84,11 +79,8 @@ class MDatabaseConnectionsTable extends Table {
      * @return void
      */
     public function insertData($fieldsArray = []) {
-        //Create New Entity
         $databaseDetails = $this->newEntity();
-        //Update New Entity Object with data
         $databaseDetails = $this->patchEntity($databaseDetails, $fieldsArray);
-        //Create new row and Save the Data
         if ($this->save($databaseDetails)) {
             return 1;
         } else {
@@ -107,7 +99,6 @@ class MDatabaseConnectionsTable extends Table {
         $options = array();
         $getconnectionname = array();
         $options['fields'] = array(_DATABASE_CONNECTION_DEVINFO_DB_CONN);
-        //$options['devinfo_db_connection']=
         $MDatabaseConnections = $this->find('all', $options);
         $result = $MDatabaseConnections->hydrate(false)->all();
         if (isset($result) && !empty($result)) {
@@ -135,26 +126,27 @@ class MDatabaseConnectionsTable extends Table {
         $options = array();
         $data = array();
         $getconnectionname = array();
-        $options['conditions'] = array(_DATABASE_CONNECTION_DEVINFO_DB_ARCHIVED=>'0');       
+        $options['conditions'] = array(_DATABASE_CONNECTION_DEVINFO_DB_ARCHIVED => _DBNOTDELETED); //1 means deleted dbs       
         $options['fields'] = array(_DATABASE_CONNECTION_DEVINFO_DB_CONN, _DATABASE_CONNECTION_DEVINFO_DB_ID);
         //$options['devinfo_db_connection']=
         $MDatabaseConnections = $this->find('all', $options);
         $result = $MDatabaseConnections->hydrate(false)->all();
         if (isset($result) && !empty($result)) {
-			$cnt=0;
+            $cnt = 0;
             foreach ($result as $index => $valuedb) {
                 $connectionObject = json_decode($valuedb[_DATABASE_CONNECTION_DEVINFO_DB_CONN], true);
                 if (isset($connectionObject['db_connection_name']) && !empty($connectionObject['db_connection_name'])) {
                     $data[$cnt]['id'] = $valuedb[_DATABASE_CONNECTION_DEVINFO_DB_ID];
                     $data[$cnt]['dbName'] = $connectionObject['db_connection_name'];
-					$cnt++;
+
+                    $cnt++;
                 }
             }
+            $data['user']['role'] = _SUPERADMINNAME;
         }
 
         return $data;
     }
-
 
     /**
      * deleteDatabase method
@@ -165,23 +157,16 @@ class MDatabaseConnectionsTable extends Table {
     public function deleteDatabase($dbId = null, $userId = null) {
 
         $fieldsArray = array();
-
-
-        $fieldsArray[_DATABASE_CONNECTION_DEVINFO_DB_ARCHIVED] = '1'; // means deleted 
-
+        $fieldsArray[_DATABASE_CONNECTION_DEVINFO_DB_ARCHIVED] = _DBDELETED; // means deleted 
         if (!empty($dbId))
             $fieldsArray[_DATABASE_CONNECTION_DEVINFO_DB_ID] = $dbId;
-
         if (!empty($userId))
             $fieldsArray[_DATABASE_CONNECTION_DEVINFO_DB_MODIFIEDBY] = $userId;
-            
 
         if (!empty($dbId) && !empty($userId)) {
-            
+
             $databaseDetails = $this->newEntity();
-            //Update New Entity Object with data
             $databaseDetails = $this->patchEntity($databaseDetails, $fieldsArray);
-            //Create new row and Save the Data
             if ($this->save($databaseDetails)) {
                 return 1;
             } else {
@@ -189,29 +174,32 @@ class MDatabaseConnectionsTable extends Table {
             }
         }
     }
-    
-    
-      public function  listAllUsersDb($db_id=null){
-           
-            $data =array();
-            $All_databases = $this->find()->where(['id'=>$db_id])->contain(['Users'],true)->hydrate(false)->all()->toArray();
-            $All_databases = current($All_databases)['users'];
-            if(isset($All_databases ) && !empty($All_databases )){
-                foreach($All_databases as $index=>$valueUsers){
-                $data[$index][_USER_EMAIL]         = $valueUsers[_USER_EMAIL];
-                $data[$index][_USER_NAME]          = $valueUsers[_USER_NAME];
-                $data[$index][_USER_ID]            = $valueUsers[_USER_ID];         
-                $data[$index][_USER_STATUS]            = $valueUsers[_USER_STATUS];         
-                $data[$index]['lastLoggedIn']  = strtotime($valueUsers[_USER_LASTLOGGEDIN]);
-               // $data[$index]['roles']  = ['Admin'];
-                $data[$index]['access']['area']  = 0;
-                $data[$index]['access']['indicator']  = 0;                
-            }     
+
+    /*
+     * listAllUsersDb list all users associated to specific dbid
+     * dbId the database id   	 
+     *  
+     */
+
+    public function listAllUsersDb($dbId = null) {
+
+        $data = array();
+        $All_databases = $this->find()->where(['id' => $dbId])->contain(['Users'], true)->hydrate(false)->all()->toArray();
+        $All_databases = current($All_databases)['users'];
+        if (isset($All_databases) && !empty($All_databases)) {
+            foreach ($All_databases as $index => $valueUsers) {
+                $data[$index][_USER_EMAIL] = $valueUsers[_USER_EMAIL];
+                $data[$index][_USER_NAME] = $valueUsers[_USER_NAME];
+                $data[$index][_USER_ID] = $valueUsers[_USER_ID];
+                $data[$index][_USER_STATUS] = $valueUsers[_USER_STATUS];
+                $data[$index]['lastLoggedIn'] = strtotime($valueUsers[_USER_LASTLOGGEDIN]);
+                // $data[$index]['roles']  = ['Admin'];
+                $data[$index]['access']['area'] = 0;
+                $data[$index]['access']['indicator'] = 0;
             }
-           
-                
-            //$All_databases=$All_databases->hydrate(false)->all();
-            return $data;
-}
+        }
+
+        return $data;
+    }
 
 }

@@ -189,6 +189,22 @@ class UsersTable extends Table
         return $result;
     }
 	
+	/**
+     * getdatabaseList method to get the database  list of logged user  
+     *
+     * @param array $userId is user Id  . {DEFAULT : null}
+     * 
+     */
+	public function getdatabaseList($userId) {
+
+        $result = $this->find()->where(['id' => $userId])->contain(['MDatabaseConnections'], true)->hydrate(false)->all()->toArray();
+
+        return $result;
+    }
+	
+	
+	
+	
 	
     
     

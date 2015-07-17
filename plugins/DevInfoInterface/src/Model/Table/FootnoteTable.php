@@ -33,7 +33,6 @@ class FootnoteTable extends Table
         return 'devInfoConnection';
     }
 
-
     /**
      * setListTypeKeyValuePairs method
      *
@@ -45,8 +44,6 @@ class FootnoteTable extends Table
         $this->primaryKey($fields[0]);
         $this->displayField($fields[1]);
     }
-
-
 
     /**
      * getDataByParams method
@@ -70,11 +67,5 @@ class FootnoteTable extends Table
         $data = $results->toArray();
 
         return $data;
-
     }
-
-
-
-
-
 }

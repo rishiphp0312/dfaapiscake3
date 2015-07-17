@@ -1,14 +1,14 @@
-<?php  
+<?php
+
 namespace App\Model\Table;
+
 use App\Model\Entity\RAccessIndicator;
 use Cake\ORM\Table;
 
 /**
  * RAccessIndicators Model
  */
- 
-class RAccessIndicatorsTable extends Table
-{
+class RAccessIndicatorsTable extends Table {
 
     /**
      * Initialize method
@@ -16,11 +16,10 @@ class RAccessIndicatorsTable extends Table
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config)
-    {
+    public function initialize(array $config) {
         $this->table('r_access_indicators');
         $this->primaryKey(_RACCESSINDICATOR_ID);
-        $this->addBehavior('Timestamp'); 
+        $this->addBehavior('Timestamp');
         $this->displayField(_RACCESSINDICATOR_INDICATOR_NAME); //used for find('list')         
     }
 
@@ -30,47 +29,42 @@ class RAccessIndicatorsTable extends Table
      * @param array $fields The fields(keys/values) for the list.
      * @return void
      */
-    public function setListTypeKeyValuePairs(array $fields)
-    {
+    public function setListTypeKeyValuePairs(array $fields) {
         $this->primaryKey($fields[0]);
         $this->displayField($fields[1]);
     }
 
     /**
-     * Creates record
-     *
+     * Creates record 
      * @param array $fieldsArray data to be created
      * @return \Cake\ORM\RulesChecker
      */
-    public function createRecord($fieldsArray = [])
-    {
+    public function createRecord($fieldsArray = []) {
         $RAccessIndicators = $this->newEntity();
         $RAccessIndicators = $this->patchEntity($RAccessIndicators, $fieldsArray);
-        
+
         $result = $this->save($RAccessIndicators);
-        
+
         if ($result) {
             return $result->{_RACCESSINDICATOR_ID};
         } else {
             return 0;
-        }        
+        }
     }
 
     /**
-     * Update record
-     *
+     * Update record     *
      * @param array $fieldsArray Fields to update with their Data. {DEFAULT : empty}
      * @param array $conditions The WHERE conditions for the Query. {DEFAULT : empty}
      * @return \Cake\ORM\RulesChecker
      */
-    public function updateRecord($fieldsArray = [], $conditions = [])
-    {
+    public function updateRecord($fieldsArray = [], $conditions = []) {
         //Initialize
         $query = $this->query();
-        
+
         //Set
         $query->update()->set($fieldsArray)->where($conditions);
-        
+
         //Execute
         $query->execute();
     }
@@ -83,23 +77,35 @@ class RAccessIndicatorsTable extends Table
      * @param string $type Query type {DEFAULT : empty}
      * @return void
      */
-    public function getRecords(array $fields, array $conditions, $type = 'all')
-    {
+    public function getRecords(array $fields, array $conditions, $type = 'all') {
         $options = [];
 
-        if(!empty($fields))
+        if (!empty($fields))
             $options['fields'] = $fields;
-        if(!empty($conditions))
+        if (!empty($conditions))
             $options['conditions'] = $conditions;
-        
-        if($type == 'list') $this->setListTypeKeyValuePairs($fields);
-        
+
+        if ($type == 'list')
+            $this->setListTypeKeyValuePairs($fields);
+
         $query = $this->find($type, $options);
         $results = $query->hydrate(false)->all();
         $data = $results->toArray();
 
         return $data;
+    }
 
+    /**
+     * deleteUserAreas method used when modifying areas  
+      @RUD_ids is the array of RUD table
+      @RUDR_ids is the array of RUDR table
+      @indicatorgids which needs to be deleted
+     * @return void
+      //_RACCESSINDICATOR_INDICATOR_GID
+     */
+    public function deleteUserIndicators($RUD_ids = [], $RUDR_ids = []) {
+        $result = $this->deleteAll([_RACCESSINDICATOR_USER_DATABASE_ID . ' IN' => $RUD_ids, _RACCESSINDICATOR_USER_DATABASE_ROLE_ID . ' IN' => $RUDR_ids]);
+        return $result;
     }
 
 }

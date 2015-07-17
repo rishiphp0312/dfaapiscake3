@@ -11,40 +11,29 @@ use Cake\ORM\TableRegistry;
 class DataComponent extends Component {
 
     // The other component your component uses
-    public $components = ['Auth', 'DevInfoInterface.IndicatorClassifications', 'DevInfoInterface.IcIus', 'DevInfoInterface.Timeperiod', 'DevInfoInterface.IndicatorUnitSubgroup'];
-    public $AreaObj = NULL;
-    public $AreaLevelObj = NULL;
+    public $components = [
+        'Auth', 
+        'DevInfoInterface.IndicatorClassifications', 
+        'DevInfoInterface.IcIus', 
+        'DevInfoInterface.Timeperiod', 
+        'DevInfoInterface.IndicatorUnitSubgroup',
+        'DevInfoInterface.Footnote'
+    ];
     public $DataObj = NULL;
-    public $TimeperiodObj = NULL;
     public $footnoteObj = NULL;
-    public $Indicator = NULL;
-    public $IndicatorUnitSubgroupObj = NULL;
-    public $SourceObj = NULL;
-    public $IcIusObj = NULL;
-    public $delm1 = '';
-    public $delm2 = _DELEM2;
 
     public function initialize(array $config) {
         parent::initialize($config);
-        $this->AreaObj = TableRegistry::get('DevInfoInterface.Areas');
         $this->DataObj = TableRegistry::get('DevInfoInterface.Data');
-        $this->TimeperiodObj = TableRegistry::get('DevInfoInterface.TimePeriods');
-        $this->AreaLevelObj = TableRegistry::get('DevInfoInterface.AreaLevel');
-        $this->Indicator = TableRegistry::get('DevInfoInterface.Indicator');
-        $this->IndicatorUnitSubgroupObj = TableRegistry::get('DevInfoInterface.IndicatorUnitSubgroup');
         $this->FootnoteObj = TableRegistry::get('DevInfoInterface.Footnote');
-        $this->IndicatorClassificationsObj = TableRegistry::get('DevInfoInterface.IndicatorClassifications');
-        $this->IcIusObj = TableRegistry::get('DevInfoInterface.IcIus');
     }
 
     public function getIusDataCollection($iusArray) {
 
-
         $tempDataAr = array(); // temproryly store data for all element name		
 
         foreach ($iusArray as $ius) {
-            //pr($ius);
-            $iusAr = explode($this->delm2, $ius);
+            $iusAr = explode(_DELEM2, $ius);
 
             $iGid = $iusAr[0];
             $uGid = $iusAr[1];
@@ -55,10 +44,7 @@ class DataComponent extends Component {
                 $sGid = '';
             }
 
-            //
             $data = $this->IndicatorUnitSubgroup->getIusNidsDetails($iGid, $uGid, $sGid);
-
-            //	pr($data);die;
 
             foreach ($data as $valueIus) {
 
@@ -96,13 +82,12 @@ class DataComponent extends Component {
     }
 
     /**
-    * getDEsearchData to get the details of search on basis of IUSNid,
-    * @parameters passed in conditions will be areanid , TimeperiodNid ,IUSNid
-    * $iusgids will be passed as array in extra 
-    * returns data value with source
-    * @access public
-    */
-    
+     * getDEsearchData to get the details of search on basis of IUSNid,
+     * @parameters passed in conditions will be areanid , TimeperiodNid ,IUSNid
+     * $iusgids will be passed as array in extra 
+     * returns data value with source
+     * @access public
+     */
     public function getDEsearchData($fields = [], $conditions = [], $extra = []) {
 
         $iusnidData = [];
@@ -122,7 +107,6 @@ class DataComponent extends Component {
             $classificationArray[$value[_IC_IC_NID]]['IC_Name'] = $value[_IC_IC_NAME];
             $classificationArray[$value[_IC_IC_NID]]['IC_Type'] = $value[_IC_IC_TYPE];
         }
-
 
         // getting all timperiod list 
         $fields2 = [_TIMEPERIOD_TIMEPERIOD_NID, _TIMEPERIOD_TIMEPERIOD];
@@ -151,18 +135,16 @@ class DataComponent extends Component {
             $iusnidData[$IUNId][$iusnid]['src'] = $value[_MDATA_SOURCENID];
             $iusnidData[$IUNId][$iusnid]['sGid'] = $iusNids['sg'][$value[_MDATA_SUBGRPNID]][0]; //sbgrp gid 
             $iusnidData[$IUNId][$iusnid]['sName'] = $iusNids['sg'][$value[_MDATA_SUBGRPNID]][1]; //sbgrp  name 
-            $iusnidData[$IUNId][$iusNids]['footnote'] = (!empty($value[_MDATA_FOOTNOTENID])) ? $footnoteList[$value[_MDATA_FOOTNOTENID]] : '';
+            $iusnidData[$IUNId][$iusnid]['footnote'] = (!empty($value[_MDATA_FOOTNOTENID])) ? $footnoteList[$value[_MDATA_FOOTNOTENID]] : '';
             $iusnidData[$IUNId][$iusnid]['iusnid'] = $value[_MDATA_IUSNID];
             $alldataIusnids[] = $value[_MDATA_IUSNID];
             $alldataIndicators[$value[_MDATA_IUSNID]] = $value[_MDATA_INDICATORNID]; // storing ind index w.r.t iusnids
             $alldataUnits[$value[_MDATA_IUSNID]] = $value[_MDATA_UNITNID]; // storing unit index w.r.t iusnids
         }
 
-
         $finalArray = [];
+        $iusValidationsArray = [];
 
-        // pr($returnediusNids);
-        //pr($iusNids['IUNid']['ius']);die;
         foreach ($returnediusNids as $index => $iusnidvalue) {
             // first classification         
             if (in_array($iusnidvalue, $alldataIusnids) == true) {
@@ -174,24 +156,64 @@ class DataComponent extends Component {
             //$prepareIU = 'IU_' .$iusnidData['IUNid'];
             //$finalArray[$icnid]['icName'] = $classificationArray[$icnid]['IC_Name'];
             // $finalArray[$icnid]['iGid'] = $classificationArray[$icnid]['IC_GId'];
-            $finalArray['iu'][$prepareIU]['iname'] = $iusNids['ind']['ius'][$iusnidvalue][1]; //name 
-            $finalArray['iu'][$prepareIU]['iGid'] = $iusNids['ind']['ius'][$iusnidvalue][0];
-            $finalArray['iu'][$prepareIU]['uName'] = $iusNids['unit']['ius'][$iusnidvalue][1];
-            $finalArray['iu'][$prepareIU]['uGid'] = $iusNids['unit']['ius'][$iusnidvalue][0];
-            //pr($iusNids);die('hua');
+            $finalArray[$prepareIU]['iname'] = $iusNids['ind']['ius'][$iusnidvalue][1]; //name 
+            $finalArray[$prepareIU]['iGid'] = $iusNids['ind']['ius'][$iusnidvalue][0];
+            $finalArray[$prepareIU]['uName'] = $iusNids['unit']['ius'][$iusnidvalue][1];
+            $finalArray[$prepareIU]['uGid'] = $iusNids['unit']['ius'][$iusnidvalue][0];
 
-
+            $iusValidationsArray[] = [
+                _MIUSVALIDATION_INDICATOR_GID => $iusNids['ind']['ius'][$iusnidvalue][0],
+                _MIUSVALIDATION_UNIT_GID => $iusNids['unit']['ius'][$iusnidvalue][0],
+                _MIUSVALIDATION_SUBGROUP_GID => $iusNids['sg']['ius'][$iusnidvalue][0],
+            ];
 
             if (in_array($iusnidvalue, $alldataIusnids) == true) {
-                $finalArray['iu'][$prepareIU]['subgrps'][$iusnidvalue] = $iusnidData[$prepareIU][$iusnidvalue];
+                $finalArray[$prepareIU]['subgrps'][] = $iusnidData[$prepareIU][$iusnidvalue];
             } else {
-                $finalArray['iu'][$prepareIU]['subgrps'][$iusnidvalue] = ['dNid' => '', 'sName' => $iusNids['sg']['ius'][$iusnidvalue][1], 'sGid' => $iusNids['sg']['ius'][$iusnidvalue][0],
+                $finalArray[$prepareIU]['subgrps'][] = ['dNid' => '', 'sName' => $iusNids['sg']['ius'][$iusnidvalue][1], 'sGid' => $iusNids['sg']['ius'][$iusnidvalue][0],
                     'iusnid' => $iusnidvalue, 'dv' => '', 'tp' => '', 'src' => '', 'footnote' => ''];
             }
         }
-
-        return $finalArray;
+        $finalArray = array_values($finalArray);
+        $return['iu'] = $finalArray;
+        $return['iusValidations'] = $iusValidationsArray;
+        return $return;
     }
 
-//  function ends here 
+    /**
+     * saveDataEntry method
+     * 
+     * @param array $insertDataKeys Fields to inserted/updated. {DEFAULT : null}
+     * @param array $insertDataValue Values to be inserted/updated. {DEFAULT : null}
+     * @param array $extra Extra Parameters if any. {DEFAULT : null}
+     * @return void
+     */
+    //public function saveDataEntry($insertDataKeys = [], $insertDataValue = [], $extra = []) {
+    public function saveDataEntry($dataDetails = [], $extra = []) {
+        $dataDetailsArray = json_decode($dataDetails, true);
+        
+        //-- Footnote
+        $footnotes = array_column($dataDetailsArray, 'footnote');
+        $fields = [_FOOTNOTE_NId, _FOOTNOTE_VAL];
+        $conditions = [_FOOTNOTE_VAL . ' IN' => $footnotes];
+        $extra = ['type' => 'list'];
+        $this->Footnote->saveAndGetFootnoteRec($fields, $conditions, $extra);
+        
+        $dNids = array_column($dataDetailsArray, 'dNid');
+        $dataDetailsUpdate = array_intersect_key($dataDetailsArray, array_filter($dNids));
+        $dataDetailsInsert = array_diff_key($dataDetailsArray, array_filter($dNids));
+        
+        //Insert Data Rows
+        if(!empty($dataDetailsInsert)){
+            
+        }
+        
+        //Update Data Rows
+        if(!empty($dataDetailsUpdate)){
+            
+        }
+        
+        debug($dataDetailsArray);exit;
+    }
+    
 }

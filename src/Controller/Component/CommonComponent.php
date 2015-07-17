@@ -19,7 +19,7 @@ class CommonComponent extends Component {
     public $dbcon = '';
     public $Users = '';
     public $Roles = '';
-    public $components = ['Auth', 'MIusValidations', 'DevInfoInterface.CommonInterface'];
+    public $components = ['Auth', 'MIusValidations', 'DevInfoInterface.CommonInterface','UserCommon'];
 
     public function initialize(array $config) {
         parent::initialize($config);
@@ -151,7 +151,8 @@ class CommonComponent extends Component {
     }
 
     /*
-      Get List of Database as per the Users
+      Get List of the Database as per the logged in  User
+	  *
      */
 
     public function getDatabases() {
@@ -162,14 +163,15 @@ class CommonComponent extends Component {
         if ($roleId == _SUPERADMINROLEID) // for super admin acces to all databases            
             $returnDatabaseDetails = $this->MDatabaseConnections->getAllDatabases();
         else
-            $returnDatabaseDetails = $this->getAlldatabaseAssignedUsers($userId);
-
+            $returnDatabaseDetails = $this->getdatabaseListOfUser($userId); //db list for logged in user 
+	
         return $returnDatabaseDetails;
     }
 
     /*
      * Function deleteDatabase is used for deleting the database details
-     * 
+     * $dbId  database id 
+	 * $userId user id 
      */
 
     public function deleteDatabase($dbId, $userId) {
@@ -178,22 +180,21 @@ class CommonComponent extends Component {
     }
 
     /*
-      function to get  the databases  associated to specific users
+      getdatabaseListOfUser to get the list of all the databases associated to specific users
       $userId the user Id of user
      */
 
-    public function getAlldatabaseAssignedUsers($userId) {
+    public function getdatabaseListOfUser($userId) {
         $data = array();
-        $All_databases = $this->Users->find()->where(['id' => $userId])->contain(['MDatabaseConnections'], true)->hydrate(false)->all()->toArray();
+		$All_databases = $this->Users->getdatabaseList($userId);
         $alldatabases = current($All_databases)['m_database_connections'];
         if (isset($alldatabases) && !empty($alldatabases)) {
             foreach ($alldatabases as $index => $valuedb) {
-
                 $connectionObject = json_decode($valuedb[_DATABASE_CONNECTION_DEVINFO_DB_CONN], true);
-
                 if (isset($connectionObject['db_connection_name']) && !empty($connectionObject['db_connection_name']) && $valuedb[_DATABASE_CONNECTION_DEVINFO_DB_ARCHIVED] == '0') {
-                    $data[$index]['id'] = $valuedb[_DATABASE_CONNECTION_DEVINFO_DB_ID];
+                    $dbId = $data[$index]['id'] = $valuedb[_DATABASE_CONNECTION_DEVINFO_DB_ID];
                     $data[$index]['dbName'] = $connectionObject['db_connection_name'];
+                    $data[$index]['dbroles'] =$this->UserCommon->getUserDatabasesRoles($userId,$dbId);
                 }
             }
         }
@@ -335,10 +336,13 @@ class CommonComponent extends Component {
                 break;
                 case _TV_IC:
                     $returndData = $this->CommonInterface->serviceInterface('CommonInterface', 'getParentChild', ['IndicatorClassifications', $parentId, $onDemand], $dbConnection);
+                    
                 break;
                 case _TV_ICIND:
-                       $returndData = $this->CommonInterface->serviceInterface('CommonInterface', 'getParentChild', ['IndicatorClassifications', $parentId, $onDemand], $dbConnection);
-           
+                    // coming soon
+                    $returndData = $this->CommonInterface->serviceInterface('CommonInterface', 'getParentChild', ['IndicatorClassifications', $parentId, false], $dbConnection);
+                    
+
                 break;
                 case _TV_ICIUS:
                     // coming soon

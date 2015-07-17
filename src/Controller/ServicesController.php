@@ -49,36 +49,6 @@ class ServicesController extends AppController {
 
         //parent::beforeFilter($event);
         $this->Auth->allow();
-
-
-        //---- Store User access data into session, if found
-        if (isset($_REQUEST['dbId']) && !empty($_REQUEST['dbId'])) {
-            $dbId = $_REQUEST['dbId'];
-            $authUserId = $this->Auth->user(_USER_ID);
-
-            // Check fake call
-            if (!empty($authUserId)) {
-                $userDbId = $this->UserCommon->findUserDatabases([$authUserId], $dbId);
-                // check user is using the assigned DB only
-                if (!empty($userDbId)) {
-                    $getDbRolesDetails = $this->UserCommon->getDbRolesDetails($fields = [], [_RUSERDBROLE_USER_DB_ID => $userDbId[0]]);
-                    // Check User DB role
-                    if (!empty($getDbRolesDetails)) {
-                        $getDbRolesDetails = reset($getDbRolesDetails);
-                        $userDbRoleId = $getDbRolesDetails[_RUSERDBROLE_ID];
-                        $areaAccess = $getDbRolesDetails[_RUSERDBROLE_ACCESS];
-                        $indicatorAccess = $getDbRolesDetails[_RUSERDBROLE_INDICATOR_ACCESS];
-
-                        // Store user access in session for later use
-                        $this->session->write('userAccess', [
-                            'userDbRoleId' => $userDbRoleId,
-                            'areaAccess' => $areaAccess,
-                            'indicatorAccess' => $indicatorAccess
-                        ]);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -97,27 +67,58 @@ class ServicesController extends AppController {
         $dbId = '';
         //$_REQUEST['dbId']=46;  // for testing 
         if (isset($_REQUEST['dbId']) && !empty($_REQUEST['dbId'])) {
+
             $dbId = $_REQUEST['dbId'];
             $dbConnection = $this->Common->getDbConnectionDetails($dbId); //dbId
+
+            $role_id = $this->Auth->user('role_id');
+
+            // User is not Superadmin
+            if ($role_id != _SUPERADMINROLEID) {
+                //---- Store User access data into session, if found
+                $authUserId = $this->Auth->user(_USER_ID);
+                // Check fake call
+                if (!empty($authUserId)) {
+                    $userDbId = $this->UserCommon->getUserDatabasesRoles([$authUserId], $dbId);
+                    // check user is using the assigned DB only
+                    if (!empty($userDbId)) {
+                        $getDbRolesDetails = $this->UserCommon->getDbRolesDetails($fields = [], [_RUSERDBROLE_USER_DB_ID => $userDbId[0]]);
+                        // Check User DB role
+                        if (!empty($getDbRolesDetails)) {
+                            $getDbRolesDetails = reset($getDbRolesDetails);
+                            $userDbRoleId = $getDbRolesDetails[_RUSERDBROLE_ID];
+                            $areaAccess = $getDbRolesDetails[_RUSERDBROLE_ACCESS];
+                            $indicatorAccess = $getDbRolesDetails[_RUSERDBROLE_INDICATOR_ACCESS];
+
+                            // Store user access in session for later use
+                            $this->session->write('userAccess', [
+                                'userDbRoleId' => $userDbRoleId,
+                                'areaAccess' => $areaAccess,
+                                'indicatorAccess' => $indicatorAccess
+                            ]);
+                        }
+                    } // User is not assigned this DB - fake call
+                    else {
+                        $returnData['success'] = _FAILED;
+                        $returnData['errCode'] = _ERR120;
+                        $case = 0;
+                    }
+                }
+            }
         }
 
         switch ($case):
 
             case 'test':
-                $params = [
-                    'fields' => [_TIMEPERIOD_TIMEPERIOD_NID, _TIMEPERIOD_TIMEPERIOD], //'fields' => ['IC_GId', 'IC_Name'],
-                    'conditions' => [],
-                    'type' => 'all'//'type' => 'list'
-                ];
-                //$returnData['data'] = $this->CommonInterface->serviceInterface('IndicatorClassifications', 'getSourceList', $params, $dbConnection);
-                $returnData['data'] = $this->CommonInterface->serviceInterface('Timeperiod', 'getDataByParams', $params, $dbConnection);
 
                 /* $returnData['data'] = $this->UserAccess->getAreaAccessToUser(['type'=>'all']);
                   $returnData['data'] = $this->UserAccess->getAreaAccessToUser(['type'=>'list']);
 
                   $returnData['data'] = $this->UserAccess->getIndicatorAccessToUser(['type'=>'all']);
                   $returnData['data'] = $this->UserAccess->getIndicatorAccessToUser(['type'=>'list']); */
-                debug($returnData['data']);
+
+                $returnData = $this->CommonInterface->serviceInterface('IcIus', 'testCasesFromTable', [], $dbConnection);
+                debug($returnData);
                 exit;
                 break;
 
@@ -1037,6 +1038,8 @@ class ServicesController extends AppController {
                                         }
 
                                         if ($chkuserDbRel == 0) {    //user is not  associated with this db 
+                                            $this->request->data['areaid'] = ['IND008', 'IND007', 'IND006'];
+                                            $this->request->data['indGids'] = ['LR_7PLUS', 'D127A005-397D-3091-5253-D3279AC481AA', 'C1A7FA43-340F-7506-979A-501CF11AB325'];
                                             $lastIdinserted = $this->UserCommon->addModifyUser($this->request->data, $dbId);
                                             if ($lastIdinserted > 0) {
                                                 $returnData['status'] = _SUCCESS;
@@ -1048,7 +1051,7 @@ class ServicesController extends AppController {
                                                     $userdetails = $this->UserCommon->getDataByParams($fields, $conditions);
                                                     if (!empty($userdetails)) {
                                                         $registeredUserId = current($userdetails)[_USER_ID];
-                                                        $this->UserCommon->sendActivationLink($registeredUserId, $this->request->data[_USER_EMAIL], $this->request->data[_USER_NAME]);
+                                                       // $this->UserCommon->sendActivationLink($registeredUserId, $this->request->data[_USER_EMAIL], $this->request->data[_USER_NAME]);
                                                     }
                                                 } else {
                                                     if ($isModified == 'false') {
@@ -1177,7 +1180,7 @@ class ServicesController extends AppController {
 
                     try {
 
-                        $dataUsrDbRoles = $this->UserCommon->findUserDatabasesRoles($authUserId, $dbId);
+                        $dataUsrDbRoles = $this->UserCommon->getUserDatabasesRoles($authUserId, $dbId);
                         $returnData['status'] = _SUCCESS;
                         $returnData['data'] = $dataUsrDbRoles;
                         $returnData['responseKey'] = 'usrDbRoles';
@@ -1351,7 +1354,10 @@ class ServicesController extends AppController {
 
 
             case 2209: //get Tree Structure List
-                if ($this->request->is('post')):
+                //if ($this->request->is('post')):
+                if (true):
+                    $this->request->data['type'] = _TV_IC;
+                    $this->request->data['onDemand'] = false;
                     // Post Variables                    
                     // possible Types Area,IU,IUS,IC and ICIND
                     $type = (isset($this->request->data['type'])) ? $this->request->data['type'] : '';
@@ -1599,10 +1605,12 @@ class ServicesController extends AppController {
                                 $returnData['errMsg'] = $return['error'];
                             } else {
                                 //-- TRANSAC Log
-                                $fieldsArray = [_MTRANSACTIONLOGS_STATUS => _SUCCESS, _MTRANSACTIONLOGS_IDENTIFIER => $return];
+                                $logFileName = basename($return);
+                                $fieldsArray = [_MTRANSACTIONLOGS_STATUS => _SUCCESS, _MTRANSACTIONLOGS_IDENTIFIER => $logFileName];
                                 $conditions = [_MTRANSACTIONLOGS_ID => $LogId];
                                 $this->TransactionLogs->updateRecord($fieldsArray, $conditions);
 
+                                $return = _WEBSITE_URL . _CHUNKS_PATH_WEBROOT . DS . $logFileName;
                                 $returnData['data'] = $return;
                                 $returnData['responseKey'] = _IMPORT_LOG;
                                 $returnData['status'] = _SUCCESS;
@@ -1630,20 +1638,21 @@ class ServicesController extends AppController {
             case 2403:
                 //if ($this->request->is('post')):
 
+
                 try {
 
                     $iusgidArray = [
-                        'LR_7PLUS' . $this->delm . '20C6CF95-37AA-C024-FE3B-895AFD42EEF8' . $this->delm . '21A70BB5-3833-FDAA-2A1E-99B990A0CC7E'
-                        , 'LR_7PLUS' . $this->delm . '20C6CF95-37AA-C024-FE3B-895AFD42EEF8' . $this->delm . '9E361AE4-35F5-F7EE-4AAA-C584923BFB4F'
-                        // , 'LTR_7PLUS' . $this->delm . 'BBCFF050-90E9-F3F6-3A7A-30CFB9BF9A39'
-                        // , 'MAINWORK_OT' . $this->delm . 'BBCFF050-90E9-F3F6-3A7A-30CFB9BF9A39'
-                        //,'AREA'. $this->delm . 'SQKM'
-                        //,'97D798F6-8C22-927F-0B0C-CDD49939276D'. $this->delm . '20C6CF95-37AA-C024-FE3B-895AFD42EEF8',
-                        , 'D127A005-397D-3091-5253-D3279AC481AA' . $this->delm . 'B602B58B-6879-4188-9D49-DD833281FE4E'
-                            //.$this->delm . '21A70BB5-3833-FDAA-2A1E-99B990A0CC7E'
+                        'LR_7PLUS' . _DELEM2 . '20C6CF95-37AA-C024-FE3B-895AFD42EEF8' . _DELEM2 . '21A70BB5-3833-FDAA-2A1E-99B990A0CC7E'
+                        , 'LR_7PLUS' . _DELEM2 . '20C6CF95-37AA-C024-FE3B-895AFD42EEF8' . _DELEM2 . '9E361AE4-35F5-F7EE-4AAA-C584923BFB4F'
+                        // , 'LTR_7PLUS' . _DELEM2 . 'BBCFF050-90E9-F3F6-3A7A-30CFB9BF9A39'
+                        // , 'MAINWORK_OT' . _DELEM2 . 'BBCFF050-90E9-F3F6-3A7A-30CFB9BF9A39'
+                        //,'AREA'. _DELEM2 . 'SQKM'
+                        //,'97D798F6-8C22-927F-0B0C-CDD49939276D'. _DELEM2 . '20C6CF95-37AA-C024-FE3B-895AFD42EEF8',
+                        , 'D127A005-397D-3091-5253-D3279AC481AA' . _DELEM2 . 'B602B58B-6879-4188-9D49-DD833281FE4E'
+                            //._DELEM2 . '21A70BB5-3833-FDAA-2A1E-99B990A0CC7E'
                     ];
 
-                    //	$iusgidArray=['LR_7PLUS'.$this->delm.'20C6CF95-37AA-C024-FE3B-895AFD42EEF8'];
+                    //	$iusgidArray=['LR_7PLUS'._DELEM2.'20C6CF95-37AA-C024-FE3B-895AFD42EEF8'];
                     $areaNid = '18274';
                     $timePeriodNid = '2';
 
@@ -1653,16 +1662,106 @@ class ServicesController extends AppController {
                     $params['conditions'] = $conditions;
                     $params['extra'] = $iusgidArray;
                     $returnData = $this->CommonInterface->serviceInterface('CommonInterface', 'getDEsearchData', $params, $dbConnection);
+
+                    //--- Prepare IUS Validations
+                    $iusGids = $returnData['iusValidations'];
+                    $iusValidations = [];
+                    $fields = [
+                        _MIUSVALIDATION_INDICATOR_GID,
+                        _MIUSVALIDATION_UNIT_GID,
+                        _MIUSVALIDATION_SUBGROUP_GID,
+                        _MIUSVALIDATION_IS_TEXTUAL,
+                        _MIUSVALIDATION_MIN_VALUE,
+                        _MIUSVALIDATION_MAX_VALUE
+                    ];
+                    $conditions = ['OR' => $iusGids, _MIUSVALIDATION_DB_ID => $dbId];
+                    $IusValidationsRecordExist = $this->MIusValidations->getRecords($fields, $conditions, 'all', $extra = []);
+                    foreach ($IusValidationsRecordExist as $records) {
+                        $isTextual = ($records[_MIUSVALIDATION_IS_TEXTUAL] == '1') ? true : false;
+                        $minimumValue = $records[_MIUSVALIDATION_MIN_VALUE];
+                        $maximumValue = $records[_MIUSVALIDATION_MAX_VALUE];
+                        $isMinimum = ($minimumValue === NULL || $minimumValue === '') ? false : true;
+                        $isMaximum = ($maximumValue === NULL || $maximumValue === '') ? false : true;
+                        $validationsArray = [
+                            'isTextual' => $isTextual,
+                            'isMinimum' => $isMinimum,
+                            'isMaximum' => $isMaximum,
+                            'minimumValue' => $minimumValue,
+                            'maximumValue' => $maximumValue,
+                        ];
+                        $iusValidations = [
+                            $records[_MIUSVALIDATION_INDICATOR_GID]
+                            . _DELEM1
+                            . $records[_MIUSVALIDATION_UNIT_GID]
+                            . _DELEM1
+                            . $records[_MIUSVALIDATION_SUBGROUP_GID] => $validationsArray
+                        ];
+                    }
+
                     $returnData['status'] = _SUCCESS;
-                    $returnData['data'] = $returnData;
-                    $returnData['responseKey'] = 'iusData';
+                    // Ius Data
+                    $returnData['responseKey'][] = 'iusData';
+                    $returnData['data'][] = $returnData['iu'];
+
+                    // Ius Validations Data
+                    $returnData['responseKey'][] = 'iusValidations';
+                    $returnData['data'][] = $iusValidations;
                 } catch (Exception $e) {
                     $returnData['errMsg'] = $e->getMessage();
                 }
                 //endif;
                 break;
 
-            case 2404: // Get DE single table lists
+            case 2404: // Save Data from IUS ,timeperiod and area
+
+                if (true):
+                    $demo = [
+                        [
+                            'dNid' => '',
+                            'iusId' => 2599,
+                            'dataValue' => '22',
+                            'source' => 401,
+                            'footnote' => 'Demo Footnote',
+                            'timeperiod' => 2,
+                            'areaId' => 'IND',
+                        ],
+                        [
+                            'dNid' => 6054328,
+                            'iusId' => 2793,
+                            'dataValue' => '152',
+                            'source' => 401,
+                            'footnote' => 'Some Text',
+                            'timeperiod' => 2,
+                            'areaId' => 'IND',
+                        ]
+                    ];
+                    $this->request->data['iusDetails'] = json_encode($demo); //'tp'
+                    $iusDetails = $this->request->data['iusDetails'];
+                    
+                    if (!empty($iusDetails)) {
+                        $params = [
+                            'dataDetails' => $iusDetails,
+                            'extra' => $extra,
+                        ];
+                        $returnData = $this->CommonInterface->serviceInterface('Data', 'saveDataEntry', $params, $dbConnection);
+                        
+                        if(isset($result['error'])){
+                            $returnData['errMsg'] = $result['error'];
+                            $status = _FAILED;
+                        }else{
+                            $returnData['data'] = $result;
+                            $status = _SUCCESS;
+                        }
+                    }
+
+                    $returnData['status'] = $status;
+                    $returnData['responseKey'] = $responseKey;
+                    $returnData['errCode'] = '';
+                    $returnData['errMsg'] = '';
+                endif;
+                break;
+                
+            case 2405: // Get DE single table lists
 
                 if (true):
                     $this->request->data['type'] = 'source'; //'tp'
@@ -1683,20 +1782,14 @@ class ServicesController extends AppController {
                     $returnData['errMsg'] = '';
                 endif;
                 break;
-                
-                case 2405: //get Tree Structure List
-                    // Post Variables                    
-                    if (true):                    
-                    // possible Types Area,IU,IUS,IC and ICIND
-                    $type = (isset($this->request->data['type'])) ? $this->request->data['type'] : 'ICIND';
-                    $parentId = (isset($this->request->data['pnid'])) ? $this->request->data['pnid'] : '-1';
-                    $onDemand = (isset($this->request->data['onDemand'])) ? $this->request->data['onDemand'] : false;
+				
+				case 2405:
+				//$getUserDatabases = $this->UserCommon->getUserDatabasesRoles('186','39');
+				//die;
+				break;
 
-                    $returnData['data'] = $this->Common->getTreeViewJSON($type, $dbId, $parentId, $onDemand);
 
-                    $returnData['status'] = _SUCCESS;
-                    $returnData['responseKey'] = $type;
-                endif;
+            default:
                 break;
 
         endswitch;
@@ -1738,7 +1831,7 @@ class ServicesController extends AppController {
                 $dataDbDetail = $returnSpecificDbDetails;
 
                 if ($role_id != _SUPERADMINROLEID):
-                    $dataUsrDbRoles = $this->UserCommon->findUserDatabasesRoles($dataUsrUserId, $dbId);
+                    $dataUsrDbRoles = $this->UserCommon->getUserDatabasesRoles($dataUsrUserId, $dbId);
                 endif;
             endif;
         }
@@ -1767,10 +1860,19 @@ class ServicesController extends AppController {
 
         if ($success == true) {
             $responseKey = '';
-            if (isset($response['responseKey']) && !empty($response['responseKey']))
-                $responseKey = $response['responseKey'];
-            if (isset($responseKey) && !empty($responseKey))
-                $returnData['data'][$responseKey] = $responseData;
+            //responseKey is an array
+            if (isset($response['responseKey']) && is_array($response['responseKey'])) {
+                foreach ($response['responseKey'] as $key => $responseKey) {
+                    if (!empty($responseKey))
+                        $returnData['data'][$responseKey] = $responseData[$key];
+                }
+            }//responseKey is a string
+            else {
+                if (isset($response['responseKey']) && !empty($response['responseKey']))
+                    $responseKey = $response['responseKey'];
+                if (isset($responseKey) && !empty($responseKey))
+                    $returnData['data'][$responseKey] = $responseData;
+            }
         }
 
         if ($convertJson == _YES) {

@@ -1338,7 +1338,7 @@ class ServicesController extends AppController {
 
                     try {
 
-                        $dataUsrDbRoles = $this->UserCommon->findUserDatabasesRoles($authUserId, $dbId);
+                        $dataUsrDbRoles = $this->UserCommon->getUserDatabasesRoles($authUserId, $dbId);
                         $returnData['status'] = _SUCCESS;
                         $returnData['data'] = $dataUsrDbRoles;
                         $returnData['responseKey'] = 'usrDbRoles';
@@ -1737,7 +1737,7 @@ class ServicesController extends AppController {
                 $dataDbDetail = $returnSpecificDbDetails;
 
                 if ($role_id != _SUPERADMINROLEID):
-                    $dataUsrDbRoles = $this->UserCommon->findUserDatabasesRoles($dataUsrUserId, $dbId);
+                    $dataUsrDbRoles = $this->UserCommon->getUserDatabasesRoles($dataUsrUserId, $dbId);
                 endif;
             endif;
         }

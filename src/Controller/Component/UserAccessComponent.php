@@ -4,6 +4,7 @@ namespace App\Controller\Component;
 
 use Cake\Controller\Component;
 use Cake\ORM\TableRegistry;
+
 /**
  * UserAccess Component
  */
@@ -63,12 +64,12 @@ class UserAccessComponent extends Component {
     public function getAreaAccessToUser($extra = ['type' => 'all']) {
         $returnData = [];
         extract($extra);
-        if($this->session->check('userAccess')){
+        if ($this->session->check('userAccess')) {
             $userAccess = $this->session->read('userAccess');
-            if($userAccess['areaAccess'] == 1){
+            if ($userAccess['areaAccess'] == 1) {
                 $userDbRoleId = $userAccess['userDbRoleId'];
-                $fields = [ 'aId' => _RACCESSAREAS_AREA_ID, 'aName' => _RACCESSAREAS_AREA_NAME];//Blank is all
-                if($type == 'list'){
+                $fields = [ 'aId' => _RACCESSAREAS_AREA_ID, 'aName' => _RACCESSAREAS_AREA_NAME]; //Blank is all
+                if ($type == 'list') {
                     $fields = array_values($fields); // we need 0,1 as keys
                 }
                 $conditions = [_RACCESSAREAS_USER_DATABASE_ROLE_ID => $userDbRoleId];
@@ -76,6 +77,16 @@ class UserAccessComponent extends Component {
             }
         }
         return $returnData;
+    }
+
+    /*
+     * deleteUserAreaAccess to delete the Areas assigned to user 
+     * $RUDR_ids can be array  RUDR table ids 
+     * $RUD_ids can be array RUD table ids 
+     */
+
+    public function deleteUserAreaAccess($RUD_ids = [], $RUDR_ids = []) {
+        return $deleteIndicators = $this->RAccessAreasObj->deleteUserAreas($RUD_ids, $RUDR_ids); //delete db		
     }
 
     /**
@@ -120,12 +131,12 @@ class UserAccessComponent extends Component {
     public function getIndicatorAccessToUser($extra = ['type' => 'all']) {
         $returnData = [];
         extract($extra);
-        if($this->session->check('userAccess')){
+        if ($this->session->check('userAccess')) {
             $userAccess = $this->session->read('userAccess');
-            if($userAccess['indicatorAccess'] == 1){
+            if ($userAccess['indicatorAccess'] == 1) {
                 $userDbRoleId = $userAccess['userDbRoleId'];
-                $fields = [ 'iGid' => _RACCESSINDICATOR_INDICATOR_GID, 'iName' => _RACCESSINDICATOR_INDICATOR_NAME];//Blank is all
-                if($type == 'list'){
+                $fields = [ 'iGid' => _RACCESSINDICATOR_INDICATOR_GID, 'iName' => _RACCESSINDICATOR_INDICATOR_NAME]; //Blank is all
+                if ($type == 'list') {
                     $fields = array_values($fields); // we need 0,1 as keys
                 }
                 $conditions = [_RACCESSINDICATOR_USER_DATABASE_ROLE_ID => $userDbRoleId];
@@ -133,6 +144,16 @@ class UserAccessComponent extends Component {
             }
         }
         return $returnData;
+    }
+
+    /*
+     * deleteUserIndicatorAccess to delete the indicators assigned to user 
+     * $userId can be array multiple user ids 
+     * $dbId is database id 
+     */
+
+    public function deleteUserIndicatorAccess($RUD_ids = [], $RUDR_ids = []) {
+        return $deleteIndicators = $this->RAccessIndicatorsObj->deleteUserIndicators($RUD_ids, $RUDR_ids); //delete db		
     }
 
 }
