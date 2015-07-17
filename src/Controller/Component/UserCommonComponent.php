@@ -81,21 +81,21 @@ class UserCommonComponent extends Component {
         return $getidsRUD = $this->RUserDatabases->getUserDatabaseId($userId, $dbId);
     }
 
-    /* 
-	  getUserDatabasesRoles gives the roles of users 
-      get the roles on basis of dbId  and userId 
+    /*
+      getUserDatabasesRoles gives the roles of users
+      get the roles on basis of dbId  and userId
      */
 
     public function getUserDatabasesRoles($userId = null, $dbId = null) {
-        
-		$rolesarray = [];
-	
-        $getidsRUD = $this->RUserDatabases->getUserDatabaseId($userId, $dbId);       				
 
-		if ($getidsRUD) {
+        $rolesarray = [];
+
+        $getidsRUD = $this->RUserDatabases->getUserDatabaseId($userId, $dbId);
+
+        if ($getidsRUD) {
             $listAllRoleIDs = $this->RUserDatabasesRoles->getRoleIDsDatabase($getidsRUD); //index for rudrid  and value for  roleid
-            
-			foreach ($listAllRoleIDs as $index => $RoleId) {
+
+            foreach ($listAllRoleIDs as $index => $RoleId) {
                 $rolesarray[] = $this->Roles->returnRoleValue($RoleId); //gives value of role on passed role id 
             }
         }
@@ -207,7 +207,6 @@ class UserCommonComponent extends Component {
                 if (isset($fieldsArray[_USER_ID]) && !empty($fieldsArray[_USER_ID])) {
 
                     $existRoles = $this->getUserDatabasesRoles($fieldsArray[_USER_ID], $dbId); //get existing roles 
-					//pr($existRoles );die;
                     $resultarray_intersect = array_intersect($fieldsArray['roles'], $existRoles); // get the common roles between posted and  exists roles 
                     // getidsRUD stores the user_database_id value from r_user_databases table 
                     $getidsRUD = $this->RUserDatabases->getUserDatabaseId($fieldsArray[_USER_ID], $dbId);
@@ -255,16 +254,14 @@ class UserCommonComponent extends Component {
                     $fieldsArrayDB[_RUSERDB_CREATEDBY] = $this->Auth->User('id');
                     $fieldsArrayDB[_RUSERDB_MODIFIEDBY] = $this->Auth->User('id');
                     $lastinserted_userid_db = $this->RUserDatabases->addUserDatabases($fieldsArrayDB); // for saving user  db
-                }else{
-					$getidsRUDR = $this->RUserDatabasesRoles->getRoleIDsDatabase($getidsRUD); //  index for rudrid and value for roleid 
-					$allRUDR_ids = array_keys($getidsRUDR); // all RUDR ids 
-					$lastinserted_userid_db = $getidsRUD;
-					//pr($getidsRUD);
-					//pr($allRUDR_ids);die;
-					$this->UserAccess->deleteUserAreaAccess($getidsRUD,$allRUDR_ids); //deleting existing areas 
-					$this->UserAccess->deleteUserIndicatorAccess($lastinserted_userid_db,$allRUDR_ids); //deleting existing indicators 
-				}
-				
+                } else {
+                    $getidsRUDR = $this->RUserDatabasesRoles->getRoleIDsDatabase($getidsRUD); //  index for rudr id and value for roleid 
+                    $allRUDR_ids = array_keys($getidsRUDR); // all RUDR ids 
+                    $this->UserAccess->deleteUserAreaAccess($getidsRUD, $allRUDR_ids); // deleting existing areas 
+                    $this->UserAccess->deleteUserIndicatorAccess($getidsRUD, $allRUDR_ids); // deleting existing indicators 
+                    $lastinserted_userid_db = current($getidsRUD);
+                }
+               
                 $cnt = 0;
                 // $resultarray_difference this will be empty if posted roles and existing roles both are same
                 if (isset($resultarray_difference) && count($resultarray_difference) > 0) {
@@ -281,8 +278,7 @@ class UserCommonComponent extends Component {
                         $fieldsArrayRoles[_RUSERDBROLE_CREATEDBY] = $this->Auth->User('id');
                         $fieldsArrayRoles[_RUSERDBROLE_MODIFIEDBY] = $this->Auth->User('id');
                         $rolesAdded[] = $rudbrolesId = $this->RUserDatabasesRoles->addUserRoles($fieldsArrayRoles); //saving roles
-                        
-						//saving areas accessible for user
+                        //saving areas accessible for user
                         if (count($fieldsArray['areaid']) > 0) {
                             foreach ($fieldsArray['areaid'] as $value) {
                                 $fieldsArrayAreas = [_RACCESSAREAS_AREA_ID => $value,
@@ -307,12 +303,41 @@ class UserCommonComponent extends Component {
 
                         $cnt++;
 
-                        $noof_roles;
+                       
                     }
                     if (count($rolesAdded) == $noof_roles) {
                         return $updated_userid;
                     } else {
                         return 0;
+                    }
+                }else{
+                    
+                    if(isset($allRUDR_ids) && count($allRUDR_ids)>0){
+                        foreach($allRUDR_ids as $roledbid){
+                           if (count($fieldsArray['indGids']) > 0) {
+                            foreach ($fieldsArray['indGids'] as $value) {
+                                $fieldsArrayInd = [_RACCESSINDICATOR_INDICATOR_GID => $value,
+                                    _RACCESSINDICATOR_USER_DATABASE_ID => $lastinserted_userid_db,
+                                    _RACCESSINDICATOR_USER_DATABASE_ROLE_ID => $roledbid
+                                ];
+                                
+                                $this->UserAccess->createRecordIndicatorAccess($fieldsArrayInd);
+                            }
+                          }
+                          
+                          if (count($fieldsArray['areaid']) > 0) {
+                            foreach ($fieldsArray['areaid'] as $value) {
+                                $fieldsArrayAreas = [_RACCESSAREAS_AREA_ID => $value,
+                                    _RACCESSAREAS_USER_DATABASE_ID => $lastinserted_userid_db,
+                                    _RACCESSAREAS_USER_DATABASE_ROLE_ID => $roledbid
+                                ];
+                                $this->UserAccess->createRecordAreaAccess($fieldsArrayAreas);
+                            }
+                        }
+                          
+                          
+                          
+                        }
                     }
                 }
                 return $updated_userid; //case when no change in roles 
