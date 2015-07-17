@@ -171,6 +171,7 @@ return [
     //Footnote table
     define('_FOOTNOTE_NId', 'FootNote_NId'),
     define('_FOOTNOTE_VAL', 'FootNote'),
+    define('_FOOTNOTE_GID', 'FootNote_GId'),
     // data table
     define('_MDATA_NID', 'Data_NId'),
     define('_MDATA_IUSNID', 'IUSNId'),
@@ -230,6 +231,7 @@ return [
     define('_ERR117', _DFAERR . '117'), //   invalid activation key    service 1204
     define('_ERR118', _DFAERR . '118'), //   user not modified bcoz email already exists   service 1204
     define('_ERR119', _DFAERR . '119'), //   user is already added to this database 
+    define('_ERR120', _DFAERR . '120'), //   user is not assigned to this database 
     // SUper Admin Role Id Hardcodes
     define('_SUPERADMINROLEID', '1'), // super admin id 
     define('_SUPERADMINNAME', 'Super Admin'), // super admin name 
@@ -243,6 +245,8 @@ return [
     define('_NO', 'no'), // 
     define('_INACTIVE', '0'), // User status inactive  
     define('_ACTIVE', '1'), // User status inactive  
+    define('_DBDELETED', '1'), // when database is deleted   
+    define('_DBNOTDELETED', '0'), // when database is active  
     define('_IMPORTERRORLOG_FILE', 'TPL_Import_'), // User status inactive  
     define('_OK', 'OK'),
     define('_STATUS', 'STATUS'), // Done or Error in import log of area and ICIUS
@@ -251,9 +255,12 @@ return [
     define('_AREA', 'area'),
     define('_ICIUSEXPORT', 'iciusExport'),
     //Chunks, Logs, xls Folders
-    define('_CHUNKS_PATH', WWW_ROOT . 'uploads' . DS . 'chunks'),
-    define('_LOGS_PATH', WWW_ROOT . 'uploads' . DS . 'logs'),
-    define('_XLS_PATH', WWW_ROOT . 'uploads' . DS . 'xls'),
+    define('_CHUNKS_PATH_WEBROOT', 'uploads' . DS . 'chunks'),
+    define('_LOGS_PATH_WEBROOT', 'uploads' . DS . 'logs'),
+    define('_XLS_PATH_WEBROOT', 'uploads' . DS . 'xls'),
+    define('_CHUNKS_PATH', WWW_ROOT . _CHUNKS_PATH_WEBROOT),
+    define('_LOGS_PATH', WWW_ROOT . _LOGS_PATH_WEBROOT),
+    define('_XLS_PATH', WWW_ROOT . _XLS_PATH_WEBROOT),
     define('_TV_AREA', 'area'), // _TV_AREA -> Tree View Area
     define('_TV_IU', 'iu'), // indicator unit
     define('_TV_IU_S', 's'), // subgroup vals
