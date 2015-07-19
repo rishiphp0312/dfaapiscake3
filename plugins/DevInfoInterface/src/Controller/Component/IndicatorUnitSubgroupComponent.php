@@ -400,9 +400,25 @@ class IndicatorUnitSubgroupComponent extends Component {
     public function testCasesFromTable($params = []) {
         return $this->IndicatorUnitSubgroupObj->testCasesFromTable($params);
     }
+	
+	
+	/*
+	* getIndicatorDetails to get the indicator details
+	* @iusNids is the iusnids 
+	* return the indicator details 
+	*/
 
-    public function getIusNidsDetails($iGid, $uGid, $sGid) {
-        return $data = $this->IndicatorUnitSubgroupObj->getIusNidsDetails($iGid, $uGid, $sGid);
+    public function getIusNidsDetails($iusNids=[]) {
+        return $data = $this->IndicatorUnitSubgroupObj->getIusNidsDetails($iusNids);
     }
+	
+	/*
+	* getIndicatorDetails to get the indicator details
+	* @iusNids is the iusnids 
+	* return the indicator details 
+	*/
+	public function getIndicatorDetails($iusNids=[]){
+        return $data = $this->IndicatorUnitSubgroupObj->getIndicatorDetails($iusNids);
+	}
 
 }

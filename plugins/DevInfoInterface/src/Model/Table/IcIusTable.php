@@ -23,6 +23,7 @@ class IcIusTable extends Table
         $this->primaryKey(_ICIUS_IC_IUSNID);
         $this->displayField(_ICIUS_IC_IUSNID); //used for find('list')
         $this->addBehavior('Timestamp');
+		
     }
 
     /*

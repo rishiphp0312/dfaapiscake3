@@ -2185,7 +2185,6 @@ class CommonInterfaceComponent extends Component {
      */
 
     public function getParentChild($component, $parentNID, $onDemand = false) {
-
         $conditions = array();
         if ($component == 'IndicatorClassifications') {
             $conditions[_IC_IC_PARENT_NID] = $parentNID;
@@ -2195,11 +2194,12 @@ class CommonInterfaceComponent extends Component {
             $conditions[_AREA_PARENT_NId] = $parentNID;
             $order = array(_AREA_AREA_NAME => 'ASC');
         }
-        $recordlist = $this->{$component}->find('all', array('conditions' => $conditions, 'fields' => array(), 'order' => $order));
+        
+		$recordlist = $this->{$component}->find('all', array('conditions' => $conditions, 'fields' => array(), 'order' => $order));
+		$list = $this->getDataRecursive($recordlist, $component, $onDemand);
 
-        $list = $this->getDataRecursive($recordlist, $component, $onDemand);
         //$list['levels'] = $AreaLevel->find('all', array());
-
+		//pr($list);die;
         return $list;
     }
 
@@ -2257,10 +2257,15 @@ class CommonInterfaceComponent extends Component {
                 // call function again to get selected area another child data
                 $dataArr = $this->getDataRecursive($childData, $component);
                 $rec_list[] = $this->prepareNode($NId, $ID, $name, $childExists, $dataArr, $this->arrayDepth);
-            }
+				//echo 'lal';
+				//echo '<br>';
+
+			}
             //if child data not found then make list with its id and name
             else {
-                $this->arrayDepthIterator = 1;
+                //echo 'kilo';
+				//echo '<br>';			
+				$this->arrayDepthIterator = 1;
                 $rec_list[] = $this->prepareNode($NId, $ID, $name, $childExists);
             }
         }
@@ -2306,5 +2311,172 @@ class CommonInterfaceComponent extends Component {
        
         return $this->Data->getDEsearchData($fields, $conditions, $extra);
     }
+	
+	
+	
+    /**
+     * getParentChildNew to get the details of Indicators with IC,
+      @areanid
+      @TimeperiodNid
+      @$iusGid can be mutiple in form of array
+      returns data value with source
+     * @access public
+     */
+	public function getParentChildNew($component, $parentNID, $onDemand = false) {
+
+        $conditions = array();
+        if ($component == 'IndicatorClassifications') {
+            $conditions[_IC_IC_PARENT_NID] = $parentNID;
+            //$conditions[_IC_IC_TYPE] = 'SC';
+            $order = array(_IC_IC_NAME => 'ASC');
+        }
+        $recordlist = $this->{$component}->find('all', array('conditions' => $conditions, 'fields' => array(), 'order' => $order));
+		$list = $this->getDataRecursiveNew($recordlist, $component, $onDemand);
+        
+		//$list['levels'] = $AreaLevel->find('all', array());
+
+        return $list;
+	}
+	
+	/**
+     * function to recursive call to get children areas
+     *
+     * @access public
+     */
+	 function getDataRecursiveNew($recordlist, $component, $onDemand = false){
+		 $rec_list = array();
+         $childData = array();
+        // start loop through area data
+        for ($lsCnt = 0; $lsCnt < count($recordlist); $lsCnt++) {
+
+            $childExists = false;
+
+            // get selected Rec details
+            if ($component == 'IndicatorClassifications') {
+                $NId = $recordlist[$lsCnt][_IC_IC_NID];
+                $ID = $recordlist[$lsCnt][_IC_IC_GID];
+                $name = $recordlist[$lsCnt][_IC_IC_NAME];
+                $parentNID = $recordlist[$lsCnt][_IC_IC_PARENT_NID];
+
+                    $childData = $this->{$component}->find('all', array('conditions' => array(_IC_IC_PARENT_NID => $NId), 'order' => array(_IC_IC_NAME => 'ASC')));
+            
+            } 
+
+            //if child data found
+            if (count($childData) > 0) {
+                $this->arrayDepthIterator = $this->arrayDepthIterator + 1;
+
+                if ($this->arrayDepthIterator > $this->arrayDepth) {
+                    $this->arrayDepth = $this->arrayDepth + 1;
+                }
+
+                $childExists = true;
+                // call function again to get selected area another child data
+                $dataArr = $this->getDataRecursiveNew($childData, $component);
+                $rec_list[] = $this->prepareNode($NId, $ID, $name, $childExists, $dataArr, $this->arrayDepth);
+				//echo 'lal';
+				//echo '<br>';
+
+			}
+            //if child data not found then make list with its id and name
+            else {
+                //echo 'kilo';
+				//echo '<br>';			
+				$this->arrayDepthIterator = 1;
+                $fields=[_ICIUS_IUSNID,_ICIUS_IUSNID];
+				$conditions=[_ICIUS_IC_NID=>$NId];
+                $iusIds  = $this->IcIus->getDataByParams($fields,$conditions,'list');//get ius ids 
+				//$iusIds = array
+				$indiIds  = $this->IndicatorUnitSubgroup->getIndicatorDetails($iusIds);// get indicator ids
+				$indicatorDetails=[];
+				if(!empty($indiIds)){
+			
+					foreach($indiIds as $index => $value){
+						$indicatorDetails[$value[_IUS_INDICATOR_NID]]['name'] = $value['indicator'][_INDICATOR_INDICATOR_NAME];
+						$indicatorDetails[$value[_IUS_INDICATOR_NID]]['gid']  = $value['indicator'][_INDICATOR_INDICATOR_GID];
+					}
+				}
+				$dataArr=$indicatorDetails;
+				$rec_list[] = $this->prepareNode($NId, $ID, $name, $childExists,$dataArr);
+            }
+        }
+        // end of loop for area data
+	//	pr($rec_list);
+		//die;
+        return $rec_list;
+    }
+	   function getDataRecursiveNew_old($recordlist, $component, $onDemand = false) {
+        $rec_list = array();
+        $childData = array();
+        // start loop through area data
+        for ($lsCnt = 0; $lsCnt < count($recordlist); $lsCnt++) {
+
+            $childExists = false;
+
+            // get selected Rec details
+            if ($component == 'IndicatorClassifications') {
+                $NId = $recordlist[$lsCnt][_IC_IC_NID];
+                $ID = $recordlist[$lsCnt][_IC_IC_GID];
+                $name = $recordlist[$lsCnt][_IC_IC_NAME];
+                $parentNID = $recordlist[$lsCnt][_IC_IC_PARENT_NID];
+				
+				$childData = $this->{$component}->find('all', array('conditions' => array(_IC_IC_PARENT_NID => $NId), 'order' => array(_IC_IC_NAME => 'ASC')));
+				   
+                } 
+				//echo '==child data==';
+				//echo '<br>';
+				//echo count($childData);
+	//			pr($childData);
+//die;
+             //if child data found
+            if (count($childData) > 0) {
+                $this->arrayDepthIterator = $this->arrayDepthIterator + 1;
+
+                if ($this->arrayDepthIterator > $this->arrayDepth) {
+                    $this->arrayDepth = $this->arrayDepth + 1;
+                }
+
+                $childExists = true;
+                
+				// call function again to get selected area another child data
+                $dataArr = $this->getDataRecursiveNew($childData, $component);
+                //pr($dataArr);die;
+				
+				
+				$rec_list[] = $this->prepareNode($NId, $ID, $name, $childExists, $dataArr, $this->arrayDepth);
+			
+			
+			   //$rec_list[] = $this->prepareNode($NId, $ID, $name, $childExists, $dataArr);
+
+			}
+            //if child data not found then make list with its id and name
+            else {
+				
+                $this->arrayDepthIterator = 1;
+				$fields=[_ICIUS_IUSNID,_ICIUS_IUSNID];
+				$conditions=[_ICIUS_IC_NID=>$NId];
+                $iusIds  = $this->IcIus->getDataByParams($fields,$conditions,'list');//get ius ids 
+				//$iusIds = array
+				$indiIds  = $this->IndicatorUnitSubgroup->getIndicatorDetails($iusIds);// get indicator ids
+				$indicatorDetails=[];
+				if(!empty($indiIds)){
+			
+					foreach($indiIds as $index => $value){
+						$indicatorDetails[$value[_IUS_INDICATOR_NID]]['indiName'] = $value['indicator'][_INDICATOR_INDICATOR_NAME];
+						$indicatorDetails[$value[_IUS_INDICATOR_NID]]['indiGid']  = $value['indicator'][_INDICATOR_INDICATOR_GID];
+					}
+				}	
+					//$rec_list[] = $this->prepareNode($NId, $ID, $name, $childExists,$indicatorDetails);
+				}
+				//$rec_list[] = $this->prepareNode($NId, $ID, $name, $childExists,$indicatorDetails);
+                
+			}
+							
+
+        // end of loop for area data
+		pr($rec_list);die('gapu');
+        return $rec_list;
+    }
+
 
 }

@@ -385,7 +385,8 @@ class IndicatorUnitSubgroupTable extends Table {
      * getIusNidsDetails to get all ius details or iu details 
      * $iGid indicator gid 
      * $uGid  unit gid 
-     * $sGid subgroup val gid 
+     * $sGid subgroup val gid
+     * return the iusnid details with ind,unit and subgrp details  on basis of ind gid,unit gid and subgrp gid .	 
      */
     public function getIusNidsDetails($iGid = '', $uGid = '', $sGid = '') {
         if ($sGid != '')
@@ -393,6 +394,16 @@ class IndicatorUnitSubgroupTable extends Table {
         else
             return $this->find()->where(['Indicator'._INDICATOR_INDICATOR_GID  => $iGid, 'Unit'._UNIT_UNIT_GID => $uGid])->contain(['Indicator', 'Unit', 'SubgroupVals'], true)->hydrate(false)->all()->toArray();
 
+    }
+	
+	/*
+     * getIndicatorDetails to get all indicator details 
+     * $iusnids ius nids 
+		return indicator details on passed iusnids 
+     */
+    public function getIndicatorDetails($iusnids = []) {
+            return $data = $this->find()->where([_IUS_IUSNID .' IN ' => $iusnids])->contain(['Indicator'], true)->hydrate(false)->all()->toArray();
+        
     }
 
 }
