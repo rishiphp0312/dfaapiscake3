@@ -121,6 +121,7 @@ return [
     define('_DATABASE_ROLE_DESC', 'description'),
     // users   table
     define('_USER_ID', 'id'),
+	define('_USER_ROLE_ID', 'role_id'),
     define('_USER_NAME', 'name'),
     define('_USER_STATUS', 'status'),
     define('_USER_LASTLOGGEDIN', 'lastloggedin'),
@@ -140,7 +141,7 @@ return [
     define('_RUSERDB_MODIFIEDBY', 'modifiedby'),
     // R_users_databases_roles table
     define('_RUSERDBROLE_ID', 'id'),
-    define('_RUSERDBROLE_ACCESS', 'area_access'),
+    define('_RUSERDBROLE_AREA_ACCESS', 'area_access'),
     define('_RUSERDBROLE_INDICATOR_ACCESS', 'indicator_access'),
     define('_RUSERDBROLE_ROLE_ID', 'role_id'),
     define('_RUSERDBROLE_USER_DB_ID', 'user_database_id'),
