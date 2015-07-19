@@ -58,29 +58,29 @@ class RUserDatabasesRolesTable extends Table {
     /**
      * deleteUserRoles method when modifying user their roles may be updated 
       @$RUD_ids is the array of RUD table
-     * $type E means roles  to be deleted else roles not to be deleted 
+     * $type IN  means roles  to be deleted 'NOT IN' roles not to be deleted 
+	   default will be IN for type 
      * @return void
      */
-    public function deleteUserRoles($RUD_ids = [], $roledids = [], $type = null) {
+    public function deleteUserRoles($RUD_ids = [], $roledids = [], $type = ' IN ') {
 
-        if ($type == 'E')
-            $result = $this->deleteAll([_RUSERDBROLE_USER_DB_ID . ' IN' => $RUD_ids, _RUSERDBROLE_ROLE_ID . ' IN' => $roledids]);
-        else
-            $result = $this->deleteAll([_RUSERDBROLE_USER_DB_ID . ' IN' => $RUD_ids, _RUSERDBROLE_ROLE_ID . ' NOT IN' => $roledids]);
+        
+            $result = $this->deleteAll([_RUSERDBROLE_USER_DB_ID . ' IN' => $RUD_ids, _RUSERDBROLE_ROLE_ID . $type => $roledids]);
+        
 
         return $result;
     }
 
     /**
      *  getRoleIDsDatabase get the role ids of specific user 
-     *  @param  $dbIds  array of database ids     
+     *  @param  $ids  array of  ids  belongs to ids of r_user_databases   
      *  @return array  key for  RUDR id  and array value is  role_id 
      */
-    public function getRoleIDsDatabase($dbIds = []) {
+    public function getRoleIDsDatabase($ids = []) {
         
         $options['fields'] = array(_RUSERDBROLE_ID,_RUSERDBROLE_ROLE_ID);
         $this->setListTypeKeyValuePairs($options['fields']);
-        $options['conditions'] = array(_RUSERDBROLE_USER_DB_ID . ' IN' => $dbIds);
+        $options['conditions'] = array(_RUSERDBROLE_USER_DB_ID . ' IN' => $ids);
         $query = $this->find('list', $options); //
         $returnRoleIds = $query->hydrate(false)->all()->toArray();    
         return $returnRoleIds;

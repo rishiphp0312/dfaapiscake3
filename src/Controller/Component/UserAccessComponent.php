@@ -83,11 +83,27 @@ class UserAccessComponent extends Component {
      * deleteUserAreaAccess to delete the Areas assigned to user 
      * $RUDR_ids can be array  RUDR table ids 
      * $RUD_ids can be array RUD table ids 
+	 * $type can be IN or NOT IN for role ids default is IN 
      */
 
-    public function deleteUserAreaAccess($RUD_ids = [], $RUDR_ids = []) {
-        return $deleteIndicators = $this->RAccessAreasObj->deleteUserAreas($RUD_ids, $RUDR_ids); //delete db		
+    public function deleteUserAreaAccess($RUD_ids = [], $RUDR_ids = [],$type) {
+        return $deleteAreas = $this->RAccessAreasObj->deleteUserAreas($RUD_ids, $RUDR_ids,$type); //delete db		
     }
+	
+	
+	
+	/*
+	getAssignedAreas to get the Areas assigned to specific user on specific db 
+	@rudId is the user database id
+	@rudrId is the user db role id 
+	*/
+	
+	public function getAssignedAreas($rudId, $rudrId) {
+        return $accesAreas = $this->RAccessAreasObj->getAssignedAreas($rudId, $rudrId); //delete db		
+    }
+	
+	
+	
 
     /**
      * Creates record - Indicator_Access

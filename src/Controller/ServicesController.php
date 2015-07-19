@@ -35,14 +35,11 @@ ini_set('memory_limit', '2000M');
 class ServicesController extends AppController {
 
     //Loading Components
-    public $RUserDatabasesObj;
     public $components = [ 'Auth', 'DevInfoInterface.CommonInterface', 'Common', 'ExcelReader', 'UserCommon', 'TransactionLogs', 'MIusValidations', 'UserAccess'];
-    public $delm = _DELEM2;
 
     public function initialize() {
         parent::initialize();
         $this->session = $this->request->session();
-        $this->RUserDatabasesObj = TableRegistry::get('RUserDatabases');
     }
 
     public function beforeFilter(Event $event) {
@@ -64,17 +61,17 @@ class ServicesController extends AppController {
         $returnData = [];
         $dbConnection = 'test';
         $authUserId = $this->Auth->user(_USER_ID); // logged in user id
+        $authUserRoleId = $this->Auth->user(_USER_ROLE_ID); // logged in user id
         $dbId = '';
         //$_REQUEST['dbId']=46;  // for testing 
         if (isset($_REQUEST['dbId']) && !empty($_REQUEST['dbId'])) {
 
             $dbId = $_REQUEST['dbId'];
             $dbConnection = $this->Common->getDbConnectionDetails($dbId); //dbId
-
-            $role_id = $this->Auth->user('role_id');
+           // $role_id = $this->Auth->user('role_id');
 
             // User is not Superadmin
-            if ($role_id != _SUPERADMINROLEID) {
+            if ($authUserRoleId != _SUPERADMINROLEID) {
                 //---- Store User access data into session, if found
                 $authUserId = $this->Auth->user(_USER_ID);
                 // Check fake call
@@ -87,7 +84,7 @@ class ServicesController extends AppController {
                         if (!empty($getDbRolesDetails)) {
                             $getDbRolesDetails = reset($getDbRolesDetails);
                             $userDbRoleId = $getDbRolesDetails[_RUSERDBROLE_ID];
-                            $areaAccess = $getDbRolesDetails[_RUSERDBROLE_ACCESS];
+                            $areaAccess = $getDbRolesDetails[_RUSERDBROLE_AREA_ACCESS];
                             $indicatorAccess = $getDbRolesDetails[_RUSERDBROLE_INDICATOR_ACCESS];
 
                             // Store user access in session for later use
@@ -1006,29 +1003,21 @@ class ServicesController extends AppController {
                         $data = array();
                         if (isset($_POST['name']) && !empty($_POST['name']) && isset($_POST['email']) && !empty($_POST['email'])) {
 
-                            if (isset($_POST['name']) && !empty($_POST['name']))
-                                $this->request->data[_USER_NAME] = trim($_POST['name']);
-
-                            if (isset($_POST['email']) && !empty($_POST['email']))
-                                $conditions[_USER_EMAIL] = $this->request->data[_USER_EMAIL] = trim($_POST['email']);
-
-                            $userId = '0';
+                            $this->request->data[_USER_NAME] = trim($_POST['name']);
+                            $conditions[_USER_EMAIL] = $this->request->data[_USER_EMAIL] = trim($_POST['email']);
+                            $userId = '0'; 
                             if (isset($this->request->data[_USER_ID]) && !empty($this->request->data[_USER_ID])) {
-                                $userId = $this->request->data[_USER_ID];
+                                $userId = $this->request->data[_USER_ID]; // case of modify or when user is already added once 
                             } else {
                                 $this->request->data[_USER_STATUS] = _INACTIVE; // 0 means Inactive
                             }
-
-                            $isModified = $this->request->data['isModified']; // case of add is false 
-
-
-                            $userRelDbstatus = 0; //user is not associated with db 		
+                            $isModified = $this->request->data['isModified']; // when value is false its add case else modify one  
                             $chkuserDbRel = 0;
                             $this->request->data[_USER_MODIFIEDBY] = $authUserId;
                             $this->request->data[_USER_CREATEDBY] = $authUserId;
-
-                            if (isset($this->request->data['roles']))
-                                $rolesarray = $this->request->data['roles'];
+							$this->request->data['areaAccess'] =1;
+							$this->request->data['indAccess'] =1;
+                            $rolesarray = $this->request->data['roles'];
                             if (isset($rolesarray) && count($rolesarray) > 0) {
                                 if (isset($dbId) && !empty($dbId)) {
                                     $chkEmail = $this->UserCommon->checkEmailExists($this->request->data[_USER_EMAIL], $this->request->data[_USER_ID]);
@@ -1038,8 +1027,9 @@ class ServicesController extends AppController {
                                         }
 
                                         if ($chkuserDbRel == 0) {    //user is not  associated with this db 
-                                            $this->request->data['areaid'] = ['IND008', 'IND007', 'IND006'];
-                                            $this->request->data['indGids'] = ['LR_7PLUS', 'D127A005-397D-3091-5253-D3279AC481AA', 'C1A7FA43-340F-7506-979A-501CF11AB325'];
+                                           $this->request->data['areaid'] = ['IND008', 'IND007', 'IND006'];
+                                           $this->request->data['indGids'] = ['LR_7PLUS', 'D127A005-397D-3091-5253-D3279AC481AA', 'C1A7FA43-340F-7506-979A-501CF11AB325'];
+										   
                                             $lastIdinserted = $this->UserCommon->addModifyUser($this->request->data, $dbId);
                                             if ($lastIdinserted > 0) {
                                                 $returnData['status'] = _SUCCESS;
@@ -1198,7 +1188,7 @@ class ServicesController extends AppController {
                 $returnData['data']['user'][_USER_ID] = $authUserId;
                 $returnData['data']['user'][_USER_NAME] = $this->Auth->user(_USER_NAME);
                 $returnData['responseKey'] = '';
-                if ($this->Auth->user('role_id') == _SUPERADMINROLEID)
+                if ($authUserRoleId == _SUPERADMINROLEID)
                     $returnData['data']['user']['role'][] = _SUPERADMINNAME;
                 else
                     $returnData['data']['user']['role'][] = '';
@@ -1356,16 +1346,14 @@ class ServicesController extends AppController {
             case 2209: //get Tree Structure List
                 //if ($this->request->is('post')):
                 if (true):
-                    $this->request->data['type'] = _TV_IC;
+                    $this->request->data['type'] = _TV_ICIND;
                     $this->request->data['onDemand'] = false;
                     // Post Variables                    
                     // possible Types Area,IU,IUS,IC and ICIND
                     $type = (isset($this->request->data['type'])) ? $this->request->data['type'] : '';
                     $parentId = (isset($this->request->data['pnid'])) ? $this->request->data['pnid'] : '-1';
                     $onDemand = (isset($this->request->data['onDemand'])) ? $this->request->data['onDemand'] : true;
-
                     $returnData['data'] = $this->Common->getTreeViewJSON($type, $dbId, $parentId, $onDemand);
-
                     $returnData['status'] = _SUCCESS;
                     $returnData['responseKey'] = $type;
                 endif;
@@ -1784,9 +1772,22 @@ class ServicesController extends AppController {
                 break;
 				
 				case 2405:
-				//$getUserDatabases = $this->UserCommon->getUserDatabasesRoles('186','39');
-				//die;
-				break;
+                 if (true):
+                    $this->request->data['type'] = _TV_ICIND;
+                    $this->request->data['onDemand'] = false;
+					die;
+                    // Post Variables                    
+                    // possible Types Area,IU,IUS,IC and ICIND
+                    $type = (isset($this->request->data['type'])) ? $this->request->data['type'] : '';
+                    $parentId = (isset($this->request->data['pnid'])) ? $this->request->data['pnid'] : '-1';
+                    $onDemand = (isset($this->request->data['onDemand'])) ? $this->request->data['onDemand'] : true;
+
+                    $returnData['data'] = $this->Common->getTreeViewJSON($type, $dbId, $parentId, $onDemand);
+
+                    $returnData['status'] = _SUCCESS;
+                    $returnData['responseKey'] = $type;
+                endif;
+                break;
 
 
             default:

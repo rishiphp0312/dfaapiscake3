@@ -336,12 +336,11 @@ class CommonComponent extends Component {
                 break;
                 case _TV_IC:
                     $returndData = $this->CommonInterface->serviceInterface('CommonInterface', 'getParentChild', ['IndicatorClassifications', $parentId, $onDemand], $dbConnection);
-                    
+					
                 break;
                 case _TV_ICIND:
-                    // coming soon
-                    $returndData = $this->CommonInterface->serviceInterface('CommonInterface', 'getParentChild', ['IndicatorClassifications', $parentId, false], $dbConnection);
-                    
+                    $returndData = $this->CommonInterface->serviceInterface('CommonInterface', 'getParentChildNew', ['IndicatorClassifications', $parentId, $onDemand], $dbConnection);
+		            //pr($returndData);die;
 
                 break;
                 case _TV_ICIUS:
@@ -352,7 +351,7 @@ class CommonComponent extends Component {
         }
         
         $data = $this->convertDataToTVArray($type, $returndData, $onDemand, $dbId);
-        //pr($data); exit;
+        pr($data); exit;
         return $data;
 
     }
@@ -432,7 +431,11 @@ class CommonComponent extends Component {
                 $returnData = array('pnid' => $data['nid'], 'pid' => $data['id']);
             break;
             case _TV_ICIND:
-                // coming soon
+                
+                $rowid = $data['id'];
+                $fields = array('icname'=>$data['name']);
+                $returnData = array('pnid' => $data['nid'], 'pid' => $data['id']);
+				
             break;
             case _TV_ICIUS:
                 // coming soon

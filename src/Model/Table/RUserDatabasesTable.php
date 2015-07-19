@@ -86,15 +86,12 @@ class RUserDatabasesTable extends Table {
 
     /**
      * getUserDatabaseId 
-     * 
      * @param  $userId the  with respect to the rows of users in  r_user_databases   
      * @$dbId is database id  
      * @return the RUD  id of table of  specific dbid of specific user
      */
     public function getUserDatabaseId($userId = [], $dbId = null) {
-        $returnIds = [];
-        if (!empty($fields))
-            $options['fields'] = array(_RUSERDB_ID);
+        $returnIds = [];        
         $options['conditions'] = [_RUSERDB_USER_ID . ' IN' => $userId, _RUSERDB_DB_ID => $dbId];
         $data = $this->find('all', $options)->hydrate(false)->all()->toArray();
         if (isset($data)) {
@@ -102,7 +99,6 @@ class RUserDatabasesTable extends Table {
                 $returnIds[] = $valueId[_RUSERDBROLE_ID];
             }
         }
-
         return $returnIds;
     }
 

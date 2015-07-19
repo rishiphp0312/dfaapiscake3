@@ -42,9 +42,7 @@ class RAccessIndicatorsTable extends Table {
     public function createRecord($fieldsArray = []) {
         $RAccessIndicators = $this->newEntity();
         $RAccessIndicators = $this->patchEntity($RAccessIndicators, $fieldsArray);
-
         $result = $this->save($RAccessIndicators);
-
         if ($result) {
             return $result->{_RACCESSINDICATOR_ID};
         } else {
@@ -59,13 +57,8 @@ class RAccessIndicatorsTable extends Table {
      * @return \Cake\ORM\RulesChecker
      */
     public function updateRecord($fieldsArray = [], $conditions = []) {
-        //Initialize
         $query = $this->query();
-
-        //Set
         $query->update()->set($fieldsArray)->where($conditions);
-
-        //Execute
         $query->execute();
     }
 
@@ -79,7 +72,6 @@ class RAccessIndicatorsTable extends Table {
      */
     public function getRecords(array $fields, array $conditions, $type = 'all') {
         $options = [];
-
         if (!empty($fields))
             $options['fields'] = $fields;
         if (!empty($conditions))
@@ -89,23 +81,44 @@ class RAccessIndicatorsTable extends Table {
             $this->setListTypeKeyValuePairs($fields);
 
         $query = $this->find($type, $options);
-        $results = $query->hydrate(false)->all();
-        $data = $results->toArray();
-
+        $data = $query->hydrate(false)->all()->toArray();
         return $data;
     }
+	
+	
+	/*
+	getAssignedIndicators to get the indicators assigned to user on db 
+	@rudId is the user database id
+	@rudrId is the user db role id 
+	*/
+	
+	public function getAssignedIndicators($rudId=null, $rudrId=null) {
+        
+		$options = [];
+        $options['fields'] = [_RACCESSINDICATOR_INDICATOR_GID,_RACCESSINDICATOR_INDICATOR_NAME];
+		$options['conditions'] = [_RACCESSINDICATOR_USER_DATABASE_ROLE_ID=>$rudId,_RACCESSINDICATOR_USER_DATABASE_ID=>$rudrId];
+        $this->setListTypeKeyValuePairs($fields);
+        $query = $this->find('list', $options);
+        $data = $query->hydrate(false)->all()->toArray();
+        return $data;
+    }
+	
+	
 
     /**
      * deleteUserAreas method used when modifying areas  
-      @RUD_ids is the array of RUD table
-      @RUDR_ids is the array of RUDR table
-      @indicatorgids which needs to be deleted
+       @RUD_ids is the array of RUD table
+       @RUDR_ids is the array of RUDR table
+       @indicatorgids which needs to be deleted
      * @return void
-      //_RACCESSINDICATOR_INDICATOR_GID
+	 * $type can be IN or NOT IN for role ids default is IN 
      */
-    public function deleteUserIndicators($RUD_ids = [], $RUDR_ids = []) {
-        $result = $this->deleteAll([_RACCESSINDICATOR_USER_DATABASE_ID . ' IN' => $RUD_ids, _RACCESSINDICATOR_USER_DATABASE_ROLE_ID . ' IN' => $RUDR_ids]);
+    public function deleteUserIndicators($RUD_ids = [], $RUDR_ids = [],$type=' IN ') {    
+		$result = $this->deleteAll([_RACCESSINDICATOR_USER_DATABASE_ID . ' IN' => $RUD_ids, _RACCESSINDICATOR_USER_DATABASE_ROLE_ID . $type => $RUDR_ids]);
         return $result;
     }
+	
+	
+	
 
 }
